@@ -1,7 +1,7 @@
 ---
 id: 0013
 title: Store times in UTC; compute deadlines in the organization's time zone
-status: proposed
+status: accepted
 date: 2026-10-17
 deciders: [Rengga]
 related: [F-001, F-003, F-005, F-009]

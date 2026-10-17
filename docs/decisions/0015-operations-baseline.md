@@ -1,7 +1,7 @@
 ---
 id: 0015
 title: Operations baseline — monitoring, heartbeats, backups
-status: proposed
+status: accepted
 date: 2026-10-17
 deciders: [Rengga]
 related: [F-009, ADR-0002, ADR-0006, ADR-0012]

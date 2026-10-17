@@ -22,9 +22,9 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0010](0010-freemium-subscription-no-transaction-fee.md) | Freemium + subscription; no mandatory transaction fee | accepted (limit check deferred: 0018) | 2026-10-15 |
 | [0011](0011-email-password-authentication.md) | Email + password sign-in for sellers | accepted | 2026-10-17 |
 | [0012](0012-database-postgresql.md) | PostgreSQL as the database engine | accepted | 2026-10-17 |
-| [0013](0013-timezones-utc-storage.md) | Store times in UTC; deadlines in the organization's time zone | proposed | 2026-10-17 |
-| [0014](0014-trip-photo-storage.md) | Trip photos — public, unguessable paths with queued resizing | proposed | 2026-10-17 |
-| [0015](0015-operations-baseline.md) | Operations baseline — monitoring, heartbeats, backups | proposed | 2026-10-17 |
-| [0016](0016-customer-booking-access-token.md) | Customer booking access via unguessable token | proposed | 2026-10-17 |
-| [0017](0017-account-recovery-and-payment-instruction-protection.md) | Account recovery and payment-instruction change protection | proposed | 2026-10-17 |
+| [0013](0013-timezones-utc-storage.md) | Store times in UTC; deadlines in the organization's time zone | accepted | 2026-10-17 |
+| [0014](0014-trip-photo-storage.md) | Trip photos — public, unguessable paths with queued resizing | accepted | 2026-10-17 |
+| [0015](0015-operations-baseline.md) | Operations baseline — monitoring, heartbeats, backups | accepted | 2026-10-17 |
+| [0016](0016-customer-booking-access-token.md) | Customer booking access via unguessable token | accepted | 2026-10-17 |
+| [0017](0017-account-recovery-and-payment-instruction-protection.md) | Account recovery and payment-instruction change protection | accepted | 2026-10-17 |
 | [0018](0018-defer-free-tier-limits.md) | Defer free-tier limits; no plan limit enforced in P0 | accepted | 2026-10-17 |

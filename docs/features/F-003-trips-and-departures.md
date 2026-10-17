@@ -187,8 +187,8 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 
 None of these block building; each has a default that the builder implements unless the human overrides it.
 
-- [ ] **Q1 Time zone** — see [ADR-0013](../decisions/0013-timezones-utc-storage.md) (proposed). Sellers outside WIB (Bali, Lombok, Labuan Bajo = WITA; Raja Ampat = WIT) need correct deadlines. *Recommended:* `organizations.timezone` default `Asia/Jakarta`, changeable by the seller in Pengaturan → Profil usaha (F-001). Accepting ADR-0013 closes this. — Rengga
-- [ ] **Q2 Photo limits & storage** — see [ADR-0014](../decisions/0014-trip-photo-storage.md) (proposed). *Recommended:* ≤ 10 photos per trip, ≤ 10 MB per file before resize, JPEG/PNG/WebP, org-prefixed path, UUID names, EXIF stripped; no per-plan storage quota in MVP (revisit with Pro). Mockup shows "foto 1/6". Accepting ADR-0014 closes this. — Rengga
+- [x] **Q1 Time zone** — decided 2026-10-17: [ADR-0013](../decisions/0013-timezones-utc-storage.md) accepted. Sellers outside WIB (Bali, Lombok, Labuan Bajo = WITA; Raja Ampat = WIT) need correct deadlines. *Recommended:* `organizations.timezone` default `Asia/Jakarta`, changeable by the seller in Pengaturan → Profil usaha (F-001). — Rengga
+- [x] **Q2 Photo limits & storage** — decided 2026-10-17: [ADR-0014](../decisions/0014-trip-photo-storage.md) accepted. *Recommended:* ≤ 10 photos per trip, ≤ 10 MB per file before resize, JPEG/PNG/WebP, org-prefixed path, UUID names, EXIF stripped; no per-plan storage quota in MVP (revisit with Pro). Mockup shows "foto 1/6". — Rengga
 - [ ] **Q3 Duration change with bookings.** *Recommended:* only departures without bookings get new end dates; booked ones keep theirs, with a notice. Alternative: block duration changes while any future departure has bookings. — Rengga
 - [ ] **Q4 Deleting a departure with bookings.** *Recommended:* not allowed — close only (AC-29). A "Batalkan keberangkatan" flow that cancels bookings and messages customers belongs with booking cancellation in week 4 (F-006/F-007). — Rengga
 - [x] **Q5 Free-plan limit.** Decided 2026-10-17: not enforced in P0; the "1 trip" in the mockups is sample copy (ADR-0018).
@@ -202,3 +202,4 @@ None of these block building; each has a default that the builder implements unl
 - 2026-10-17 — Planner: full acceptance criteria (AC-1…AC-42), data model & rules, tenancy/overbooking cases, dependencies; open questions given defaults; status → `ready`
 - 2026-10-17 — Aligned with F-001/F-009 and decisions relayed by the coordinator: description optional (checklist item "Nama trip"); Private preset has no duration; free-plan limit counts `published` trips; AC-22 covers onboarding trips without meeting time; ADR-0012 (PostgreSQL), ADR-0013 (time zone), ADR-0014 (trip photos, EXIF stripped) linked; time zone default Asia/Jakarta, set in Pengaturan → Profil usaha
 - 2026-10-17 — Free-plan trip limit removed from P0 (ADR-0018): Scope item dropped, AC-14 now asserts no limit, Q5 closed
+- 2026-10-17 — ADR-0013 and ADR-0014 accepted; Q1 and Q2 closed

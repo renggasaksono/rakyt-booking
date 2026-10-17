@@ -34,19 +34,11 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 |---|---|---|---|
 | Seat hold length; does proof upload pause the hold; can the seller extend it | 2 h proposed; rest open — see ADR | [ADR-0006](../decisions/0006-seat-hold-and-capacity-locking.md) · F-005 | **Blocking** for F-005 |
 | Prada brand shade D vs C | see ADR | [ADR-0008](../decisions/0008-brand-tokens-and-cta-rule.md) | Before UI build (wk 2) |
-| Store times in UTC; deadlines in the organization's time zone | Accept | [ADR-0013](../decisions/0013-timezones-utc-storage.md) · F-003 Q1 · F-001 Q8 · F-009 Q8 | Wk 2 |
-| Trip photos: public, UUID names, EXIF stripped, ≤ 10 × 10 MB | Accept | [ADR-0014](../decisions/0014-trip-photo-storage.md) · F-003 Q2 | Wk 2 |
-| Operations baseline: Sentry, uptime, heartbeat, daily off-host backups | Accept | [ADR-0015](../decisions/0015-operations-baseline.md) | Pilot go (end wk 4) |
-| Customer booking access via unguessable token | Accept | [ADR-0016](../decisions/0016-customer-booking-access-token.md) | Before F-005 |
-| Account recovery; 24 h block on bank-detail changes after reset | Accept | [ADR-0017](../decisions/0017-account-recovery-and-payment-instruction-protection.md) | Wk 2 (F-001/F-009) |
 
 ### Week 1 — choices outside the specs
 
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
-| Hosting target and backup storage | Managed VPS (e.g. Forge), Singapore/Jakarta; backups at another provider | [F-009 Q2](../features/F-009-tenancy-security-operations.md#open-questions) | Pilot go |
-| Backup policy | Daily, 14 daily + 8 weekly, ≤ 24 h data loss in pilot | [F-009 Q3](../features/F-009-tenancy-security-operations.md#open-questions) | Pilot go |
-| Error tracker and alert channel | Sentry free tier; founder email + phone | [F-009 Q4](../features/F-009-tenancy-security-operations.md#open-questions) | Pilot go |
 | Transactional email provider (SPF/DKIM) | — | [F-001](../features/F-001-seller-onboarding.md#dependencies) | Pilot |
 | Syarat & Privasi text; PDP law (UU 27/2022) | Short Bahasa notice before pilot; formal review before launch | [F-009 Q9](../features/F-009-tenancy-security-operations.md#open-questions) | Pilot |
 | Free-tier limits and pricing | Decide after pilot | [ADR-0018](../decisions/0018-defer-free-tier-limits.md) | After pilot |
@@ -55,7 +47,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 
 | Decision | Recommended | Source |
 |---|---|---|
-| Staff-assisted recovery: proof when the seller lost their email | WhatsApp contact + KTP name = account holder + 2 booking refs | [F-009 Q5](../features/F-009-tenancy-security-operations.md#open-questions) |
 | Rakyt staff access to seller data | None in-app; audited artisan commands | [F-009 Q6](../features/F-009-tenancy-security-operations.md#open-questions) |
 | Sellers see a change history in P0 | No; capture now, show later | [F-009 Q7](../features/F-009-tenancy-security-operations.md#open-questions) |
 | Changing a trip's duration when departures have bookings | Only unbooked departures move; notice shown | [F-003 Q3](../features/F-003-trips-and-departures.md#open-questions) |

@@ -225,7 +225,7 @@ None block building. The spec uses the recommended default for each; override an
 - [ ] **Q5 — 4f timer for sellers who come back days later.** *Recommend:* from sign-up to first publish, shown only if ≤ 60 min (D4). Showing "3 hari 2 jam" would undercut the promise.
 - [x] **Q6 — Trip type presets.** Aligned with F-003: Open trip → scheduled + 3H2M; Day trip → scheduled + 1 hari; Private → request_date, no duration preset.
 - [ ] **Q7 — Inclusion chips.** Mockup 4c shows Karimunjawa-specific chips (Kapal, Homestay, Makan, Alat snorkel, Guide). *Recommend a generic set:* Transportasi, Penginapan, Makan, Guide, Tiket masuk, Dokumentasi, + Lainnya.
-- [ ] **Q8 — Timezone for operators in WITA/WIT (Bali, NTT, Sulawesi, Papua).** *Recommend:* default WIB, selectable WIB/WITA/WIT in Pengaturan → Profil usaha; don't add a field to step 1 (time budget).
+- [x] **Q8 — Timezone for operators in WITA/WIT (Bali, NTT, Sulawesi, Papua).** Decided 2026-10-17: ADR-0013 accepted. *Recommend:* default WIB, selectable WIB/WITA/WIT in Pengaturan → Profil usaha; don't add a field to step 1 (time budget).
 - [ ] **Q9 — Who owns logo / bio / contact editing?** *Recommend: F-001 section F* (blueprint P0 lists it; nothing else owns it). Confirm, or move it to F-007.
 - [ ] **Q10 — Sellers who only take QRIS or cash.** *Recommend:* onboarding asks for bank / e-wallet only; QRIS-only or cash-only sellers save as draft, add the method in Pengaturan → Pembayaran (F-006), then publish. Revisit if pilots hit it.
 - [x] **Q11 — Is a description required to publish?** Decided 2026-10-17: no; F-003 checklist item is "Nama". Onboarding has no description field.
@@ -239,3 +239,4 @@ None block building. The spec uses the recommended default for each; override an
 - 2026-10-17 — planner pass: testable ACs (A–F, tenancy, phone), data model, reserved slugs, edge cases, dependencies; resolved step count from mockup
 - 2026-10-17 — section A rewritten for email + password (ADR-0011, ADR-0009 rejected); WhatsApp number moved to step 1 as unverified contact; DB = PostgreSQL (ADR-0012); description optional (Q11); trip-type presets aligned with F-003; mockup 4a/4b divergence and time-budget recheck noted; status → `ready`
 - 2026-10-17 — Free-plan trip limit removed from P0 (ADR-0018): sign-up copy "Gratis untuk mulai.", D3 asserts no limit
+- 2026-10-17 — ADR-0013 accepted; Q8 closed

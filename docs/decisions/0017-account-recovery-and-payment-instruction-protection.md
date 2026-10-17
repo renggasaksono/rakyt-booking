@@ -1,7 +1,7 @@
 ---
 id: 0017
 title: Account recovery and payment-instruction change protection
-status: proposed
+status: accepted
 date: 2026-10-17
 deciders: [Rengga]
 related: [F-001, F-006, F-009, ADR-0003, ADR-0011]
