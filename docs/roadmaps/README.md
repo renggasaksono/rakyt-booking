@@ -11,8 +11,8 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 
 | Item | Status |
 |---|---|
-| Week 1 — resolve open questions, confirm proposed ADRs, scaffold Laravel app | planned |
-| [F-009](../features/F-009-tenancy-security-operations.md) Tenancy & security baseline (slice A wk 2 · ops wk 4 · hardening wk 6) | ready (spec) |
+| Week 1 — resolve open questions, confirm proposed ADRs, scaffold Laravel app | scaffold done (ADR-0020); ADR-0011 still proposed |
+| [F-009](../features/F-009-tenancy-security-operations.md) Tenancy & security baseline (slice A wk 2 · ops wk 4 · hardening wk 6) | in-progress — slice A built; B, C to do |
 | [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | ready (spec) |
 | [F-003](../features/F-003-trips-and-departures.md) Trips & departures | ready (spec) |
 | [F-002](../features/F-002-public-booking-page.md) Public booking page | planned |

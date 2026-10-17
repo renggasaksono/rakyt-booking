@@ -29,3 +29,5 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0017](0017-customer-booking-access-token.md) | Customer booking access via unguessable token | accepted | 2026-10-17 |
 | [0018](0018-account-recovery-and-payment-instruction-protection.md) | Account recovery and payment-instruction change protection | accepted | 2026-10-17 |
 | [0019](0019-defer-free-tier-limits.md) | Defer free-tier limits; no plan limit enforced in P0 | accepted | 2026-10-17 |
+| [0020](0020-app-scaffold-and-tooling.md) | App scaffold, module layout and tooling | accepted | 2026-10-17 |
+| [0021](0021-tenancy-enforcement-mechanics.md) | How organization scoping is enforced in code | accepted | 2026-10-17 |

@@ -38,19 +38,38 @@ Full context: [`docs/product/blueprint.md`](docs/product/blueprint.md) · UI ref
 ## Stack (see [ADR-0002](docs/decisions/0002-stack-laravel-inertia-vue-tailwind.md))
 
 Laravel (modular monolith) · Inertia.js · Vue 3 · Tailwind CSS · Laravel queue + scheduler · S3-compatible media storage.
-Local development runs on **Laravel Herd** (`rakyt-booking.test`). Database engine: see [ADR-0002](docs/decisions/0002-stack-laravel-inertia-vue-tailwind.md) (open question).
-
-> The Laravel app has not been scaffolded yet. When it is, add the real commands (install, dev, test, lint) to the section below and remove this note.
+Local development runs on **Laravel Herd** (`rakyt-booking.test`). Database: **PostgreSQL** ([ADR-0013](docs/decisions/0013-database-postgresql.md)).
+App layout and tooling: [ADR-0020](docs/decisions/0020-app-scaffold-and-tooling.md). Tenancy mechanics: [ADR-0021](docs/decisions/0021-tenancy-enforcement-mechanics.md).
 
 ## Commands
 
 ```bash
-# To be filled in once the app is scaffolded, e.g.:
-# composer install && npm install
-# composer run dev
-# php artisan test
-# ./vendor/bin/pint && npm run lint
+# First run — needs PostgreSQL 17 (e.g. DBngin) with databases `rakyt_booking` and `rakyt_booking_test`
+composer install && npm install
+cp .env.example .env && php artisan key:generate && php artisan migrate
+
+composer run dev          # app + Vite
+php artisan test          # PHPUnit on PostgreSQL (rakyt_booking_test)
+./vendor/bin/pint         # PHP format/lint (CI runs --test)
+npm run lint              # ESLint (CI runs --max-warnings=0)
+npm run build             # Vite production build
 ```
+
+For plain-HTTP local dev set `SESSION_SECURE_COOKIE=false` in `.env` (or run `herd secure`).
+Never drop or reset the dev database to "start clean"; tests reset their own test database.
+
+## Working in the code
+
+- Seller-owned model → `use BelongsToOrganization`, a policy extending `OrganizationOwnedPolicy`, and
+  `ExistsInCurrentOrganization` for ids in payloads. Cross-tenant tests use `tests/Support/InteractsWithTenants`.
+  The schema, model and scope-bypass guard tests fail if any of this is skipped.
+- Never call `acrossOrganizations()` / `withoutGlobalScope(s)` outside `config/rakyt.php → cross_organization_allowlist`
+  or `app/Admin/Queries`.
+- Audited actions go through `App\Audit\AuditLog`, inside the same `DB::transaction` as the change.
+- Public endpoints get a named limiter (`throttle:public-booking`, …); customer token pages get `no-referrer`.
+- Test names: `test_ac_<id>_…` in lower case (Pint rewrites `test_AC_…` to `test_a_c_…`).
+- In tests the current organization stays on the last request's user: create seller rows inside `asTenant()`, and
+  assert with `assertDatabase*` or `acrossOrganizations()`.
 
 ## Keeping the docs true (definition of done)
 
