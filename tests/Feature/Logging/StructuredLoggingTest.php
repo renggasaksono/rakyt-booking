@@ -6,6 +6,7 @@ use App\Logging\RedactSensitiveData;
 use App\Logging\UseJsonFormat;
 use App\Models\User;
 use DateTimeImmutable;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +15,8 @@ use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\TestHandler;
 use Monolog\Level;
 use Monolog\LogRecord;
+use PDOException;
+use RuntimeException;
 use Tests\Support\InteractsWithTenants;
 use Tests\TestCase;
 
@@ -66,6 +69,41 @@ class StructuredLoggingTest extends TestCase
         $this->assertSame(1250000, $record->context['amount']);
     }
 
+    public function test_ac_a24_exceptions_in_context_are_scrubbed(): void
+    {
+        $e = new RuntimeException('Gagal kirim WA ke 081234567890');
+        $record = $this->redact($e->getMessage(), ['exception' => $e]);
+
+        $json = json_encode([$record->message, $record->context]);
+        $this->assertStringNotContainsString('81234567890', $json);
+        $this->assertSame(RuntimeException::class, $record->context['exception']['class']);
+        $this->assertStringContainsString('+62812****890', $record->context['exception']['message']);
+    }
+
+    public function test_ac_a24_sql_errors_never_log_bound_values(): void
+    {
+        $e = new QueryException(
+            'pgsql',
+            'insert into bookings (phone, name) values (?, ?)',
+            ['081234567890', 'Budi Santoso'],
+            new PDOException('SQLSTATE[23505]: Unique violation'),
+        );
+        $record = $this->redact($e->getMessage(), ['exception' => $e]);
+
+        $json = json_encode([$record->message, $record->context]);
+        $this->assertStringNotContainsString('Budi Santoso', $json);
+        $this->assertStringNotContainsString('81234567890', $json);
+        $this->assertStringContainsString('insert into bookings (phone, name) values (?, ?)', $record->message);
+    }
+
+    public function test_ac_a24_formatted_phone_numbers_are_masked_and_lookalike_keys_kept(): void
+    {
+        $record = $this->redact('Hubungi 0812-3456-7890 atau +62 812 3456 7890', ['passengers' => 4]);
+
+        $this->assertStringNotContainsString('3456', $record->message);
+        $this->assertSame(4, $record->context['passengers']);
+    }
+
     public function test_ac_a24_request_logs_carry_request_user_and_organization_ids(): void
     {
         [$a] = $this->createTenants();
@@ -98,5 +136,19 @@ class StructuredLoggingTest extends TestCase
         $this->assertNotEmpty($context['request_id']);
         $this->assertArrayNotHasKey('user_id', $context);
         $this->assertInstanceOf(User::class, User::factory()->make());
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    private function redact(string $message, array $context): LogRecord
+    {
+        return (new RedactSensitiveData)(new LogRecord(
+            datetime: new DateTimeImmutable,
+            channel: 'test',
+            level: Level::Error,
+            message: $message,
+            context: $context,
+        ));
     }
 }
