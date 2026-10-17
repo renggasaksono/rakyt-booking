@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../js/**/*.vue';
+
+/* Rakyt Sogan tokens — docs/design/README.md, ADR-0008. */
+@theme {
+    --font-sans: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    --font-heading: 'Poppins', Arial, sans-serif;
+
+    --color-sogan: #6e4527;
+    --color-ink: #211710;
+    --color-gading: #f4efe6;
+    --color-surface: #fbf8f2;
+    --color-secondary: #6f5b4b;
+    --color-prada: #e5a823;
+
+    --color-status-waiting: #8f4a00;
+    --color-status-check: #2c4a7a;
+    --color-status-paid: #2f6b3a;
+    --color-status-rejected: #a1281e;
+    --color-status-cancelled: #4f4741;
+}
