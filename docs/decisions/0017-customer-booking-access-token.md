@@ -1,5 +1,5 @@
 ---
-id: 0016
+id: 0017
 title: Customer booking access via unguessable token
 status: accepted
 date: 2026-10-17
@@ -7,7 +7,7 @@ deciders: [Rengga]
 related: [F-005, F-006, F-009, ADR-0004]
 ---
 
-# 0016. Customer booking access via unguessable token
+# 0017. Customer booking access via unguessable token
 
 ## Context
 

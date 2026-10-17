@@ -5,7 +5,7 @@ status: ready
 priority: P0
 roadmap: mvp-weeks-2-3
 mockups: [1f, 1g, 3a, 3b, 4c, 4d, 1e]
-decisions: ["0002", "0004", "0005", "0006", "0007", "0008", "0010", "0012", "0013", "0014", "0018"]
+decisions: ["0002", "0004", "0005", "0006", "0007", "0008", "0010", "0013", "0014", "0015", "0019"]
 updated: 2026-10-17
 ---
 
@@ -70,7 +70,7 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 - [ ] **AC-4 Published trips are not autosaved.** Given a published trip, when the seller edits it, then nothing goes live until they tap "Simpan perubahan"; on success the change is visible on the public page.
 - [ ] **AC-5 Duration presets.** Given the Durasi picker, then options are *Beberapa jam*, *1 hari*, *2 hari 1 malam*, *3 hari 2 malam*, *4 hari 3 malam* and *Atur sendiri*. When *Atur sendiri* is chosen, then Hari and Malam steppers appear with Hari 1–30 and Malam 0–Hari; trying to set Malam above Hari is prevented and shows "Malam maksimal sama dengan jumlah hari."
 - [ ] **AC-6 Inclusions.** Given the Termasuk field, then suggestion chips (Kapal, Homestay, Makan, Alat snorkel, Guide) can be toggled and "+ Lainnya" adds a free-text item; same input pattern (without suggestions) for Tidak termasuk.
-- [ ] **AC-7 Photos.** Given the photo section, when the seller adds photos from the gallery/camera, then each is uploaded with a progress state, the first photo is labelled "sampul", photos can be reordered (the new first becomes the cover) and removed. A file that is not JPEG/PNG/WebP, is over 10 MB, or would exceed 10 photos per trip is rejected with a Bahasa message and the other photos are unaffected. Stored photos and their variants have EXIF metadata (incl. GPS) stripped (ADR-0014).
+- [ ] **AC-7 Photos.** Given the photo section, when the seller adds photos from the gallery/camera, then each is uploaded with a progress state, the first photo is labelled "sampul", photos can be reordered (the new first becomes the cover) and removed. A file that is not JPEG/PNG/WebP, is over 10 MB, or would exceed 10 photos per trip is rejected with a Bahasa message and the other photos are unaffected. Stored photos and their variants have EXIF metadata (incl. GPS) stripped (ADR-0015).
 - [ ] **AC-8 Money input.** Given any price field, then it accepts digits only (numeric keypad on phones), displays thousands with dots ("1.250.000"), and is stored as integer rupiah. Values below Rp1.000 or above Rp100.000.000 are rejected.
 
 ### Publish
@@ -80,7 +80,7 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 - [ ] **AC-11 Publish blocked until complete.** Given an incomplete checklist, then "Terbitkan trip" is disabled and the helper reads "Lengkapi n langkah lagi untuk terbit"; a direct publish request is also rejected server-side with the missing items listed.
 - [ ] **AC-12 Publish.** Given a complete checklist, when the seller taps "Terbitkan trip", then the trip becomes `published`, is visible on the public page (F-002), and an audit event `trip.published` is written.
 - [ ] **AC-13 Live preview.** Given the editor, then a preview card shows cover, name, "Mulai Rp…" (lowest effective price among open future departures, else base price) and next departure date + seats — matching the F-002 trip card. On phone width the preview is reachable from the sticky bottom bar instead of a side column.
-- [ ] **AC-14 No plan limit in P0.** Given an organization on any plan, when it publishes another trip, then no plan-based limit is applied (ADR-0018). The organization's `plan` is not read by publish in P0.
+- [ ] **AC-14 No plan limit in P0.** Given an organization on any plan, when it publishes another trip, then no plan-based limit is applied (ADR-0019). The organization's `plan` is not read by publish in P0.
 - [ ] **AC-15 Unpublish.** Given a published trip, when the seller chooses "Sembunyikan dari halaman publik", then the trip returns to `draft`, disappears from the public page, existing bookings and their payment pages keep working, and an audit event `trip.unpublished` is written.
 - [ ] **AC-16 Delete trip.** Given a trip with no bookings ever, when the seller deletes it, then it and its departures and photos are removed. Given a trip with any booking, then delete is not offered; only unpublish is.
 
@@ -133,7 +133,7 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 - `base_price` (integer rupiah, Rp1.000–Rp100.000.000; required to publish).
 - Display labels: 3H2M = "3 hari 2 malam"; `hours` = "Beberapa jam"; 1/0 = "1 hari".
 
-**trip_photos** (ADR-0014) — `organization_id`, `trip_id`, `path` (organization-prefixed, UUID file name, e.g. `org/{organization_public_id}/trips/{trip_public_id}/{uuid}.{ext}`), `position`. Lowest position = cover. JPEG/PNG/WebP, ≤ 10 MB each, ≤ 10 per trip. EXIF stripped from the stored original and all variants. Resized variants (e.g. 400/800/1600 px wide) generated on the queue for F-002's 3G target. Photos are public assets; payment evidence is not (F-006).
+**trip_photos** (ADR-0015) — `organization_id`, `trip_id`, `path` (organization-prefixed, UUID file name, e.g. `org/{organization_public_id}/trips/{trip_public_id}/{uuid}.{ext}`), `position`. Lowest position = cover. JPEG/PNG/WebP, ≤ 10 MB each, ≤ 10 per trip. EXIF stripped from the stored original and all variants. Resized variants (e.g. 400/800/1600 px wide) generated on the queue for F-002's 3G target. Photos are public assets; payment evidence is not (F-006).
 
 **trip_departures** (ADR-0005)
 - `organization_id` (must equal the trip's), `trip_id`, `public_id`.
@@ -153,14 +153,14 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 - **Capacity change:** inside a DB transaction, lock the departure row (`SELECT … FOR UPDATE`), re-read `seats_taken`, reject if new capacity < `seats_taken`, update, write audit event — same lock F-005 uses when taking seats (ADR-0006).
 - **Duration change** on a trip: recompute `end_date` for departures with `seats_taken = 0`; departures with bookings keep their dates and the seller is told "n keberangkatan yang sudah ada pesanan tidak berubah." (see Q3).
 - **Booking mode change** is refused while any future departure has `seats_taken > 0`.
-- **Plan limits:** none enforced in P0 (ADR-0018). Free-tier limits are decided with pricing after the pilot and added in a later spec.
+- **Plan limits:** none enforced in P0 (ADR-0019). Free-tier limits are decided with pricing after the pilot and added in a later spec.
 - **Authorisation:** policy = user is a member of the record's organization (any role in MVP). Lookups resolve through the current organization's scope, so foreign IDs return 404. Validate that `trip_id` in departure payloads belongs to the current organization.
 - **Audit event names:** `trip.published`, `trip.unpublished`, `trip.base_price_changed`, `departure.created`, `departure.deleted`, `departure.price_changed`, `departure.capacity_changed`, `departure.status_changed`, `departure.deadline_changed`.
 - **Scheduler:** auto-close job runs every minute, is idempotent, and its heartbeat is monitored (F-009).
 
 ### Time
 
-- ADR-0013: store timestamps in UTC; compute and display deadlines in the organization's time zone (`Asia/Jakarta` WIB, `Asia/Makassar` WITA, `Asia/Jayapura` WIT). Default `Asia/Jakarta`; the seller changes it in Pengaturan → Profil usaha (F-001). Indonesia has no DST.
+- ADR-0014: store timestamps in UTC; compute and display deadlines in the organization's time zone (`Asia/Jakarta` WIB, `Asia/Makassar` WITA, `Asia/Jayapura` WIT). Default `Asia/Jakarta`; the seller changes it in Pengaturan → Profil usaha (F-001). Indonesia has no DST.
 - Dates in UI: Indonesian locale, "Senin, 21 Okt pukul 23.59", ranges "24 – 26 Okt 2026".
 
 ### Edge cases covered
@@ -181,17 +181,17 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 - **F-002:** renders trips/departures, uses `slug`, photo variants and the *Bookable* rule.
 - **F-004:** decides whether accepted requests create departures (they would appear in this list).
 - **F-007:** "Edit cepat" on Hari ini opens this feature's quick-edit sheet.
-- **ADR-0012:** database is PostgreSQL (row locks via `SELECT … FOR UPDATE`, as ADR-0006 assumes).
+- **ADR-0013:** database is PostgreSQL (row locks via `SELECT … FOR UPDATE`, as ADR-0006 assumes).
 
 ## Open questions
 
 None of these block building; each has a default that the builder implements unless the human overrides it.
 
-- [x] **Q1 Time zone** — decided 2026-10-17: [ADR-0013](../decisions/0013-timezones-utc-storage.md) accepted. Sellers outside WIB (Bali, Lombok, Labuan Bajo = WITA; Raja Ampat = WIT) need correct deadlines. *Recommended:* `organizations.timezone` default `Asia/Jakarta`, changeable by the seller in Pengaturan → Profil usaha (F-001). — Rengga
-- [x] **Q2 Photo limits & storage** — decided 2026-10-17: [ADR-0014](../decisions/0014-trip-photo-storage.md) accepted. *Recommended:* ≤ 10 photos per trip, ≤ 10 MB per file before resize, JPEG/PNG/WebP, org-prefixed path, UUID names, EXIF stripped; no per-plan storage quota in MVP (revisit with Pro). Mockup shows "foto 1/6". — Rengga
+- [x] **Q1 Time zone** — decided 2026-10-17: [ADR-0014](../decisions/0014-timezones-utc-storage.md) accepted. Sellers outside WIB (Bali, Lombok, Labuan Bajo = WITA; Raja Ampat = WIT) need correct deadlines. *Recommended:* `organizations.timezone` default `Asia/Jakarta`, changeable by the seller in Pengaturan → Profil usaha (F-001). — Rengga
+- [x] **Q2 Photo limits & storage** — decided 2026-10-17: [ADR-0015](../decisions/0015-trip-photo-storage.md) accepted. *Recommended:* ≤ 10 photos per trip, ≤ 10 MB per file before resize, JPEG/PNG/WebP, org-prefixed path, UUID names, EXIF stripped; no per-plan storage quota in MVP (revisit with Pro). Mockup shows "foto 1/6". — Rengga
 - [ ] **Q3 Duration change with bookings.** *Recommended:* only departures without bookings get new end dates; booked ones keep theirs, with a notice. Alternative: block duration changes while any future departure has bookings. — Rengga
 - [ ] **Q4 Deleting a departure with bookings.** *Recommended:* not allowed — close only (AC-29). A "Batalkan keberangkatan" flow that cancels bookings and messages customers belongs with booking cancellation in week 4 (F-006/F-007). — Rengga
-- [x] **Q5 Free-plan limit.** Decided 2026-10-17: not enforced in P0; the "1 trip" in the mockups is sample copy (ADR-0018).
+- [x] **Q5 Free-plan limit.** Decided 2026-10-17: not enforced in P0; the "1 trip" in the mockups is sample copy (ADR-0019).
 - [ ] **Q6 Default deadline preset.** *Recommended:* H-3 (selected in mockups 3a and 4d); seller changes it in Pengaturan. — Rengga
 - [ ] **Q7 "Sampai hari keberangkatan" cut-off.** *Recommended:* 1 hour before meeting time (mockup 3a: 06.00 → 05.00); not offered when the trip has no meeting time. — Rengga
 - [ ] **Q8 Mobile trip editor mockup.** 1f is desktop-only; phone layout is specified by AC-41 reusing onboarding patterns (4c/4d). *Recommended:* build from those patterns; review on a device in week 3 rather than wait for a mockup. — design
@@ -200,6 +200,6 @@ None of these block building; each has a default that the builder implements unl
 
 - 2026-10-17 — created
 - 2026-10-17 — Planner: full acceptance criteria (AC-1…AC-42), data model & rules, tenancy/overbooking cases, dependencies; open questions given defaults; status → `ready`
-- 2026-10-17 — Aligned with F-001/F-009 and decisions relayed by the coordinator: description optional (checklist item "Nama trip"); Private preset has no duration; free-plan limit counts `published` trips; AC-22 covers onboarding trips without meeting time; ADR-0012 (PostgreSQL), ADR-0013 (time zone), ADR-0014 (trip photos, EXIF stripped) linked; time zone default Asia/Jakarta, set in Pengaturan → Profil usaha
-- 2026-10-17 — Free-plan trip limit removed from P0 (ADR-0018): Scope item dropped, AC-14 now asserts no limit, Q5 closed
-- 2026-10-17 — ADR-0013 and ADR-0014 accepted; Q1 and Q2 closed
+- 2026-10-17 — Aligned with F-001/F-009 and decisions relayed by the coordinator: description optional (checklist item "Nama trip"); Private preset has no duration; free-plan limit counts `published` trips; AC-22 covers onboarding trips without meeting time; ADR-0013 (PostgreSQL), ADR-0014 (time zone), ADR-0015 (trip photos, EXIF stripped) linked; time zone default Asia/Jakarta, set in Pengaturan → Profil usaha
+- 2026-10-17 — Free-plan trip limit removed from P0 (ADR-0019): Scope item dropped, AC-14 now asserts no limit, Q5 closed
+- 2026-10-17 — ADR-0014 and ADR-0015 accepted; Q1 and Q2 closed

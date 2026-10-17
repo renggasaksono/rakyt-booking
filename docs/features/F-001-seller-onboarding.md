@@ -5,7 +5,7 @@ status: ready
 priority: P0
 roadmap: mvp-weeks-2-3
 mockups: [4a, 4b, 4c, 4d, 4e, 4f]
-decisions: ["0003", "0004", "0005", "0007", "0008", "0010", "0011", "0012", "0018"]
+decisions: ["0003", "0004", "0005", "0007", "0008", "0010", "0012", "0013", "0019"]
 updated: 2026-10-17
 ---
 
@@ -20,13 +20,13 @@ roadmap gate "Continue / pivot" measures exactly this).
 
 ## Readiness
 
-**`ready`.** The blocking product decisions are made: sign-in is email + password (ADR-0011, replaces the rejected
-ADR-0009); the database is PostgreSQL (ADR-0012); a trip description is optional to publish (F-003 checklist).
+**`ready`.** The blocking product decisions are made: sign-in is email + password (ADR-0012, replaces the rejected
+ADR-0009); the database is PostgreSQL (ADR-0013); a trip description is optional to publish (F-003 checklist).
 The remaining open questions have defaults this spec already uses and can be overridden without blocking the build.
 Build order still depends on F-009 and F-003 (see Dependencies).
 
 **Differences from the mockup:** screens 4a and 4b show WhatsApp code sign-up ("Kirim kode", "✓ WhatsApp …
-terverifikasi"). Under ADR-0011 the sign-up / sign-in screens differ from 4a (email + password, see section A),
+terverifikasi"). Under ADR-0012 the sign-up / sign-in screens differ from 4a (email + password, see section A),
 and step 1 asks for the WhatsApp number as an unverified contact field instead of showing it as verified. Keep 4a's
 headline, layout, tokens and one-gold-CTA rule. The time budget ("±m menit lagi") was set for code sign-in and
 must be rechecked in pilot (Q12).
@@ -36,7 +36,7 @@ must be rechecked in pilot (Q12).
 **In:**
 - **A. Account** (replaces the 4a code flow; no mockup for the new screens): sign-up with email + password,
   sign-in, sign-out, password reset by expiring email link, non-blocking email verification, change of email.
-  Laravel's standard auth stack (Fortify/Breeze-style) per ADR-0011.
+  Laravel's standard auth stack (Fortify/Breeze-style) per ADR-0012.
 - **B. Organization** (4b, "Langkah 1 dari 4 · Usaha"): business name, base city, business WhatsApp number
   (contact for customers, not verified), booking link slug with live availability check. Creates the
   organization and the owner membership atomically.
@@ -51,7 +51,7 @@ must be rechecked in pilot (Q12).
   branding"; 4f lists "Logo & bio usaha" as "Nanti, dari dashboard").
 
 **Out (explicitly):**
-- WhatsApp / SMS code sign-in, magic links, social login, two-factor authentication (ADR-0011).
+- WhatsApp / SMS code sign-in, magic links, social login, two-factor authentication (ADR-0012).
 - Verifying the business WhatsApp number.
 - Making email verification a requirement for onboarding or publishing (P0 only reminds).
 - Staff invites, multiple members, roles beyond `owner` (P1 "staff accounts & permissions").
@@ -81,9 +81,9 @@ must be rechecked in pilot (Q12).
 IDs are stable so tests can reference them (e.g. `test_AC_B4_...`). Rate limits referenced as "F-009 limits" come
 from the rate-limit table in F-009; tests read the configured values rather than hard-coding them.
 
-### A. Account — email + password (ADR-0011)
+### A. Account — email + password (ADR-0012)
 
-- [ ] **A1** Given the sign-up screen ("Daftar") at 360 px width, then it shows the headline "Trip pertama Anda online dalam 10 menit.", the sub-line from 4a, fields "Nama Anda" (Q13), "Email" (`type="email"`, `autocomplete="email"`) and "Password" (`autocomplete="new-password"`, "Lihat" show/hide toggle, helper "Minimal 8 karakter"), a required checkbox "Saya setuju dengan Syarat & Privasi" with both words linking to their pages, "Gratis untuk mulai." (no specific limit promised, ADR-0018), the gold CTA "Daftar", and the link "Sudah punya akun? Masuk". No password-confirmation field (the show/hide toggle replaces it).
+- [ ] **A1** Given the sign-up screen ("Daftar") at 360 px width, then it shows the headline "Trip pertama Anda online dalam 10 menit.", the sub-line from 4a, fields "Nama Anda" (Q13), "Email" (`type="email"`, `autocomplete="email"`) and "Password" (`autocomplete="new-password"`, "Lihat" show/hide toggle, helper "Minimal 8 karakter"), a required checkbox "Saya setuju dengan Syarat & Privasi" with both words linking to their pages, "Gratis untuk mulai." (no specific limit promised, ADR-0019), the gold CTA "Daftar", and the link "Sudah punya akun? Masuk". No password-confirmation field (the show/hide toggle replaces it).
 - [ ] **A2** Validation on sign-up: email required, valid format, stored trimmed and lowercased, unique case-insensitively; password required, ≥ 8 characters (no composition rules); terms checkbox must be ticked; "Nama Anda" required, 2–80 chars. Errors appear inline in Bahasa Indonesia and keep all input except the password. Given the email is already registered, then "Email ini sudah terdaftar. Masuk atau atur ulang password." with both actions linked.
 - [ ] **A3** Given valid sign-up, then exactly one `users` row is created with the password hashed (Laravel default hasher), `terms_accepted_at` and `signup_started_at` set, `email_verified_at` null; the seller is signed in, a verification email is queued, and they land on step 1 (Usaha). A double tap creates one user.
 - [ ] **A4** Given the sign-in screen ("Masuk"): email, password (show/hide toggle), "Ingat saya" (checked by default), gold CTA "Masuk", link "Lupa password?", link "Belum punya akun? Daftar". Given wrong email or wrong password, then the same message "Email atau password salah." is shown for both. Sign-in attempts are throttled per email + IP per the F-009 limits, with "Terlalu banyak percobaan. Coba lagi dalam n menit."
@@ -132,7 +132,7 @@ from the rate-limit table in F-009; tests read the configured values rather than
 
 - [ ] **D1** Given "Terbitkan trip", when the trip fails the shared publish checklist (owned by F-003: cover photo, name, base price, ≥1 open future departure for `scheduled` trips, ≥1 active payment method in the organization — description **not** required), then nothing is published and the seller is sent to the first failing step with the missing item highlighted.
 - [ ] **D2** Given the checklist passes, then in one transaction the trip becomes `published`, `organizations.first_published_at` is set if empty, and an audit event (`trip.published`, actor, before/after status) is written. A double tap publishes once.
-- [ ] **D3** Given an organization on the `free` plan, then publishing is not limited by plan in P0 (ADR-0018); `plan` is stored but not enforced.
+- [ ] **D3** Given an organization on the `free` plan, then publishing is not limited by plan in P0 (ADR-0019); `plan` is stored but not enforced.
 - [ ] **D4** Given a successful first publish, then 4f shows "✓ Trip terbit · m menit s detik" where the time is `first_published_at − users.signup_started_at`, **only if** that is ≤ 60 minutes; otherwise "✓ Trip terbit". Then "Siap terima pesanan.", the trip card (cover, name, "Mulai Rp…", "24 Okt · 16 kursi" or "Ajukan tanggal" for request-date trips), "Link booking Anda" `rakyt.id/<slug>` with "Salin".
 - [ ] **D5** "Salin" copies `https://rakyt.id/<slug>` and shows "Link disalin". The gold CTA "↗ Bagikan ke WA / IG" opens the native share sheet (Web Share API) with the link and a short Bahasa text; without Web Share it copies the link and shows "Link disalin". "Ke dashboard" is an ink-outline button.
 - [ ] **D6** 4f lists "Nanti, dari dashboard": "Deskripsi, itinerary per hari & ketentuan" (links to the F-003 trip editor) and "Logo & bio usaha ±1 menit" (links to Pengaturan → Profil usaha, section F).
@@ -174,7 +174,7 @@ booking or seat hold happens here. Capacity changes after publish go through F-0
 
 ## Data & rules
 
-**Entities** (names per blueprint §3; F-003 owns trips/departures, F-006 owns payment methods; PostgreSQL per ADR-0012):
+**Entities** (names per blueprint §3; F-003 owns trips/departures, F-006 owns payment methods; PostgreSQL per ADR-0013):
 
 | Table | Fields used by F-001 | Notes |
 |---|---|---|
@@ -190,7 +190,7 @@ booking or seat hold happens here. Capacity changes after publish go through F-0
 **Rules**
 - Money is integer rupiah. Phone numbers are stored E.164 and rendered `+62 812 7788 1020`.
 - `signup_started_at` = the moment the sign-up form is submitted successfully (user created).
-- No plan limits are enforced in P0 (ADR-0018); `plan` is stored (default `free`) for later. Mockup copy "Gratis untuk 1 trip aktif" is sample text.
+- No plan limits are enforced in P0 (ADR-0019); `plan` is stored (default `free`) for later. Mockup copy "Gratis untuk 1 trip aktif" is sample text.
 - Slugs are lowercase, 3–30 chars, `[a-z0-9-]`, no leading/trailing/double hyphen, unique, not reserved.
 - **Initial reserved slugs** (config, extend freely): `admin, api, app, auth, login, logout, masuk, keluar, daftar, register, signup, password, reset, lupa-password, verify, verifikasi, email, dashboard, hari-ini, pesanan, pembayaran, trip, trips, keberangkatan, pengaturan, settings, akun, account, profil, profile, onboarding, mulai, help, bantuan, support, cs, kontak, contact, about, tentang, blog, docs, status, legal, syarat, privasi, terms, privacy, pricing, harga, paket, pro, business, enterprise, rakyt, rakytbooking, booking, book, pesan, www, mail, static, assets, storage, media, cdn, img, images, public, null, undefined, new, edit, test, demo`. Plus every first route segment (B7).
 - Bank / e-wallet picker (initial list, config): BCA, BRI, BNI, Mandiri, BSI, CIMB Niaga, Permata, BTN, Danamon, Bank Jago, SeaBank, BPD (isi nama), GoPay, OVO, DANA, ShopeePay, LinkAja, Lainnya.
@@ -218,14 +218,14 @@ photo upload (C3); lost connection mid-step (C13); stale draft with past dates (
 
 None block building. The spec uses the recommended default for each; override any time.
 
-- [x] **Q1 — Sign-in method.** Decided 2026-10-17: email + password (ADR-0011); ADR-0009 rejected.
+- [x] **Q1 — Sign-in method.** Decided 2026-10-17: email + password (ADR-0012); ADR-0009 rejected.
 - [x] ~~**Q2 — Prefill business name from the WhatsApp Business profile?**~~ Withdrawn: no WhatsApp sign-in, so nothing to prefill; manual field.
 - [ ] **Q3 — Can sellers change their slug later?** *Recommend: editable until first publish; afterwards only via Rakyt support, no redirects in P0.* Shared links on IG bios and WA statuses break on change; support-only keeps it rare and deliberate. Revisit (self-serve + redirect from old slug) if pilots ask.
 - [x] **Q4 — "Akun" outside the 4 numbered steps?** Resolved from mockup 4a–4e: sign-up has no step header; Usaha, Trip, Jadwal, Pembayaran are steps 1–4.
 - [ ] **Q5 — 4f timer for sellers who come back days later.** *Recommend:* from sign-up to first publish, shown only if ≤ 60 min (D4). Showing "3 hari 2 jam" would undercut the promise.
 - [x] **Q6 — Trip type presets.** Aligned with F-003: Open trip → scheduled + 3H2M; Day trip → scheduled + 1 hari; Private → request_date, no duration preset.
 - [ ] **Q7 — Inclusion chips.** Mockup 4c shows Karimunjawa-specific chips (Kapal, Homestay, Makan, Alat snorkel, Guide). *Recommend a generic set:* Transportasi, Penginapan, Makan, Guide, Tiket masuk, Dokumentasi, + Lainnya.
-- [x] **Q8 — Timezone for operators in WITA/WIT (Bali, NTT, Sulawesi, Papua).** Decided 2026-10-17: ADR-0013 accepted. *Recommend:* default WIB, selectable WIB/WITA/WIT in Pengaturan → Profil usaha; don't add a field to step 1 (time budget).
+- [x] **Q8 — Timezone for operators in WITA/WIT (Bali, NTT, Sulawesi, Papua).** Decided 2026-10-17: ADR-0014 accepted. *Recommend:* default WIB, selectable WIB/WITA/WIT in Pengaturan → Profil usaha; don't add a field to step 1 (time budget).
 - [ ] **Q9 — Who owns logo / bio / contact editing?** *Recommend: F-001 section F* (blueprint P0 lists it; nothing else owns it). Confirm, or move it to F-007.
 - [ ] **Q10 — Sellers who only take QRIS or cash.** *Recommend:* onboarding asks for bank / e-wallet only; QRIS-only or cash-only sellers save as draft, add the method in Pengaturan → Pembayaran (F-006), then publish. Revisit if pilots hit it.
 - [x] **Q11 — Is a description required to publish?** Decided 2026-10-17: no; F-003 checklist item is "Nama". Onboarding has no description field.
@@ -237,6 +237,6 @@ None block building. The spec uses the recommended default for each; override an
 
 - 2026-10-17 — created from blueprint §3 and mockup round 4
 - 2026-10-17 — planner pass: testable ACs (A–F, tenancy, phone), data model, reserved slugs, edge cases, dependencies; resolved step count from mockup
-- 2026-10-17 — section A rewritten for email + password (ADR-0011, ADR-0009 rejected); WhatsApp number moved to step 1 as unverified contact; DB = PostgreSQL (ADR-0012); description optional (Q11); trip-type presets aligned with F-003; mockup 4a/4b divergence and time-budget recheck noted; status → `ready`
-- 2026-10-17 — Free-plan trip limit removed from P0 (ADR-0018): sign-up copy "Gratis untuk mulai.", D3 asserts no limit
-- 2026-10-17 — ADR-0013 accepted; Q8 closed
+- 2026-10-17 — section A rewritten for email + password (ADR-0012, ADR-0009 rejected); WhatsApp number moved to step 1 as unverified contact; DB = PostgreSQL (ADR-0013); description optional (Q11); trip-type presets aligned with F-003; mockup 4a/4b divergence and time-budget recheck noted; status → `ready`
+- 2026-10-17 — Free-plan trip limit removed from P0 (ADR-0019): sign-up copy "Gratis untuk mulai.", D3 asserts no limit
+- 2026-10-17 — ADR-0014 accepted; Q8 closed

@@ -38,7 +38,7 @@ None open.
 |---|---|---|---|
 | Transactional email provider (SPF/DKIM) | — | [F-001](../features/F-001-seller-onboarding.md#dependencies) | Pilot |
 | Syarat & Privasi text; PDP law (UU 27/2022) | Short Bahasa notice before pilot; formal review before launch | [F-009 Q9](../features/F-009-tenancy-security-operations.md#open-questions) | Pilot |
-| Free-tier limits and pricing | Decide after pilot | [ADR-0018](../decisions/0018-defer-free-tier-limits.md) | After pilot |
+| Free-tier limits and pricing | Decide after pilot | [ADR-0019](../decisions/0019-defer-free-tier-limits.md) | After pilot |
 
 ### Ready specs — defaults in use, confirm or override
 

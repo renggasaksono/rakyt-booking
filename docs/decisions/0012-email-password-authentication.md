@@ -1,13 +1,13 @@
 ---
-id: 0011
+id: 0012
 title: Email + password sign-in for sellers
 status: accepted
 date: 2026-10-17
 deciders: [Rengga]
-related: [F-001, F-009, ADR-0009, ADR-0017]
+related: [F-001, F-009, ADR-0009, ADR-0018]
 ---
 
-# 0011. Email + password sign-in for sellers
+# 0012. Email + password sign-in for sellers
 
 ## Context
 

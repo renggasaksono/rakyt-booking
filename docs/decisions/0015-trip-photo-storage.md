@@ -1,5 +1,5 @@
 ---
-id: 0014
+id: 0015
 title: Trip photos — public, unguessable paths with queued resizing
 status: accepted
 date: 2026-10-17
@@ -7,7 +7,7 @@ deciders: [Rengga]
 related: [F-002, F-003, F-009, ADR-0004]
 ---
 
-# 0014. Trip photos — public, unguessable paths with queued resizing
+# 0015. Trip photos — public, unguessable paths with queued resizing
 
 ## Context
 

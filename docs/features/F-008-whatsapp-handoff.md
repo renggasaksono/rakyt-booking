@@ -19,7 +19,7 @@ WhatsApp is where operators and customers already talk. Rakyt should hand off cl
 
 **In:** `wa.me` deep links with prefilled, URL-encoded Bahasa messages for: customer → seller (Chat WhatsApp; Kabari operator with booking reference), seller → customer (Ingatkan pembayaran; Balas permintaan tanggal; booking confirmed). Message templates editable in one place (translation files).
 
-**Out:** automated sending via WhatsApp Business API (P1 "automated notifications"). (Seller sign-in is email + password, [ADR-0011](../decisions/0011-email-password-authentication.md) — no WhatsApp OTP.)
+**Out:** automated sending via WhatsApp Business API (P1 "automated notifications"). (Seller sign-in is email + password, [ADR-0012](../decisions/0012-email-password-authentication.md) — no WhatsApp OTP.)
 
 ## Acceptance criteria
 

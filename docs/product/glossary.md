@@ -6,9 +6,9 @@ Source of UI wording: [design mockup](../design/README.md).
 | Code / English | UI (Bahasa Indonesia) | Meaning |
 |---|---|---|
 | organization | usaha | The seller's business. Tenant boundary — every seller-owned record belongs to one. |
-| organization time zone | zona waktu (WIB/WITA/WIT) | Used to compute and show deadlines. All storage in UTC ([ADR-0013](../decisions/0013-timezones-utc-storage.md)). |
-| plan | paket | `free` / `pro` / `business`; limits live in config (ADR-0010). No limits enforced in P0; free-tier limits not decided yet (ADR-0018). |
-| email verification | verifikasi email | Confirms the seller's email; reminder only in P0, never blocks onboarding or publishing ([ADR-0011](../decisions/0011-email-password-authentication.md)). |
+| organization time zone | zona waktu (WIB/WITA/WIT) | Used to compute and show deadlines. All storage in UTC ([ADR-0014](../decisions/0014-timezones-utc-storage.md)). |
+| plan | paket | `free` / `pro` / `business`; limits live in config (ADR-0010). No limits enforced in P0; free-tier limits not decided yet (ADR-0019). |
+| email verification | verifikasi email | Confirms the seller's email; reminder only in P0, never blocks onboarding or publishing ([ADR-0012](../decisions/0012-email-password-authentication.md)). |
 | onboarding | — (Langkah n dari 4) | Guided first run: Usaha → Trip → Jadwal → Pembayaran → publish. |
 | seller, operator | operator | Person running the organization. |
 | customer | pelanggan, pemesan | Person booking a trip. No account required. |
@@ -36,7 +36,7 @@ Source of UI wording: [design mockup](../design/README.md).
 | date request | permintaan tanggal / ajukan tanggal | Customer proposes a date for a request-date trip; seller replies. |
 | booking | pesanan | A customer's reservation on a departure. |
 | booking reference | kode pesanan | Human-readable ID, e.g. `RKB-1024-0142`. Display only — never grants access. |
-| booking access token | — (in link) | Unguessable token in the customer's booking/payment link ([ADR-0016](../decisions/0016-customer-booking-access-token.md)). |
+| booking access token | — (in link) | Unguessable token in the customer's booking/payment link ([ADR-0017](../decisions/0017-customer-booking-access-token.md)). |
 | seat hold | kursi ditahan | Seats reserved for an unpaid booking for 2 hours; uploading payment evidence stops the clock until the seller reviews it (ADR-0006). |
 | payment record | pembayaran | Amount due/paid, evidence, verification for a booking. |
 | payment evidence | bukti transfer | Photo/screenshot uploaded by the customer. |

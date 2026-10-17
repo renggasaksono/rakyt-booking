@@ -5,7 +5,7 @@ status: ready
 priority: P0
 roadmap: mvp-weeks-2-6
 mockups: []
-decisions: ["0002", "0003", "0004", "0006", "0007", "0011", "0012", "0013", "0014", "0015", "0016", "0017"]
+decisions: ["0002", "0003", "0004", "0006", "0007", "0012", "0013", "0014", "0015", "0016", "0017", "0018"]
 updated: 2026-10-17
 ---
 
@@ -40,7 +40,7 @@ F-009 is cross-cutting. It ships the **primitives and guardrails** that every ot
 - Structured logs with request ID and tenant context, with PII redaction.
 - Error tracking, uptime checks, scheduler and queue heartbeats with alerting.
 - Daily automated DB backups to off-host storage, a written restore runbook, and a rehearsed restore.
-- Account recovery (ADR-0017): session revocation, the 24-hour block on changing payment instructions, audit, and a staff-assisted recovery runbook for sellers who lost access to their email. The self-serve password-reset screens are part of F-001 (ADR-0011); F-009 sets the security rules they must meet.
+- Account recovery (ADR-0018): session revocation, the 24-hour block on changing payment instructions, audit, and a staff-assisted recovery runbook for sellers who lost access to their email. The self-serve password-reset screens are part of F-001 (ADR-0012); F-009 sets the security rules they must meet.
 - Bahasa Indonesia error pages (404, 419, 429, 500, 503), phone-width first.
 - `.env.example` complete; no secrets in git.
 
@@ -91,17 +91,17 @@ Tags: **(auto)** = automated test in CI · **(ops)** = verified by a rehearsal o
 - [ ] **A15a (auto)** Given a password-reset request for an email that has no account, then the response and its timing match a request for a real account ("Jika email terdaftar, link reset sudah dikirim."), so sign-up emails cannot be enumerated.
 - [ ] **A16 (auto)** Responses carry: `Strict-Transport-Security` (production), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` (customer booking/payment pages: `no-referrer`), and `frame-ancestors 'none'` (CSP) or `X-Frame-Options: DENY`. Session cookies are `Secure`, `HttpOnly`, `SameSite=Lax`.
 - [ ] **A17 (auto)** Given an expired CSRF token / session (419), a missing page (404), a rate limit (429), a server error (500) or maintenance (503), then the user sees a Bahasa Indonesia page that fits a 360 px wide screen without horizontal scroll, uses ink-outline buttons only (no gold CTA — nothing moves a booking forward), and never shows a stack trace.
-- [ ] **A18a (auto)** CI runs the full test suite against **PostgreSQL** (ADR-0012), the same major version as production — never SQLite — so row locks, `CHECK` constraints and concurrency tests behave as they do in production.
+- [ ] **A18a (auto)** CI runs the full test suite against **PostgreSQL** (ADR-0013), the same major version as production — never SQLite — so row locks, `CHECK` constraints and concurrency tests behave as they do in production.
 - [ ] **A18b (auto)** Database `CHECK` constraints back up the application rules F-009 owns: `audit_events.actor_type IN ('user','customer','system','rakyt_staff')`, and `organization_members.role IN ('owner')` (widened when roles arrive in P1). A test inserts a bad value directly and expects the database to reject it. The capacity constraints owned by F-003/F-005 are listed under Data & rules.
 - [ ] **A18 (auto)** CI runs `composer audit` and `npm audit --audit-level=high` and a secret scanner (e.g. gitleaks) on every PR; a high-severity finding or a detected secret fails the build.
 
 ### Slice A — Media
 
-Media rules follow ADR-0014 (accepted); if it changes limits or formats, ADR-0014 wins over the numbers below.
+Media rules follow ADR-0015 (accepted); if it changes limits or formats, ADR-0015 wins over the numbers below.
 
 - [ ] **A19 (auto)** Uploaded files are stored under `orgs/{organization_id}/…` with random (UUID) file names; the original file name is never used as the path.
 - [ ] **A20 (auto)** Payment evidence is stored on a private disk. Given Org A's owner, when they open evidence for their own booking, then it is served (stream or temporary signed URL, TTL ≤ 5 min) after a policy check; given Org B's owner or an anonymous user with the storage path or an expired URL, then they get 403/404.
-- [ ] **A21 (auto)** Given a customer, when they open their own evidence via their booking access token (ADR-0016), then it is served; with another booking's token, it is not.
+- [ ] **A21 (auto)** Given a customer, when they open their own evidence via their booking access token (ADR-0017), then it is served; with another booking's token, it is not.
 - [ ] **A22 (auto)** Uploads are validated server-side by detected MIME type (not extension) and size (evidence: JPEG/PNG/WebP/HEIC ≤ 5 MB per F-006); public trip photos are re-encoded so EXIF metadata (incl. GPS) is stripped.
 
 ### Slice A — Secrets & logs
@@ -111,7 +111,7 @@ Media rules follow ADR-0014 (accepted); if it changes limits or formats, ADR-001
 
 ### Slice B — Operations before pilot (end of week 4)
 
-Operations follow ADR-0015.
+Operations follow ADR-0016.
 
 - [ ] **B1 (ops)** An unhandled exception in production appears in the error tracker within 5 minutes with environment, release and request ID, with PII scrubbing on (no request bodies, cookies or phone numbers), and triggers an alert to the configured channel (Q4).
 - [ ] **B2 (ops)** An external uptime monitor checks the health endpoint and one public seller page every ≤ 5 minutes; two consecutive failures trigger an alert. Verified by taking the app down on staging.
@@ -123,7 +123,7 @@ Operations follow ADR-0015.
 - [ ] **B8 (ops) Restore rehearsal:** following only the written runbook in `docs/operations/restore.md`, someone restores the latest backup into a fresh database, points a staging app at it, signs in as a test seller and opens a known booking and its payment evidence. Time taken and backup age are recorded. Done once before the Pilot-go gate and again in week 6.
 - [ ] **B9 (ops)** Media bucket protection is in place per Q3 (versioning or a scheduled copy) and covered by the runbook.
 - [ ] **B10 (ops) Staff-assisted recovery runbook** `docs/operations/account-recovery.md` exists for sellers who lost access to their email. It states the accepted proof of identity (Q5), who may perform recovery, and that recovery runs only through the artisan command in B11c.
-- [ ] **B11 (auto) Self-serve password reset (ADR-0011, ADR-0017):** Given a seller requests a reset, then a single-use reset link is emailed that expires within 60 minutes. Requesting a new link invalidates the old one, and a used or expired link shows "Link sudah tidak berlaku. Minta link baru." After a successful reset:
+- [ ] **B11 (auto) Self-serve password reset (ADR-0012, ADR-0018):** Given a seller requests a reset, then a single-use reset link is emailed that expires within 60 minutes. Requesting a new link invalidates the old one, and a used or expired link shows "Link sudah tidak berlaku. Minta link baru." After a successful reset:
   - (a) every other session of that user is revoked; the session that completed the reset stays signed in;
   - (b) changes to payment instructions are blocked for 24 hours. The server rejects them and the UI shows "Demi keamanan, rekening baru bisa diubah {tanggal, jam}.";
   - (c) an `auth.password_reset` audit event is written.
@@ -150,7 +150,7 @@ Operations follow ADR-0015.
 - Cache keys and queued-job payloads that touch seller data include `organization_id`.
 - System jobs that intentionally cross organizations (hold expiry, deadline auto-close) are the **only** code allowed to remove the global scope, are listed in one allowlist, and are covered by A8.
 - No in-app super-admin bypass in P0. Production data fixes by Rakyt staff go through artisan commands that write audit events (actor `rakyt_staff:<name>`).
-- **Customer access** (no account, ADR-0016): a customer reaches their booking/payment page through an **unguessable access token** (at least 128 random bits) in the URL, never through the human-readable booking reference alone. `RKB-MMDD-NNNN` can be guessed and would expose other customers' names and phone numbers. (Built in F-005/F-006.)
+- **Customer access** (no account, ADR-0017): a customer reaches their booking/payment page through an **unguessable access token** (at least 128 random bits) in the URL, never through the human-readable booking reference alone. `RKB-MMDD-NNNN` can be guessed and would expose other customers' names and phone numbers. (Built in F-005/F-006.)
 
 ### Owner organization tables (built in slice A)
 
@@ -188,7 +188,7 @@ Retention: kept indefinitely in P0. Not shown in seller UI in P0 (Q7).
 
 | Endpoint | Key | Default |
 |---|---|---|
-| Seller sign-in attempts (ADR-0011) | email + IP | 5 per minute, then lockout per Laravel default |
+| Seller sign-in attempts (ADR-0012) | email + IP | 5 per minute, then lockout per Laravel default |
 | Seller sign-in attempts | IP | 30 per 10 min |
 | Password-reset link request | email | 3 per 15 min |
 | Password-reset link request | IP | 20 per hour |
@@ -203,7 +203,7 @@ Indonesian mobile carriers use carrier-grade NAT, so many customers share one IP
 ### Time
 
 - All timestamps are stored and compared in **UTC**; the scheduler runs in UTC.
-- Display and deadline calculations (e.g. "H-3, 23.59") use the organization's time zone (ADR-0013, accepted). Field and default are owned by F-001/F-003.
+- Display and deadline calculations (e.g. "H-3, 23.59") use the organization's time zone (ADR-0014, accepted). Field and default are owned by F-001/F-003.
 
 ### Logging & PII
 
@@ -212,13 +212,13 @@ Indonesian mobile carriers use carrier-grade NAT, so many customers share one IP
 
 ### Backups & restore
 
-- DB: a consistent `pg_dump` daily; encrypted; stored off-host; retention per ADR-0015 / Q3.
+- DB: a consistent `pg_dump` daily; encrypted; stored off-host; retention per ADR-0016 / Q3.
 - Media: per Q3. Payment evidence is the only media that cannot be re-uploaded by the seller easily.
 - Runbook location: `docs/operations/restore.md` (created by the builder in slice B).
 
 ### Concurrency / overbooking (what F-009 provides)
 
-- CI runs the test suite against **PostgreSQL** (ADR-0012), not SQLite, so row-lock and concurrency tests (ADR-0006, F-005 "two bookings for the last seat") mean something (A18a).
+- CI runs the test suite against **PostgreSQL** (ADR-0013), not SQLite, so row-lock and concurrency tests (ADR-0006, F-005 "two bookings for the last seat") mean something (A18a).
 - **`CHECK` constraints as the last line of defence** (the app still validates first). F-009 owns the audit and membership constraints (A18b). The capacity constraints are owned by F-003/F-005 and are listed here so reviewers check them: `trip_departures.capacity >= 0`; if a seat counter column exists, `seats_taken BETWEEN 0 AND capacity`; `bookings.participants >= 1`; money columns (`base_price`, `price_override`, amounts due/paid) `>= 0`. If seats are counted from bookings instead of a counter, the row lock in ADR-0006 is the guard and no counter constraint applies.
 - A test helper that runs two booking attempts on separate DB connections, used by F-005.
 - Scheduler failure never causes overbooking: capacity is enforced in the booking transaction and deadlines are checked at booking time (B5). A stalled scheduler can only cause *under*-booking (holds not released), which the heartbeat alert (B3) catches.
@@ -233,30 +233,30 @@ Indonesian mobile carriers use carrier-grade NAT, so many customers share one IP
 - Session expires mid-form on a phone (419 page, A17); rate limit hit mid-form (A14 keeps input).
 - Signed evidence URL forwarded in WhatsApp: expires within 5 minutes (A20).
 - Referrer leakage of the customer token to `wa.me` or images: `no-referrer` on customer pages (A16).
-- Account takeover through a password reset, an email change or staff recovery: other sessions are revoked, payment-instruction changes are blocked for 24 hours, and the event is audited (B11–B12, ADR-0017).
+- Account takeover through a password reset, an email change or staff recovery: other sessions are revoked, payment-instruction changes are blocked for 24 hours, and the event is audited (B11–B12, ADR-0018).
 - Password reset requested for an email that isn't registered: same response as for a real account (A15a).
 - Reset link opened twice, or after a newer link was sent: rejected (B11).
 
 ## Readiness
 
-Nothing blocks building. The database engine is decided (PostgreSQL, ADR-0012) and seller sign-in is email + password (ADR-0011), so all of slice A can start.
-Q2–Q5 have recommended defaults (most are captured in ADR-0015 and ADR-0017). They must be confirmed before slice B is closed at the Pilot-go gate (end of week 4), but they do not block building it. Q6–Q9 do not block anything.
+Nothing blocks building. The database engine is decided (PostgreSQL, ADR-0013) and seller sign-in is email + password (ADR-0012), so all of slice A can start.
+Q2–Q5 have recommended defaults (most are captured in ADR-0016 and ADR-0018). They must be confirmed before slice B is closed at the Pilot-go gate (end of week 4), but they do not block building it. Q6–Q9 do not block anything.
 
 ## Open questions
 
-- [x] **Q1 Database engine.** Resolved 2026-10-17: **PostgreSQL** (ADR-0012, accepted). CI runs on PostgreSQL (A18a) and `CHECK` constraints back up key rules (A18b, Data & rules).
-- [x] **Q2 Hosting target and backup storage** — decided 2026-10-17 (ADR-0015 accepted): one VPS managed with Laravel Forge (or an equivalent managed Laravel host) in Singapore or Jakarta, with backups written to S3-compatible object storage at a different provider. The code stays host-agnostic, so this blocks only the closing of slice B.
-- [x] **Q3 Backup policy (RPO / retention / media)** — decided 2026-10-17 (ADR-0015 accepted): daily DB backup, keep 14 daily and 8 weekly; accept up to 24 hours of data loss during the pilot (bookings also exist in WhatsApp chats); use point-in-time recovery if the database is managed; turn on 30-day versioning for the media bucket. Revisit before public launch.
-- [x] **Q4 Error tracker and alert channel** — decided 2026-10-17 (ADR-0015 accepted): Sentry (free tier, official Laravel SDK, built-in PII scrubbing); alerts to the founder's email and phone push. Low-stakes and reversible, so the builder may go ahead with this if there is no answer.
-- [x] **Q5 Staff-assisted recovery when the seller has lost their email: what proof is enough?** — decided 2026-10-17 (ADR-0017 accepted). Self-serve reset, session revocation and the 24-hour block are settled in ADR-0017. Only the identity check for staff-assisted recovery is still open. *Recommended:* the founder verifies that (a) the requester writes from the WhatsApp number stored on the organization profile, (b) their KTP name matches the account-holder name in the payment instructions, and (c) they can name two recent booking references with amounts. Then the B11c command sets the new email. Why: a takeover lets an attacker swap the bank account and collect customers' transfers. This is needed for the runbook (B10), not for the code.
+- [x] **Q1 Database engine.** Resolved 2026-10-17: **PostgreSQL** (ADR-0013, accepted). CI runs on PostgreSQL (A18a) and `CHECK` constraints back up key rules (A18b, Data & rules).
+- [x] **Q2 Hosting target and backup storage** — decided 2026-10-17 (ADR-0016 accepted): one VPS managed with Laravel Forge (or an equivalent managed Laravel host) in Singapore or Jakarta, with backups written to S3-compatible object storage at a different provider. The code stays host-agnostic, so this blocks only the closing of slice B.
+- [x] **Q3 Backup policy (RPO / retention / media)** — decided 2026-10-17 (ADR-0016 accepted): daily DB backup, keep 14 daily and 8 weekly; accept up to 24 hours of data loss during the pilot (bookings also exist in WhatsApp chats); use point-in-time recovery if the database is managed; turn on 30-day versioning for the media bucket. Revisit before public launch.
+- [x] **Q4 Error tracker and alert channel** — decided 2026-10-17 (ADR-0016 accepted): Sentry (free tier, official Laravel SDK, built-in PII scrubbing); alerts to the founder's email and phone push. Low-stakes and reversible, so the builder may go ahead with this if there is no answer.
+- [x] **Q5 Staff-assisted recovery when the seller has lost their email: what proof is enough?** — decided 2026-10-17 (ADR-0018 accepted). Self-serve reset, session revocation and the 24-hour block are settled in ADR-0018. Only the identity check for staff-assisted recovery is still open. *Recommended:* the founder verifies that (a) the requester writes from the WhatsApp number stored on the organization profile, (b) their KTP name matches the account-holder name in the payment instructions, and (c) they can name two recent booking references with amounts. Then the B11c command sets the new email. Why: a takeover lets an attacker swap the bank account and collect customers' transfers. This is needed for the runbook (B10), not for the code.
 - [ ] **Q6 Rakyt staff access to seller data in P0** — Rengga. *Recommended:* no in-app cross-tenant access; production DB access only for named people; fixes via audited artisan commands. A support view is a separate decision (F-007 open question).
 - [ ] **Q7 Should sellers see an audit/history trail in P0?** — Rengga. *Recommended:* no. Capture now, show later (e.g. booking history in F-007) if pilots ask.
-- [x] **Q8 Time zones (WIB / WITA / WIT)**: decided 2026-10-17, ADR-0013 accepted; F-001/F-003 own it. *Recommended:* an organization time-zone field, default `Asia/Jakarta`, with `Asia/Makassar` and `Asia/Jayapura` selectable; deadlines like "H-3 23.59" use it. Does not block F-009, which only requires "store in UTC".
+- [x] **Q8 Time zones (WIB / WITA / WIT)**: decided 2026-10-17, ADR-0014 accepted; F-001/F-003 own it. *Recommended:* an organization time-zone field, default `Asia/Jakarta`, with `Asia/Makassar` and `Asia/Jayapura` selectable; deadlines like "H-3 23.59" use it. Does not block F-009, which only requires "store in UTC".
 - [ ] **Q9 Privacy notice and Indonesia's PDP law (UU 27/2022)** — Rengga. *Recommended:* before pilot, publish a short privacy notice and terms (Bahasa), linked from sign-up and the booking form; handle deletion/access requests manually; get a formal review before public launch. Kept outside F-009 scope unless you want it here.
 
 ## Changelog
 
 - 2026-10-17 — created
 - 2026-10-17 — planner pass: split into slices A/B/C; testable Given/When/Then criteria for tenancy, audit, rate limits, media, logs, ops, backups and recovery; data rules (current-org resolution, 404 on cross-tenant, customer access token, audit schema and action list, rate-limit defaults, UTC); edge cases; resolved "error tracking service" as a non-blocking default (Q4); status stays `draft`, blocked only by Q1 (DB engine)
-- 2026-10-17 — after decisions: Q1 closed with PostgreSQL (ADR-0012); CI on PostgreSQL and `CHECK` constraints added (A18a, A18b). Recovery rewritten for email + password (ADR-0011, ADR-0017): self-serve reset link, revoke other sessions, 24-hour payment-instruction block on reset, email change or staff recovery (B11–B12). Sign-in and reset rate limits keyed by email + IP; customer limits stay phone-keyed. Added links to ADR-0013/0014/0015/0016; dropped ADR-0009. Status → `ready`
-- 2026-10-17 — ADR-0013 to ADR-0017 accepted; Q2, Q3, Q4, Q5 and Q8 closed
+- 2026-10-17 — after decisions: Q1 closed with PostgreSQL (ADR-0013); CI on PostgreSQL and `CHECK` constraints added (A18a, A18b). Recovery rewritten for email + password (ADR-0012, ADR-0018): self-serve reset link, revoke other sessions, 24-hour payment-instruction block on reset, email change or staff recovery (B11–B12). Sign-in and reset rate limits keyed by email + IP; customer limits stay phone-keyed. Added links to ADR-0014/0015/0016/0017; dropped ADR-0009. Status → `ready`
+- 2026-10-17 — ADR-0014 to ADR-0018 accepted; Q2, Q3, Q4, Q5 and Q8 closed

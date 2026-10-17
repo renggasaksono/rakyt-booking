@@ -1,5 +1,5 @@
 ---
-id: 0012
+id: 0013
 title: PostgreSQL as the database engine
 status: accepted
 date: 2026-10-17
@@ -7,7 +7,7 @@ deciders: [Rengga]
 related: [ADR-0002, ADR-0004, ADR-0006, F-009]
 ---
 
-# 0012. PostgreSQL as the database engine
+# 0013. PostgreSQL as the database engine
 
 ## Context
 

@@ -67,5 +67,5 @@ Every status = tint + deep text + its own glyph + a word. Never colour alone; ne
 ## Assumptions baked into the mockup (verify before building)
 
 - 2-hour seat hold for unpaid bookings (placeholder) — [ADR-0006](../decisions/0006-seat-hold-and-capacity-locking.md)
-- ~~WhatsApp OTP sign-up, no password~~ — rejected; sellers use email + password ([ADR-0011](../decisions/0011-email-password-authentication.md)). Mockups 4a–4b still show OTP; F-001 section A is the source of truth.
+- ~~WhatsApp OTP sign-up, no password~~ — rejected; sellers use email + password ([ADR-0012](../decisions/0012-email-password-authentication.md)). Mockups 4a–4b still show OTP; F-001 section A is the source of truth.
 - "Kencana Trip" and all names/numbers are invented sample data.

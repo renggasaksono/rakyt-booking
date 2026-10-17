@@ -1,5 +1,5 @@
 ---
-id: 0018
+id: 0019
 title: Defer free-tier limits; no plan limit enforced in P0
 status: accepted
 date: 2026-10-17
@@ -7,7 +7,7 @@ deciders: [Rengga]
 related: [ADR-0010, F-001, F-003]
 ---
 
-# 0018. Defer free-tier limits; no plan limit enforced in P0
+# 0019. Defer free-tier limits; no plan limit enforced in P0
 
 ## Context
 
