@@ -1,6 +1,5 @@
 @extends('errors.layout')
 
 @section('code', '403')
-@section('title', 'Akses ditolak')
-@section('message', 'Anda tidak punya akses ke halaman ini.')
-
+@section('title', __('errors.403.title'))
+@section('message', __('errors.403.message'))

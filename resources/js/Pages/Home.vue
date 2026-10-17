@@ -1,5 +1,12 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
+
+defineProps({
+    tagline: {
+        type: String,
+        required: true,
+    },
+});
 </script>
 
 <template>
@@ -9,7 +16,7 @@ import { Head } from '@inertiajs/vue3';
             Rakyt Booking
         </h1>
         <p class="mt-2 text-base text-secondary">
-            Satu link untuk trip, keberangkatan, dan pemesanan Anda.
+            {{ tagline }}
         </p>
     </main>
 </template>

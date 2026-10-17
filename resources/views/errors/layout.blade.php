@@ -25,7 +25,7 @@
         <p>@yield('message')</p>
         <div class="actions">
             @section('actions')
-                <a class="button" href="{{ url('/') }}">Ke beranda</a>
+                <a class="button" href="{{ url('/') }}">{{ __('errors.home') }}</a>
             @show
         </div>
     </main>

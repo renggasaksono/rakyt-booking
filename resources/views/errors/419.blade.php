@@ -1,8 +1,8 @@
 @extends('errors.layout')
 
 @section('code', '419')
-@section('title', 'Sesi Anda sudah habis')
-@section('message', 'Demi keamanan, halaman ini kedaluwarsa. Muat ulang halaman lalu coba lagi.')
+@section('title', __('errors.419.title'))
+@section('message', __('errors.419.message'))
 @section('actions')
-    <a class="button" href="{{ url()->previous() }}">Muat ulang</a>
+    <a class="button" href="{{ url()->previous() }}">{{ __('errors.reload') }}</a>
 @endsection
