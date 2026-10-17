@@ -27,6 +27,8 @@ Source of UI wording: [design mockup](../design/README.md).
 | public page | halaman publik | `rakyt.id/<slug>` — the seller's shareable booking page. |
 | quick edit | edit cepat | Mobile sheet to change price, seats, open/closed in < 30 s. |
 | today | hari ini | Seller dashboard home. |
+| platform admin | admin | Rakyt operator (the product owner in the MVP) with access to `/admin` across organizations. Not a member of any organization. ADR-0011. |
+| suspended (organization) | ditangguhkan | Organization blocked from new activity by the platform admin; data is kept. F-014. |
 
 ## Booking & payment statuses
 

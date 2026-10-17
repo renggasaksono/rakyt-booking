@@ -20,3 +20,4 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0008](0008-brand-tokens-and-cta-rule.md) | Rakyt Sogan tokens, status set, one-gold-CTA rule | proposed (Prada shade) | 2026-10-17 |
 | [0009](0009-whatsapp-otp-authentication.md) | WhatsApp OTP sign-in for sellers | proposed | 2026-10-17 |
 | [0010](0010-freemium-subscription-no-transaction-fee.md) | Freemium + subscription; no mandatory transaction fee | accepted | 2026-10-15 |
+| [0011](0011-platform-admin-access.md) | Platform admin inside the same app, explicitly authorised, no impersonation | proposed | 2026-10-17 |

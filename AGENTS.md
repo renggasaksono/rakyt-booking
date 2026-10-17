@@ -33,6 +33,7 @@ Full context: [`docs/product/blueprint.md`](docs/product/blueprint.md) · UI ref
 5. **Mobile first.** Design and test at phone width first. Large tap targets, clear validation, loading/error states.
 6. **UI copy in Bahasa Indonesia**; code, comments, commits and docs in English. See [ADR-0007](docs/decisions/0007-ui-language-bahasa-indonesia.md).
 7. **Secrets never in git.** `.env` stays local.
+8. **Admin is a separate boundary.** `/admin` (F-010–F-015) is gated server-side to the platform admin; cross-organization reads live only in admin query classes — never loosen seller scopes or policies to make admin work easier. Every admin route gets authorization tests (guest, seller, admin) and every sensitive admin action an audit test. No impersonation, DB browser, multi-admin roles or booking/payment editing without a new ADR. See [ADR-0011](docs/decisions/0011-platform-admin-access.md).
 
 ## Stack (see [ADR-0002](docs/decisions/0002-stack-laravel-inertia-vue-tailwind.md))
 
@@ -55,7 +56,7 @@ Local development runs on **Laravel Herd** (`rakyt-booking.test`). Database engi
 
 A change is not done until the docs match the code. In the same PR:
 
-- **Feature behaviour changed?** Update the feature spec (status, acceptance criteria, open questions).
+- **Feature behaviour changed?** Update the feature spec (status, acceptance criteria, open questions). Set `done` only when its acceptance criteria are covered by passing tests — scaffolding is not `done`.
 - **Made a choice someone could later ask "why?" about?** Add an ADR in `docs/decisions/` (copy `_template.md`). Never rewrite an accepted ADR — supersede it.
 - **Scope or timing moved?** Update `docs/roadmaps/`.
 - **New domain term?** Add it to the glossary.

@@ -34,8 +34,9 @@ The common tasks — verify payments, watch seats, share the link — must be on
 
 - [ ] Mobile version of 1e needs a mockup.
 - [ ] Manual booking entry by seller (for bookings that come in by chat)? Not in blueprint P0 but likely needed.
-- [ ] Support/admin view for Rakyt staff (blueprint week 4) — separate feature?
+- [x] Support/admin view for Rakyt staff (blueprint week 4) — separate feature? Yes: F-010–F-015.
 
 ## Changelog
 
 - 2026-10-17 — created
+- 2026-10-17 — admin view moved to F-010–F-015

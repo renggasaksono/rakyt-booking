@@ -27,6 +27,10 @@ Cross-seller data exposure or overbooking would end trust in the product. Bluepr
 - [ ] Error tracking and uptime monitoring live before pilot.
 - [ ] No secrets in git; `.env.example` complete.
 - [ ] Scheduler (hold expiry, deadline closing) monitored — alert if it stops.
+- [ ] `audit_events` supports a platform-admin actor so admin actions (F-015) reuse the same log.
+- [ ] Admin cross-organization access (F-010–F-015) never relaxes seller scopes; seller cross-tenant tests stay green.
+
+System health for the admin: link to the hosting, log and error-tracking tools chosen here; an in-app health view is P1.
 
 ## Open questions
 
@@ -36,3 +40,4 @@ Cross-seller data exposure or overbooking would end trust in the product. Bluepr
 ## Changelog
 
 - 2026-10-17 — created
+- 2026-10-17 — audit/tenancy hooks for admin panel (F-010–F-015)
