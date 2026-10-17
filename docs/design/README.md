@@ -39,7 +39,7 @@ Reference: [`mockups/rakyt-booking-draft-v2.html`](mockups/rakyt-booking-draft-v
 | Secondary | `#6F5B4B` | Helper text, metadata — don't go lighter | 5.6 : 1 |
 | Prada (CTA) | `#E5A823` (option D) | The one primary action per screen | ink label 8.4 : 1 |
 
-Prada alternatives tested: A `#B8862F` (dull), B `#C48A1E`, C `#D99A1E`. **D is recommended but not yet confirmed** —
+Prada alternatives tested: A `#B8862F` (dull), B `#C48A1E`, C `#D99A1E`. **D is confirmed** —
 see [ADR-0008](../decisions/0008-brand-tokens-and-cta-rule.md).
 
 ### Status set

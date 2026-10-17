@@ -30,9 +30,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 
 ### Proposed ADRs — accept or reject
 
-| Decision | Recommended | Source | Needed by |
-|---|---|---|---|
-| Prada brand shade D vs C | see ADR | [ADR-0008](../decisions/0008-brand-tokens-and-cta-rule.md) | Before UI build (wk 2) |
+None open.
 
 ### Week 1 — choices outside the specs
 
