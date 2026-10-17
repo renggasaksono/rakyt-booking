@@ -1,5 +1,7 @@
 # Roles
 
+Each role has a Claude Code subagent in `.claude/agents/` (see [README](README.md#claude-code-subagents)).
+
 One agent can play several roles in a session, but keep the hats distinct — especially builder vs reviewer.
 
 ## Planner

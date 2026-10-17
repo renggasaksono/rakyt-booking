@@ -21,6 +21,10 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | planned |
 | [F-006](../features/F-006-payment-instructions-and-records.md) Payment instructions & records | planned |
 | [F-008](../features/F-008-whatsapp-handoff.md) WhatsApp handoff | planned |
+| Internal admin panel — [F-010](../features/F-010-admin-access-control.md) access control, [F-011](../features/F-011-admin-overview-dashboard.md) overview, [F-012](../features/F-012-admin-seller-directory.md) seller directory, [F-013](../features/F-013-admin-booking-search.md) booking search, [F-014](../features/F-014-seller-suspension.md) suspension, [F-015](../features/F-015-admin-audit-log.md) admin audit log | planned |
+
+The admin panel is an internal tool for the sole platform admin (product owner) to onboard pilot sellers, inspect
+bookings, investigate problems and suspend/reactivate sellers — not a back office (ADR-0011).
 
 ## Pending decisions
 
@@ -30,7 +34,9 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 
 ### Proposed ADRs — accept or reject
 
-None open.
+| Decision | Recommended | Source | Needed by |
+|---|---|---|---|
+| Platform admin inside the same app, gated, no impersonation; admin login = email + password + TOTP | Accept | [ADR-0011](../decisions/0011-platform-admin-access.md) · F-010–F-015 | Before admin build (wk 4) |
 
 ### Week 1 — choices outside the specs
 
@@ -68,7 +74,12 @@ None open.
 | Accepted date request → public or private departure; price on accept | [F-004](../features/F-004-request-a-date.md#open-questions) |
 | Booking reference format (`RKB-MMDD-NNNN`: departure or booking date) | [F-005](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
 | Booking vs payment status model; re-upload and hold clock after rejection; DP 50% in P0 or P1 | [F-006](../features/F-006-payment-instructions-and-records.md#open-questions) |
-| Mobile dashboard mockup; manual booking entry; Rakyt support/admin view | [F-007](../features/F-007-seller-dashboard-and-bookings.md#open-questions) |
+| Mobile dashboard mockup; manual booking entry | [F-007](../features/F-007-seller-dashboard-and-bookings.md#open-questions) |
+| Admin auth mechanism; admin UI language (Bahasa or English) | [F-010](../features/F-010-admin-access-control.md#open-questions) |
+| Admin status mapping (depends on F-006) | [F-011](../features/F-011-admin-overview-dashboard.md#open-questions) |
+| Meaning of "last activity" in the seller directory | [F-012](../features/F-012-admin-seller-directory.md#open-questions) |
+| Suspension effects: public page, seller sign-in, unpaid holds, paid upcoming bookings | [F-014](../features/F-014-seller-suspension.md#open-questions) |
+| Do sellers see admin actions on their organization | [F-015](../features/F-015-admin-audit-log.md#open-questions) |
 
 ### Missing mockups
 
@@ -79,14 +90,16 @@ mobile dashboard (F-007).
 
 Recurring departure templates · CSV export · automated notifications/reminders · deposits & remaining balance ·
 promo codes, add-ons, packages · staff accounts & permissions · seller-owned payment-provider integrations ·
-custom domains & branding removal on paid plans · subscription billing.
+custom domains & branding removal on paid plans · subscription billing · admin system-health view (failed jobs, recent errors;
+link to hosting/error-tracking tools until then).
 
 Promote an item only with pilot evidence; give it an F-number when it moves to **Now**.
 
 ## Later / explicitly deferred (P2)
 
 Plugin/extension marketplace · marketplace discovery & traffic promises · reseller/agent/affiliate hierarchies ·
-dynamic pricing · accounting/ERP/CRM/inventory · native mobile apps · AI features · multi-provider payment orchestration.
+dynamic pricing · accounting/ERP/CRM/inventory · native mobile apps · AI features · multi-provider payment orchestration ·
+admin back-office powers (impersonation, multi-admin roles, support-team accounts, booking/payment editing) — need a new ADR.
 
 Enterprise capabilities (white-label, multi-brand, API, SLA) are built only when a qualified buyer validates them —
 see [`year-1-commercial.md`](year-1-commercial.md).

@@ -45,7 +45,7 @@ F-009 is cross-cutting. It ships the **primitives and guardrails** that every ot
 - `.env.example` complete; no secrets in git.
 
 **Out (explicitly):**
-- Rakyt staff / support admin UI and any in-app cross-tenant "super admin" bypass (tracked as an open question in F-007).
+- The platform admin panel itself — specced in F-010–F-015 ([ADR-0011](../decisions/0011-platform-admin-access.md), proposed). F-009 only provides the hooks it needs (A8, A8a, `platform_admin` audit actor). An in-app system-health view is P1; until then the admin uses the hosting, log and error-tracking tools chosen here (ADR-0016).
 - Seller-visible audit log / activity history UI (data is captured now; UI later if pilots ask).
 - Staff accounts and roles beyond `owner` (P1). The policy layer must not assume roles exist beyond owner.
 - Organization switching for users with several organizations (P1+; see Data & rules).
@@ -75,6 +75,7 @@ Tags: **(auto)** = automated test in CI · **(ops)** = verified by a rehearsal o
 - [ ] **A6 (auto) Schema guard:** Given the full migration set, when the guard test runs, then every table has a non-null, indexed, foreign-keyed `organization_id`, except tables on an explicit allowlist in the test (e.g. `users`, `organizations`, `sessions`, `jobs`, `failed_jobs`, `cache`, `migrations`, `password_reset_tokens`, framework tables). Adding a table without either is a failing test.
 - [ ] **A7 (auto) Model guard:** every Eloquent model whose table has `organization_id` uses the scoping trait and has a registered policy; otherwise the test fails.
 - [ ] **A8 (auto)** Given a queued job or scheduled command acts on seller data, when it runs without a signed-in user, then it either (a) receives an explicit `organization_id` and scopes to it, or (b) is on a reviewed allowlist of system jobs that deliberately query across organizations (hold expiry, deadline closing) and only touches the columns it needs. A test asserts the allowlist is exactly what is expected.
+- [ ] **A8a (auto)** Given the admin panel (F-010–F-015, ADR-0011), then cross-organization reads happen only in admin-module query classes behind the `platform-admin` gate; seller-facing scopes and policies are unchanged, and every seller cross-tenant test stays green with the admin module installed.
 - [ ] **A9 (auto) Harness:** a reusable cross-tenant test helper exists (two orgs, two owners, factories) that a feature test can call with a resource name and its routes to assert A2/A3. F-001, F-003, F-004, F-005, F-006, F-007 each use it for their resources.
 
 ### Slice A — Audit events
@@ -92,7 +93,7 @@ Tags: **(auto)** = automated test in CI · **(ops)** = verified by a rehearsal o
 - [ ] **A16 (auto)** Responses carry: `Strict-Transport-Security` (production), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` (customer booking/payment pages: `no-referrer`), and `frame-ancestors 'none'` (CSP) or `X-Frame-Options: DENY`. Session cookies are `Secure`, `HttpOnly`, `SameSite=Lax`.
 - [ ] **A17 (auto)** Given an expired CSRF token / session (419), a missing page (404), a rate limit (429), a server error (500) or maintenance (503), then the user sees a Bahasa Indonesia page that fits a 360 px wide screen without horizontal scroll, uses ink-outline buttons only (no gold CTA — nothing moves a booking forward), and never shows a stack trace.
 - [ ] **A18a (auto)** CI runs the full test suite against **PostgreSQL** (ADR-0013), the same major version as production — never SQLite — so row locks, `CHECK` constraints and concurrency tests behave as they do in production.
-- [ ] **A18b (auto)** Database `CHECK` constraints back up the application rules F-009 owns: `audit_events.actor_type IN ('user','customer','system','rakyt_staff')`, and `organization_members.role IN ('owner')` (widened when roles arrive in P1). A test inserts a bad value directly and expects the database to reject it. The capacity constraints owned by F-003/F-005 are listed under Data & rules.
+- [ ] **A18b (auto)** Database `CHECK` constraints back up the application rules F-009 owns: `audit_events.actor_type IN ('user','customer','system','rakyt_staff','platform_admin')`, and `organization_members.role IN ('owner')` (widened when roles arrive in P1). A test inserts a bad value directly and expects the database to reject it. The capacity constraints owned by F-003/F-005 are listed under Data & rules.
 - [ ] **A18 (auto)** CI runs `composer audit` and `npm audit --audit-level=high` and a secret scanner (e.g. gitleaks) on every PR; a high-severity finding or a detected secret fails the build.
 
 ### Slice A — Media
@@ -148,8 +149,8 @@ Operations follow ADR-0016.
 - Route model binding for nested routes is scoped (child must belong to parent, parent must belong to current org).
 - Validation `exists` rules on IDs are org-scoped.
 - Cache keys and queued-job payloads that touch seller data include `organization_id`.
-- System jobs that intentionally cross organizations (hold expiry, deadline auto-close) are the **only** code allowed to remove the global scope, are listed in one allowlist, and are covered by A8.
-- No in-app super-admin bypass in P0. Production data fixes by Rakyt staff go through artisan commands that write audit events (actor `rakyt_staff:<name>`).
+- System jobs that intentionally cross organizations (hold expiry, deadline auto-close) and the admin-module query classes (ADR-0011) are the **only** code allowed to remove the global scope; system jobs are listed in one allowlist (A8), admin queries are covered by A8a.
+- No super-admin bypass through seller routes, scopes or memberships; the platform admin is not an organization member (ADR-0011). Production data fixes by Rakyt staff go through artisan commands that write audit events (actor `rakyt_staff:<name>`).
 - **Customer access** (no account, ADR-0017): a customer reaches their booking/payment page through an **unguessable access token** (at least 128 random bits) in the URL, never through the human-readable booking reference alone. `RKB-MMDD-NNNN` can be guessed and would expose other customers' names and phone numbers. (Built in F-005/F-006.)
 
 ### Owner organization tables (built in slice A)
@@ -162,7 +163,7 @@ Slice A creates the minimal `organizations` (id, timestamps, plus whatever F-001
 |---|---|---|
 | `id` | bigint / ulid | |
 | `organization_id` | FK, not null | Tenant scope |
-| `actor_type` | string + `CHECK` | `user`, `customer`, `system`, `rakyt_staff` |
+| `actor_type` | string + `CHECK` | `user`, `customer`, `system`, `rakyt_staff`, `platform_admin` (admin actions, F-015) |
 | `actor_id` | nullable | User ID, booking ID for customer, job name for system, staff name |
 | `action` | string | Dot-namespaced, e.g. `departure.capacity_changed` |
 | `subject_type`, `subject_id` | string, id | No FK cascade — events outlive their subject |
@@ -249,7 +250,7 @@ Q2–Q5 have recommended defaults (most are captured in ADR-0016 and ADR-0018). 
 - [x] **Q3 Backup policy (RPO / retention / media)** — decided 2026-10-17 (ADR-0016 accepted): daily DB backup, keep 14 daily and 8 weekly; accept up to 24 hours of data loss during the pilot (bookings also exist in WhatsApp chats); use point-in-time recovery if the database is managed; turn on 30-day versioning for the media bucket. Revisit before public launch.
 - [x] **Q4 Error tracker and alert channel** — decided 2026-10-17 (ADR-0016 accepted): Sentry (free tier, official Laravel SDK, built-in PII scrubbing); alerts to the founder's email and phone push. Low-stakes and reversible, so the builder may go ahead with this if there is no answer.
 - [x] **Q5 Staff-assisted recovery when the seller has lost their email: what proof is enough?** — decided 2026-10-17 (ADR-0018 accepted). Self-serve reset, session revocation and the 24-hour block are settled in ADR-0018. Only the identity check for staff-assisted recovery is still open. *Recommended:* the founder verifies that (a) the requester writes from the WhatsApp number stored on the organization profile, (b) their KTP name matches the account-holder name in the payment instructions, and (c) they can name two recent booking references with amounts. Then the B11c command sets the new email. Why: a takeover lets an attacker swap the bank account and collect customers' transfers. This is needed for the runbook (B10), not for the code.
-- [ ] **Q6 Rakyt staff access to seller data in P0** — Rengga. *Recommended:* no in-app cross-tenant access; production DB access only for named people; fixes via audited artisan commands. A support view is a separate decision (F-007 open question).
+- [x] **Q6 Rakyt staff access to seller data in P0** — superseded 2026-10-17: the sole platform admin gets read-only cross-seller access through the admin panel (F-010–F-015, [ADR-0011](../decisions/0011-platform-admin-access.md), proposed). Production DB access stays limited to named people; data fixes still go through audited artisan commands.
 - [ ] **Q7 Should sellers see an audit/history trail in P0?** — Rengga. *Recommended:* no. Capture now, show later (e.g. booking history in F-007) if pilots ask.
 - [x] **Q8 Time zones (WIB / WITA / WIT)**: decided 2026-10-17, ADR-0014 accepted; F-001/F-003 own it. *Recommended:* an organization time-zone field, default `Asia/Jakarta`, with `Asia/Makassar` and `Asia/Jayapura` selectable; deadlines like "H-3 23.59" use it. Does not block F-009, which only requires "store in UTC".
 - [ ] **Q9 Privacy notice and Indonesia's PDP law (UU 27/2022)** — Rengga. *Recommended:* before pilot, publish a short privacy notice and terms (Bahasa), linked from sign-up and the booking form; handle deletion/access requests manually; get a formal review before public launch. Kept outside F-009 scope unless you want it here.
@@ -257,6 +258,8 @@ Q2–Q5 have recommended defaults (most are captured in ADR-0016 and ADR-0018). 
 ## Changelog
 
 - 2026-10-17 — created
+- 2026-10-17 — audit/tenancy hooks for admin panel (F-010–F-015)
 - 2026-10-17 — planner pass: split into slices A/B/C; testable Given/When/Then criteria for tenancy, audit, rate limits, media, logs, ops, backups and recovery; data rules (current-org resolution, 404 on cross-tenant, customer access token, audit schema and action list, rate-limit defaults, UTC); edge cases; resolved "error tracking service" as a non-blocking default (Q4); status stays `draft`, blocked only by Q1 (DB engine)
 - 2026-10-17 — after decisions: Q1 closed with PostgreSQL (ADR-0013); CI on PostgreSQL and `CHECK` constraints added (A18a, A18b). Recovery rewritten for email + password (ADR-0012, ADR-0018): self-serve reset link, revoke other sessions, 24-hour payment-instruction block on reset, email change or staff recovery (B11–B12). Sign-in and reset rate limits keyed by email + IP; customer limits stay phone-keyed. Added links to ADR-0014/0015/0016/0017; dropped ADR-0009. Status → `ready`
 - 2026-10-17 — ADR-0014 to ADR-0018 accepted; Q2, Q3, Q4, Q5 and Q8 closed
+- 2026-10-17 — merged with admin panel (F-010–F-015, ADR-0011): admin panel out of F-009 scope, A8a added, `platform_admin` audit actor, Q6 superseded; branch ADRs renumbered 0012–0019
