@@ -39,7 +39,7 @@ Reference: [`mockups/rakyt-booking-draft-v2.html`](mockups/rakyt-booking-draft-v
 | Secondary | `#6F5B4B` | Helper text, metadata — don't go lighter | 5.6 : 1 |
 | Prada (CTA) | `#E5A823` (option D) | The one primary action per screen | ink label 8.4 : 1 |
 
-Prada alternatives tested: A `#B8862F` (dull), B `#C48A1E`, C `#D99A1E`. **D is recommended but not yet confirmed** —
+Prada alternatives tested: A `#B8862F` (dull), B `#C48A1E`, C `#D99A1E`. **D is confirmed** —
 see [ADR-0008](../decisions/0008-brand-tokens-and-cta-rule.md).
 
 ### Status set
@@ -67,5 +67,5 @@ Every status = tint + deep text + its own glyph + a word. Never colour alone; ne
 ## Assumptions baked into the mockup (verify before building)
 
 - 2-hour seat hold for unpaid bookings (placeholder) — [ADR-0006](../decisions/0006-seat-hold-and-capacity-locking.md)
-- WhatsApp OTP sign-up, no password — [ADR-0009](../decisions/0009-whatsapp-otp-authentication.md)
+- ~~WhatsApp OTP sign-up, no password~~ — rejected; sellers use email + password ([ADR-0012](../decisions/0012-email-password-authentication.md)). Mockups 4a–4b still show OTP; F-001 section A is the source of truth.
 - "Kencana Trip" and all names/numbers are invented sample data.

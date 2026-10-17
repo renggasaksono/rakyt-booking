@@ -50,9 +50,10 @@ No admin credentials or flags in `.env` committed to git.
 
 ## Open questions
 
-- [ ] Admin auth mechanism: password + TOTP via Fortify vs reusing seller OTP plus a second factor — depends on ADR-0009 outcome — Rengga
+- [ ] Admin auth mechanism — ADR-0009 (OTP) was rejected; sellers use email + password (ADR-0012). *Recommended:* same Fortify email + password stack plus required TOTP 2FA for the admin. Confirm when accepting ADR-0011. — Rengga
 - [ ] Admin UI language: Bahasa Indonesia per ADR-0007, or English since it is internal-only? — Rengga
 
 ## Changelog
 
 - 2026-10-17 — created
+- 2026-10-17 — admin auth question updated: ADR-0009 rejected, seller sign-in is email + password (ADR-0012)

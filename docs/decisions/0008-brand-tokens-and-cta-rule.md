@@ -1,7 +1,7 @@
 ---
 id: 0008
 title: Rakyt Sogan tokens, status set, one-gold-CTA rule
-status: proposed
+status: accepted
 date: 2026-10-17
 deciders: [Rengga]
 related: [docs/design/README.md]
@@ -18,11 +18,11 @@ Mockup rounds 2–3 defined colour tokens with measured contrast, a semantic sta
 - Implement the tokens and status set in `docs/design/README.md` as Tailwind theme values (single source in `tailwind` config / CSS variables).
 - One gold CTA per screen, ink label; everything else ink outline.
 - Statuses always combine tint + deep text + glyph + word.
-- **Prada = D `#E5A823`** (recommended in mockup 3d) — *pending confirmation*.
+- **Prada = D `#E5A823`** (mockup 3d).
 
-## To confirm
+## Decided 2026-10-17
 
-- Prada shade D vs C.
+- Prada shade D `#E5A823` (over C `#D99A1E`).
 
 ## Consequences
 

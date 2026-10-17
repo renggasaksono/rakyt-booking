@@ -5,7 +5,7 @@ status: draft
 priority: P0
 roadmap: mvp-week-4
 mockups: [1a, 1d, 2e, 1e]
-decisions: ["0009"]
+decisions: []
 updated: 2026-10-17
 ---
 
@@ -19,7 +19,7 @@ WhatsApp is where operators and customers already talk. Rakyt should hand off cl
 
 **In:** `wa.me` deep links with prefilled, URL-encoded Bahasa messages for: customer → seller (Chat WhatsApp; Kabari operator with booking reference), seller → customer (Ingatkan pembayaran; Balas permintaan tanggal; booking confirmed). Message templates editable in one place (translation files).
 
-**Out:** automated sending via WhatsApp Business API (P1 "automated notifications"), except OTP if ADR-0009 is accepted.
+**Out:** automated sending via WhatsApp Business API (P1 "automated notifications"). (Seller sign-in is email + password, [ADR-0012](../decisions/0012-email-password-authentication.md) — no WhatsApp OTP.)
 
 ## Acceptance criteria
 

@@ -1,7 +1,7 @@
 ---
 id: 0009
 title: WhatsApp OTP sign-in for sellers
-status: proposed
+status: rejected (replaced by 0012)
 date: 2026-10-17
 deciders: [Rengga]
 related: [F-001, F-008]

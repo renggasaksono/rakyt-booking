@@ -59,6 +59,7 @@ A change is not done until the docs match the code. In the same PR:
 - **Feature behaviour changed?** Update the feature spec (status, acceptance criteria, open questions). Set `done` only when its acceptance criteria are covered by passing tests — scaffolding is not `done`.
 - **Made a choice someone could later ask "why?" about?** Add an ADR in `docs/decisions/` (copy `_template.md`). Never rewrite an accepted ADR — supersede it.
 - **Scope or timing moved?** Update `docs/roadmaps/`.
+- **Open question added or answered, or ADR proposed/decided?** Update the *Pending decisions* table in `docs/roadmaps/README.md`.
 - **New domain term?** Add it to the glossary.
 - **Learned something agents keep getting wrong?** Add it to this file.
 
