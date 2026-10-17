@@ -63,8 +63,9 @@ Never drop or reset the dev database to "start clean"; tests reset their own tes
 - Seller-owned model → `use BelongsToOrganization`, a policy extending `OrganizationOwnedPolicy`, and
   `ExistsInCurrentOrganization` for ids in payloads. Cross-tenant tests use `tests/Support/InteractsWithTenants`.
   The schema, model and scope-bypass guard tests fail if any of this is skipped.
-- Never call `acrossOrganizations()` / `withoutGlobalScope(s)` outside `config/rakyt.php → cross_organization_allowlist`
-  or `app/Admin/Queries`.
+- Never call `acrossOrganizations()` / `withoutGlobalScope(s)` or the raw query builder (`DB::table`, `DB::select`, …)
+  outside `config/rakyt.php → cross_organization_allowlist` or `app/Admin/Queries` — raw queries skip the scope.
+- All UI copy lives in `lang/id/*.php` (Vue pages get it as props); never hard-code Bahasa strings in views.
 - Audited actions go through `App\Audit\AuditLog`, inside the same `DB::transaction` as the change.
 - Public endpoints get a named limiter (`throttle:public-booking`, …); customer token pages get `no-referrer`.
 - Test names: `test_ac_<id>_…` in lower case (Pint rewrites `test_AC_…` to `test_a_c_…`).

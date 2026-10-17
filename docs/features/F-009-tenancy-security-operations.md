@@ -80,14 +80,15 @@ Tags: **(auto)** = automated test in CI · **(ops)** = verified by a rehearsal o
 
 ### Slice A — Audit events
 
-- [x] **A10 (auto)** Given any action in the "Audited actions" table below, when it succeeds, then exactly one `audit_events` row is written **in the same DB transaction** as the change, with `organization_id`, actor (type + id), action, subject (type + id), `before` and `after` values of the changed fields, and `created_at` (UTC). If the change rolls back, no audit row exists.
-- [x] **A11 (auto)** Given a system process changes data (hold expiry, deadline auto-close), then the audit row has actor type `system` and names the job.
+- [ ] **A10 (auto)** Given any action in the "Audited actions" table below, when it succeeds, then exactly one `audit_events` row is written **in the same DB transaction** as the change, with `organization_id`, actor (type + id), action, subject (type + id), `before` and `after` values of the changed fields, and `created_at` (UTC). If the change rolls back, no audit row exists. *Writer built and tested (`AuditLog`); ticks when each action's owning feature has its audit test — re-checked in C1.*
+- [ ] **A11 (auto)** Given a system process changes data (hold expiry, deadline auto-close), then the audit row has actor type `system` and names the job. *`Actor::system()` built and tested; ticks with the hold-expiry (F-005) and auto-close (F-003) jobs.*
 - [x] **A12 (auto)** Given an existing audit event, when application code attempts to update or delete it, then the attempt throws; deleting the audited subject does not delete its audit events.
 - [x] **A13 (auto)** Audit events are tenant-scoped like any other seller-owned record: Org A cannot read Org B's events (covered by A6/A7/A9).
 
 ### Slice A — Abuse protection & app security
 
-- [x] **A14 (auto)** Given the rate-limit defaults in Data & rules, when a client exceeds a limit, then the server responds 429 and the UI shows, in Bahasa Indonesia, "Terlalu banyak percobaan. Coba lagi dalam {n} menit." without losing what the user typed in the form.
+- [x] **A14 (auto)** Given the rate-limit defaults in Data & rules, when a client exceeds a limit, then: an Inertia form submit is sent back to the form with "Terlalu banyak percobaan. Coba lagi dalam {n} menit." as a `rate_limit` validation error and the typed input kept (passwords never flashed); a JSON request gets **429** with that message; any other request gets the Bahasa 429 page. *(Reworded 2026-10-17, approved by Rengga: a bare 429 would make Inertia replace the form with an error modal and lose the input.)*
+- [ ] **A14b (auto)** Given a seller form hits a limit, then the form shows the `rate_limit` message and keeps what was typed. Owned by the first form that uses a limiter (F-001 sign-in).
 - [x] **A15 (auto)** Customer limits keyed on phone number use the normalised E.164 number, so `0812…`, `+62812…` and `62812…` share one bucket. Seller sign-in and password-reset limits are keyed on the email (lower-cased, trimmed) and on IP, so `Budi@Mail.com` and ` budi@mail.com` share one bucket.
 - [ ] **A15a (auto)** Given a password-reset request for an email that has no account, then the response and its timing match a request for a real account ("Jika email terdaftar, link reset sudah dikirim."), so sign-up emails cannot be enumerated.
 - [x] **A16 (auto)** Responses carry: `Strict-Transport-Security` (production), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` (customer booking/payment pages: `no-referrer`), and `frame-ancestors 'none'` (CSP) or `X-Frame-Options: DENY`. Session cookies are `Secure`, `HttpOnly`, `SameSite=Lax`.
@@ -100,7 +101,7 @@ Tags: **(auto)** = automated test in CI · **(ops)** = verified by a rehearsal o
 
 Media rules follow ADR-0015 (accepted); if it changes limits or formats, ADR-0015 wins over the numbers below.
 
-- [x] **A19 (auto)** Uploaded files are stored under `orgs/{organization_id}/…` with random (UUID) file names; the original file name is never used as the path.
+- [x] **A19 (auto)** Uploaded files are stored under `org/{organization public_id}/…` (ADR-0015) with random (UUID) file names; the original file name is never used as the path.
 - [ ] **A20 (auto)** Payment evidence is stored on a private disk. Given Org A's owner, when they open evidence for their own booking, then it is served (stream or temporary signed URL, TTL ≤ 5 min) after a policy check; given Org B's owner or an anonymous user with the storage path or an expired URL, then they get 403/404.
 - [ ] **A21 (auto)** Given a customer, when they open their own evidence via their booking access token (ADR-0017), then it is served; with another booking's token, it is not.
 - [x] **A22 (auto)** Uploads are validated server-side by detected MIME type (not extension) and size (evidence: JPEG/PNG/WebP/HEIC ≤ 5 MB per F-006); public trip photos are re-encoded so EXIF metadata (incl. GPS) is stripped.
@@ -265,11 +266,27 @@ Primitives are exercised by a test-only resource (`tests/Fixtures/Tenancy/ProbeN
 - **A18 / A18a** — CI is configured; tick after the first green run on GitHub. Gitleaks did not run locally.
 - **A20 / A21** — private disk and ≤ 5-minute signed URLs are built and tested; the policy/token check that issues them comes with payment evidence (F-006).
 
-**Deviations, recorded for review:**
+- **A10 / A11** — audit writer and system actor are built; each audited action ticks with its owning feature.
+- **A14b** — the form-side display of the rate-limit message (F-001).
 
-- **A19 path prefix** follows ADR-0015 (`org/{organization public_id}/…`) rather than `orgs/{organization_id}/…`, as this spec says ADR-0015 wins. `organizations.public_id` (UUID) was added for this.
-- **A14 for Inertia forms:** a limit hit on an Inertia form submit redirects back with the message as a `rate_limit` validation error and the typed input kept (passwords never flashed). JSON clients get a literal 429 with the message; other requests the Bahasa 429 page. A bare 429 would make Inertia replace the form with an error modal and lose the input.
-- **Two-connection concurrency helper** (Data & rules) is deferred to F-005, which owns the last-seat test and the tables it locks.
+**Decisions taken while building:**
+
+- **A19 path prefix** follows ADR-0015 (`org/{organization public_id}/…`); `organizations.public_id` (UUID) was added for it. Criterion reworded.
+- **A14** reworded to redirect-with-error for Inertia forms, 429 for JSON and plain requests (approved 2026-10-17).
+- **Two-connection concurrency helper** (Data & rules) moves to F-005, which owns the last-seat test and the tables it locks (noted in F-005).
+- **Scope-bypass guard** also covers the raw query builder (`DB::table`, `DB::select`, …) in `app/` and `routes/`; only the three tenancy mechanism files are exempt.
+- **Non-numeric ids** are a 404 in URLs (trait route binding) and a 422 in payloads, never a PostgreSQL 500. Scoped child bindings on a non-tenant parent still need checking when the first one is added.
+
+**Review follow-ups (2026-10-17 review, not yet done):**
+
+- [ ] **R1** Empty phone/email collapses everyone into one rate-limit bucket (`booking-phone:`); return `Limit::none()` for an empty key (the IP limit still applies) and fail loudly if `evidence-upload` has no `token` route parameter. — before F-005.
+- [ ] **R2** The local `private` disk's `serve => true` also registers a signed `PUT /storage/{path}` upload route; before A20, stream evidence from an authorised controller (`serve => false`) or ban `temporaryUploadUrl()` with a guard test. — F-006.
+- [ ] **R3** Cap pixel dimensions for public photos (`dimensions:max_width,max_height` or a `getimagesize` check) before GD decodes them. — F-001/F-003 photo upload.
+- [ ] **R4** `AuditLog` should throw when the subject's organization differs from the current one (the trait silently overrides it), and resolve a `User` subject through its membership so `auth.password_reset` works for a guest. — F-001 (reset flow).
+- [ ] **R5** Query-builder updates (`Model::whereKey()->update(['organization_id' => …])`) skip the trait's `updating` guard; add a trigger or guard test. — slice C.
+- [ ] **R6** `DatabaseSeeder` uses `WithoutModelEvents`, which disables the tenancy and audit hooks; drop it when seeders are written.
+- [ ] **R7** Inertia visits that hit 409/419/429 HTML pages show them in Inertia's error modal; add an Inertia-aware renderer with F-001.
+- [ ] **R8** Rate limits use `$request->ip()`; configure trusted proxies with hosting (C2).
 
 ## Readiness
 
@@ -297,3 +314,4 @@ Q2–Q5 have recommended defaults (most are captured in ADR-0016 and ADR-0018). 
 - 2026-10-17 — ADR-0014 to ADR-0018 accepted; Q2, Q3, Q4, Q5 and Q8 closed
 - 2026-10-17 — merged with admin panel (F-010–F-015, ADR-0011): admin panel out of F-009 scope, A8a added, `platform_admin` audit actor, Q6 superseded; branch ADRs renumbered 0012–0019
 - 2026-10-17 — slice A built (builder): tenancy primitives, guards and harness, audit events, rate limiters, security headers, Bahasa error pages, media primitives, `.env.example` guard, JSON logs, CI. A1–A4, A6–A8, A10–A17, A18b, A19, A22–A24 ticked; A5, A8a, A9, A15a, A18, A18a, A20, A21 wait on the features named above. ADR-0020, ADR-0021 added. Status → `in-progress`
+- 2026-10-17 — review fixes: exception and SQL-binding redaction in logs (A24), raw-query coverage in the bypass guard (A8), non-numeric ids → 404/422, `OrganizationPolicy`, Bahasa copy moved to `lang/id` with Indonesian validation/auth/password messages and `id` locale defaults. A14 reworded and split (A14b → F-001); A10/A11 unticked until their owning features audit; A19 reworded to ADR-0015. Review follow-ups R1–R8 recorded

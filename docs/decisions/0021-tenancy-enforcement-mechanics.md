@@ -28,9 +28,12 @@ seller.
   models are already scoped and another seller's id is a 404.
 - **Policies extend `OrganizationOwnedPolicy`** and deny with 404 (`denyAsNotFound`), a second layer behind the scope.
 - **Payload ids** are validated with `ExistsInCurrentOrganization`, never a bare `exists:` rule.
-- **Bypassing the scope** (`acrossOrganizations()`, `withoutGlobalScope(s)`) is allowed only in files listed in
-  `config/rakyt.php → cross_organization_allowlist` (system jobs) or under `app/Admin/Queries` (ADR-0011). A test
-  scans `app/` and fails on any other use.
+- **Bypassing the scope** (`acrossOrganizations()`, `withoutGlobalScope(s)`) and the raw query builder (`DB::table`,
+  `DB::select`, …, which never applies the scope) are allowed only in files listed in
+  `config/rakyt.php → cross_organization_allowlist` (system jobs), under `app/Admin/Queries` (ADR-0011), or in the
+  three tenancy mechanism files. A test scans `app/` and `routes/` and fails on any other use.
+- **The `Organization` model** is not scoped (it is the tenant); `OrganizationPolicy` allows only the current
+  organization and answers others with 404. Non-numeric ids in URLs are a 404, in payloads a 422.
 - **Guards in CI:** a schema test (every table has a NOT NULL, indexed, FK'd `organization_id` unless allowlisted) and
   a model test (every such model uses the trait, has a policy and does not make `organization_id` fillable).
 - **Audit events** are written through `App\Audit\AuditLog` inside the change's transaction (it throws otherwise); a
