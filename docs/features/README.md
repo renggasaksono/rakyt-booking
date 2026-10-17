@@ -18,13 +18,21 @@ Status flow: `draft` → `ready` → `in-progress` → `done` (or `parked`). Kee
 | [F-007](F-007-seller-dashboard-and-bookings.md) | Seller dashboard ("Hari ini") & booking list | P0 | draft | MVP wk 2–4 |
 | [F-008](F-008-whatsapp-handoff.md) | WhatsApp contact & prefilled messages | P0 | draft | MVP wk 4 |
 | [F-009](F-009-tenancy-security-operations.md) | Tenancy, security & operations baseline | P0 | draft | MVP wk 2–6 |
+| [F-010](F-010-admin-access-control.md) | Admin authentication & access control | P0 | draft | MVP wk 4 |
+| [F-011](F-011-admin-overview-dashboard.md) | Admin overview dashboard | P0 | draft | MVP wk 4 |
+| [F-012](F-012-admin-seller-directory.md) | Admin seller directory & organization details | P0 | draft | MVP wk 4 |
+| [F-013](F-013-admin-booking-search.md) | Admin cross-seller booking search & details | P0 | draft | MVP wk 4 |
+| [F-014](F-014-seller-suspension.md) | Seller account suspension & reactivation | P0 | draft | MVP wk 4 |
+| [F-015](F-015-admin-audit-log.md) | Audit logging for admin actions | P0 | draft | MVP wk 4 |
 
-Next free ID: **F-010**
+F-010–F-015 form the internal admin panel for the sole platform admin during MVP/pilot (ADR-0011).
+
+Next free ID: **F-016**
 
 ## Backlog (P1 — not specced yet)
 
 Recurring departure templates · CSV export · automated notifications & reminders · deposit / remaining balance ·
 promo codes, add-ons, package options · staff accounts & permissions · seller-owned payment-provider integrations ·
-custom domains & Rakyt-branding removal.
+custom domains & Rakyt-branding removal · admin system-health view (failed jobs, recent errors — use hosting/error-tracking tools from F-009 until then).
 
 Write a spec only when the item moves to **Next** on the [roadmap](../roadmaps/README.md).
