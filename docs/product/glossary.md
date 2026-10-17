@@ -37,7 +37,7 @@ Source of UI wording: [design mockup](../design/README.md).
 | booking | pesanan | A customer's reservation on a departure. |
 | booking reference | kode pesanan | Human-readable ID, e.g. `RKB-1024-0142`. Display only — never grants access. |
 | booking access token | — (in link) | Unguessable token in the customer's booking/payment link ([ADR-0016](../decisions/0016-customer-booking-access-token.md)). |
-| seat hold | kursi ditahan | Seats reserved for an unpaid booking until the hold expires. |
+| seat hold | kursi ditahan | Seats reserved for an unpaid booking for 2 hours; uploading payment evidence stops the clock until the seller reviews it (ADR-0006). |
 | payment record | pembayaran | Amount due/paid, evidence, verification for a booking. |
 | payment evidence | bukti transfer | Photo/screenshot uploaded by the customer. |
 | payment instructions | instruksi pembayaran, rekening | Seller's bank / e-wallet / QRIS details shown to customers. |

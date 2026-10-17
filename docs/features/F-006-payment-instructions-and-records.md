@@ -35,7 +35,7 @@ Customers need to know exactly where to pay; sellers need to see who has paid. R
 ## Open questions
 
 - [ ] Map blueprint booking statuses (pending/confirmed/cancelled/completed) to payment statuses (awaiting/needs review/paid/rejected). Proposal: booking.status + payment_record.status as two fields.
-- [ ] After `rejected`, can the customer upload again within the hold?
+- [ ] After `rejected`, can the customer upload again, and does the 2-hour clock restart or resume? (Upload stops the clock while under review — ADR-0006.)
 - [ ] DP 50% appears in mockup 1e/2f — P0 or P1?
 
 ## Changelog

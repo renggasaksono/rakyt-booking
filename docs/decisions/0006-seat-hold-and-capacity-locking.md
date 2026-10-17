@@ -1,7 +1,7 @@
 ---
 id: 0006
 title: Seat holds with automatic expiry; transactional capacity
-status: proposed
+status: accepted
 date: 2026-10-17
 deciders: [Rengga]
 related: [F-005, F-006]
@@ -17,16 +17,23 @@ Blueprint §4 "Capacity and booking reliability": prevent overbooking; if unpaid
 
 - Creating a booking takes seats inside a DB transaction with a row lock on the departure (`SELECT … FOR UPDATE`) or an atomic conditional update (`seats_taken + n <= capacity`).
 - An unpaid booking holds its seats until `hold_expires_at`. A scheduled job releases expired holds (status → cancelled/expired) and writes an audit event.
-- Uploading payment evidence before expiry **[open: does it extend/freeze the hold?]**.
-- Seats count as taken when held or paid. Viewing a page never holds seats.
+- **Hold length: 2 hours** from booking creation, fixed for every seller in the MVP (not configurable). `hold_expires_at = created_at + 2 h`.
+- **Uploading payment evidence before expiry stops the clock.** The booking moves to `needs_review` and its seats stay held with no expiry until the seller verifies (→ `paid`) or rejects it. In this phase the seller is responsible for reviewing promptly; Rakyt does not auto-release a booking under review.
+- Evidence cannot be uploaded after the hold has expired (the booking is already cancelled).
+- **Sellers cannot extend a hold manually.**
+- Seats count as taken when held (incl. under review) or paid. Viewing a page never holds seats.
 
-## To confirm (why this is `proposed`)
+## Decided 2026-10-17
 
-1. Hold length — 2 hours? Configurable per seller?
-2. Does uploading proof stop the clock until the seller reviews?
-3. Should the seller be able to extend a hold manually?
+1. Hold length: 2 hours, not configurable in the MVP.
+2. Uploading proof stops the clock until the seller reviews it.
+3. No manual hold extension by the seller.
+
+Still open in F-006: what happens to the hold after the seller rejects evidence (re-upload allowed? clock restarts?).
 
 ## Consequences
 
 - Good: no overbooking; predictable for customers.
 - Costs: scheduler must run reliably in production; concurrency tests required.
+- Costs: a seller who never reviews evidence keeps those seats blocked indefinitely; the dashboard (F-007) must surface bookings waiting for review.
+- Follow-ups: revisit configurable hold length and a review deadline after the pilot.

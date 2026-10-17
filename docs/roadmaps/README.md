@@ -32,7 +32,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
-| Seat hold length; does proof upload pause the hold; can the seller extend it | 2 h proposed; rest open — see ADR | [ADR-0006](../decisions/0006-seat-hold-and-capacity-locking.md) · F-005 | **Blocking** for F-005 |
 | Prada brand shade D vs C | see ADR | [ADR-0008](../decisions/0008-brand-tokens-and-cta-rule.md) | Before UI build (wk 2) |
 
 ### Week 1 — choices outside the specs
@@ -70,7 +69,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | SSR/caching for link previews (OG tags); Rakyt branding placement on free plan | [F-002](../features/F-002-public-booking-page.md#open-questions) |
 | Accepted date request → public or private departure; price on accept | [F-004](../features/F-004-request-a-date.md#open-questions) |
 | Booking reference format (`RKB-MMDD-NNNN`: departure or booking date) | [F-005](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
-| Booking vs payment status model; re-upload after rejection; DP 50% in P0 or P1 | [F-006](../features/F-006-payment-instructions-and-records.md#open-questions) |
+| Booking vs payment status model; re-upload and hold clock after rejection; DP 50% in P0 or P1 | [F-006](../features/F-006-payment-instructions-and-records.md#open-questions) |
 | Mobile dashboard mockup; manual booking entry; Rakyt support/admin view | [F-007](../features/F-007-seller-dashboard-and-bookings.md#open-questions) |
 
 ### Missing mockups

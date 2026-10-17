@@ -15,7 +15,7 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0003](0003-seller-direct-payments.md) | Seller-direct payments; Rakyt never holds funds | accepted | 2026-10-15 |
 | [0004](0004-organization-scoped-multi-tenancy.md) | Single database, organization-scoped multi-tenancy | accepted | 2026-10-15 |
 | [0005](0005-trip-and-departure-domain-model.md) | Trip (offering) vs departure (bookable occurrence) | accepted | 2026-10-15 |
-| [0006](0006-seat-hold-and-capacity-locking.md) | Seat holds with automatic expiry; transactional capacity | proposed (hold length) | 2026-10-17 |
+| [0006](0006-seat-hold-and-capacity-locking.md) | Seat holds with automatic expiry; transactional capacity | accepted | 2026-10-17 |
 | [0007](0007-ui-language-bahasa-indonesia.md) | UI copy in Bahasa Indonesia; code & docs in English | accepted | 2026-10-17 |
 | [0008](0008-brand-tokens-and-cta-rule.md) | Rakyt Sogan tokens, status set, one-gold-CTA rule | proposed (Prada shade) | 2026-10-17 |
 | [0009](0009-whatsapp-otp-authentication.md) | WhatsApp OTP sign-in for sellers | rejected (replaced by 0011) | 2026-10-17 |
