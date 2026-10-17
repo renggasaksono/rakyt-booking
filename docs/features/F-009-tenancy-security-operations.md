@@ -1,11 +1,11 @@
 ---
 id: F-009
 title: Tenancy, security & operations baseline
-status: draft
+status: ready
 priority: P0
 roadmap: mvp-weeks-2-6
 mockups: []
-decisions: ["0002", "0004", "0006"]
+decisions: ["0002", "0003", "0004", "0006", "0007", "0011", "0012", "0013", "0014", "0015", "0016", "0017"]
 updated: 2026-10-17
 ---
 
@@ -13,26 +13,249 @@ updated: 2026-10-17
 
 ## Problem
 
-Cross-seller data exposure or overbooking would end trust in the product. Blueprint lists these as launch blockers.
+Cross-seller data exposure or overbooking would end trust in the product; blueprint §4 and §9 treat both as
+launch-blocking. A small team with a low ops budget also needs to know, without watching dashboards, when the app,
+the scheduler or the backups stop working, and must be able to restore data after a mistake or outage.
+The Pilot-go gate (end of week 4) requires "no known overbooking or cross-tenant leaks; backup restore tested".
 
 ## Scope
 
-**In:** organization scoping + policies, cross-tenant test suite, audit events, account recovery, automated backups + **tested restore**, error reporting, structured logs, uptime checks, secrets management, rate limiting, private media.
+F-009 is cross-cutting. It ships the **primitives and guardrails** that every other feature uses, then the
+**operations** needed before real customers arrive. It is delivered in three slices:
+
+| Slice | When | Delivers |
+|---|---|---|
+| **A — Tenancy & app security primitives** | Week 2, before any other seller-owned model | Org scoping, policies pattern, cross-tenant test harness, schema guard, audit events, rate limiting, private media, security headers, error pages, secrets hygiene, structured logs |
+| **B — Operations before pilot** | By end of week 4 (Pilot-go gate) | Error tracking, uptime checks, scheduler/queue heartbeat, daily backups + rehearsed restore, account-recovery runbook |
+| **C — Hardening** | Week 6 | Cross-tenant coverage audit across all P0 resources, second restore rehearsal, security checklist pass |
+
+**In:**
+- Organization scoping for every seller-owned record (ADR-0004): `organization_id` column, global scope, auto-fill, immutable after create.
+- Server-side authorization via Laravel policies; current organization resolved from the authenticated membership, never from request input.
+- Reusable cross-tenant test harness + a schema/model guard test that fails when a new table or model is not tenant-scoped.
+- `audit_events` table, writer service and the P0 list of audited actions (see Data & rules).
+- Rate limiting for public and auth endpoints (defaults below).
+- Media storage: organization-prefixed paths; public disk for published trip photos; private disk for payment evidence served only after an authorization check.
+- Security baseline: HTTPS only, secure cookies, CSRF (framework default), security headers, dependency audit in CI, secret scanning in CI.
+- Structured logs with request ID and tenant context, with PII redaction.
+- Error tracking, uptime checks, scheduler and queue heartbeats with alerting.
+- Daily automated DB backups to off-host storage, a written restore runbook, and a rehearsed restore.
+- Account recovery (ADR-0017): session revocation, the 24-hour block on changing payment instructions, audit, and a staff-assisted recovery runbook for sellers who lost access to their email. The self-serve password-reset screens are part of F-001 (ADR-0011); F-009 sets the security rules they must meet.
+- Bahasa Indonesia error pages (404, 419, 429, 500, 503), phone-width first.
+- `.env.example` complete; no secrets in git.
+
+**Out (explicitly):**
+- Rakyt staff / support admin UI and any in-app cross-tenant "super admin" bypass (tracked as an open question in F-007).
+- Seller-visible audit log / activity history UI (data is captured now; UI later if pilots ask).
+- Staff accounts and roles beyond `owner` (P1). The policy layer must not assume roles exist beyond owner.
+- Organization switching for users with several organizations (P1+; see Data & rules).
+- Self-serve account or organization deletion, data export, formal PDP-law compliance programme (see Q9).
+- SSO, 2FA, WhatsApp sign-in codes (ADR-0009 rejected), WAF, DDoS protection beyond the host/CDN defaults.
+- Microservices, Kubernetes, log aggregation stacks, APM/tracing (ADR-0002 "not now").
+
+## User stories
+
+- As a seller, I want certainty that no other operator can see or change my trips, bookings, customers or payment proofs, so that I can trust Rakyt with my business.
+- As a customer, I want my name, phone number and transfer proof to be visible only to the operator I booked with, so that my data is not exposed.
+- As a seller who lost access to my sign-in, I want a clear way to get my account back without a stranger being able to take it over, so that I don't lose my bookings or have my bank details changed.
+- As the Rakyt operator (founder), I want to be alerted when the app, the scheduler or the backups fail, and to be able to restore yesterday's data, so that a fault doesn't silently become overbooking or data loss.
+- As a builder, I want tenancy and audit primitives that make the safe path the default, so that a forgotten scope is caught by tests, not by a seller.
 
 ## Acceptance criteria
 
-- [ ] Cross-tenant tests for trips, departures, bookings, payment records, media.
-- [ ] Audit events for booking status, price, capacity and payment verification changes (who, what, before/after, when).
-- [ ] Daily automated DB backups; restore rehearsed and documented in `docs/` before pilot.
-- [ ] Error tracking and uptime monitoring live before pilot.
-- [ ] No secrets in git; `.env.example` complete.
-- [ ] Scheduler (hold expiry, deadline closing) monitored — alert if it stops.
+Tags: **(auto)** = automated test in CI · **(ops)** = verified by a rehearsal or check, with evidence (date, who, result) recorded in `docs/operations/`.
+
+### Slice A — Tenancy primitives
+
+- [ ] **A1 (auto)** Given a model uses the organization-scoping trait, when Org A's owner queries it (index, show, count, search), then only rows with Org A's `organization_id` are returned; a seller with zero records sees an empty result, never another org's rows.
+- [ ] **A2 (auto)** Given Org A's owner is signed in, when they request show/update/delete/custom actions for a record belonging to Org B by ID in the URL, then the response is **404** and the record is unchanged in the database.
+- [ ] **A3 (auto)** Given Org A's owner submits a form whose payload references an Org B record (e.g. `departure_id`, `trip_id`, `booking_id`), when the request is processed, then it fails validation (422) and nothing is written.
+- [ ] **A4 (auto)** Given a seller-owned record is created through the app, when `organization_id` is omitted, then it is filled from the current organization; when a request tries to set or change `organization_id` (mass assignment or update), then the value is ignored or rejected and the stored value is unchanged.
+- [ ] **A5 (auto)** Given a public (unauthenticated) request for `rakyt.id/<slug-of-A>/…` that names a trip, departure or booking ID belonging to Org B, or an unpublished/draft trip of Org A, then the response is 404.
+- [ ] **A6 (auto) Schema guard:** Given the full migration set, when the guard test runs, then every table has a non-null, indexed, foreign-keyed `organization_id`, except tables on an explicit allowlist in the test (e.g. `users`, `organizations`, `sessions`, `jobs`, `failed_jobs`, `cache`, `migrations`, `password_reset_tokens`, framework tables). Adding a table without either is a failing test.
+- [ ] **A7 (auto) Model guard:** every Eloquent model whose table has `organization_id` uses the scoping trait and has a registered policy; otherwise the test fails.
+- [ ] **A8 (auto)** Given a queued job or scheduled command acts on seller data, when it runs without a signed-in user, then it either (a) receives an explicit `organization_id` and scopes to it, or (b) is on a reviewed allowlist of system jobs that deliberately query across organizations (hold expiry, deadline closing) and only touches the columns it needs. A test asserts the allowlist is exactly what is expected.
+- [ ] **A9 (auto) Harness:** a reusable cross-tenant test helper exists (two orgs, two owners, factories) that a feature test can call with a resource name and its routes to assert A2/A3. F-001, F-003, F-004, F-005, F-006, F-007 each use it for their resources.
+
+### Slice A — Audit events
+
+- [ ] **A10 (auto)** Given any action in the "Audited actions" table below, when it succeeds, then exactly one `audit_events` row is written **in the same DB transaction** as the change, with `organization_id`, actor (type + id), action, subject (type + id), `before` and `after` values of the changed fields, and `created_at` (UTC). If the change rolls back, no audit row exists.
+- [ ] **A11 (auto)** Given a system process changes data (hold expiry, deadline auto-close), then the audit row has actor type `system` and names the job.
+- [ ] **A12 (auto)** Given an existing audit event, when application code attempts to update or delete it, then the attempt throws; deleting the audited subject does not delete its audit events.
+- [ ] **A13 (auto)** Audit events are tenant-scoped like any other seller-owned record: Org A cannot read Org B's events (covered by A6/A7/A9).
+
+### Slice A — Abuse protection & app security
+
+- [ ] **A14 (auto)** Given the rate-limit defaults in Data & rules, when a client exceeds a limit, then the server responds 429 and the UI shows, in Bahasa Indonesia, "Terlalu banyak percobaan. Coba lagi dalam {n} menit." without losing what the user typed in the form.
+- [ ] **A15 (auto)** Customer limits keyed on phone number use the normalised E.164 number, so `0812…`, `+62812…` and `62812…` share one bucket. Seller sign-in and password-reset limits are keyed on the email (lower-cased, trimmed) and on IP, so `Budi@Mail.com` and ` budi@mail.com` share one bucket.
+- [ ] **A15a (auto)** Given a password-reset request for an email that has no account, then the response and its timing match a request for a real account ("Jika email terdaftar, link reset sudah dikirim."), so sign-up emails cannot be enumerated.
+- [ ] **A16 (auto)** Responses carry: `Strict-Transport-Security` (production), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` (customer booking/payment pages: `no-referrer`), and `frame-ancestors 'none'` (CSP) or `X-Frame-Options: DENY`. Session cookies are `Secure`, `HttpOnly`, `SameSite=Lax`.
+- [ ] **A17 (auto)** Given an expired CSRF token / session (419), a missing page (404), a rate limit (429), a server error (500) or maintenance (503), then the user sees a Bahasa Indonesia page that fits a 360 px wide screen without horizontal scroll, uses ink-outline buttons only (no gold CTA — nothing moves a booking forward), and never shows a stack trace.
+- [ ] **A18a (auto)** CI runs the full test suite against **PostgreSQL** (ADR-0012), the same major version as production — never SQLite — so row locks, `CHECK` constraints and concurrency tests behave as they do in production.
+- [ ] **A18b (auto)** Database `CHECK` constraints back up the application rules F-009 owns: `audit_events.actor_type IN ('user','customer','system','rakyt_staff')`, and `organization_members.role IN ('owner')` (widened when roles arrive in P1). A test inserts a bad value directly and expects the database to reject it. The capacity constraints owned by F-003/F-005 are listed under Data & rules.
+- [ ] **A18 (auto)** CI runs `composer audit` and `npm audit --audit-level=high` and a secret scanner (e.g. gitleaks) on every PR; a high-severity finding or a detected secret fails the build.
+
+### Slice A — Media
+
+Media rules follow ADR-0014 (proposed); if it changes limits or formats, ADR-0014 wins over the numbers below.
+
+- [ ] **A19 (auto)** Uploaded files are stored under `orgs/{organization_id}/…` with random (UUID) file names; the original file name is never used as the path.
+- [ ] **A20 (auto)** Payment evidence is stored on a private disk. Given Org A's owner, when they open evidence for their own booking, then it is served (stream or temporary signed URL, TTL ≤ 5 min) after a policy check; given Org B's owner or an anonymous user with the storage path or an expired URL, then they get 403/404.
+- [ ] **A21 (auto)** Given a customer, when they open their own evidence via their booking access token (ADR-0016), then it is served; with another booking's token, it is not.
+- [ ] **A22 (auto)** Uploads are validated server-side by detected MIME type (not extension) and size (evidence: JPEG/PNG/WebP/HEIC ≤ 5 MB per F-006); public trip photos are re-encoded so EXIF metadata (incl. GPS) is stripped.
+
+### Slice A — Secrets & logs
+
+- [ ] **A23 (auto)** `.env.example` lists every env variable the app reads (test compares `env()` keys used in `config/` against `.env.example`), with placeholder values only. `.env` is git-ignored.
+- [ ] **A24 (auto)** Logs are structured (JSON) and every entry from a web request carries `request_id`, `user_id` and `organization_id` when known. A test asserts that passwords, password-reset tokens, session and booking access tokens and signed URLs are never logged, and phone numbers are masked (e.g. `+62812****789`).
+
+### Slice B — Operations before pilot (end of week 4)
+
+Operations follow ADR-0015.
+
+- [ ] **B1 (ops)** An unhandled exception in production appears in the error tracker within 5 minutes with environment, release and request ID, with PII scrubbing on (no request bodies, cookies or phone numbers), and triggers an alert to the configured channel (Q4).
+- [ ] **B2 (ops)** An external uptime monitor checks the health endpoint and one public seller page every ≤ 5 minutes; two consecutive failures trigger an alert. Verified by taking the app down on staging.
+- [ ] **B3 (auto + ops) Scheduler heartbeat:** the scheduler writes a heartbeat every minute; the health endpoint returns 503 when the heartbeat is older than 5 minutes. Given the scheduler is stopped, then an alert fires within 10 minutes (verified once on staging). Same for the queue worker if any P0 feature uses queued jobs.
+- [ ] **B4 (auto)** Scheduled tasks that release holds or close departures run with "one server" and "without overlapping" protection and are idempotent: running the same task twice, or two instances at once, produces the same end state and one audit event per change.
+- [ ] **B5 (auto)** Booking correctness does not depend on the scheduler: with the scheduler stopped, a booking on a departure past its booking deadline is still rejected server-side (F-005 rule), and capacity is still enforced inside the booking transaction (ADR-0006).
+- [ ] **B6 (ops)** The health endpoint reports only `ok` / `degraded` per check (DB, cache, scheduler, queue) — no versions, hostnames or error details.
+- [ ] **B7 (ops) Backups:** a full, consistent DB backup runs daily (target 02:00 WIB) to S3-compatible storage at a **different provider or account** from the app server, encrypted at rest, with the retention set in Q3. A failed backup, or no successful backup for 26 hours, raises an alert.
+- [ ] **B8 (ops) Restore rehearsal:** following only the written runbook in `docs/operations/restore.md`, someone restores the latest backup into a fresh database, points a staging app at it, signs in as a test seller and opens a known booking and its payment evidence. Time taken and backup age are recorded. Done once before the Pilot-go gate and again in week 6.
+- [ ] **B9 (ops)** Media bucket protection is in place per Q3 (versioning or a scheduled copy) and covered by the runbook.
+- [ ] **B10 (ops) Staff-assisted recovery runbook** `docs/operations/account-recovery.md` exists for sellers who lost access to their email. It states the accepted proof of identity (Q5), who may perform recovery, and that recovery runs only through the artisan command in B11c.
+- [ ] **B11 (auto) Self-serve password reset (ADR-0011, ADR-0017):** Given a seller requests a reset, then a single-use reset link is emailed that expires within 60 minutes. Requesting a new link invalidates the old one, and a used or expired link shows "Link sudah tidak berlaku. Minta link baru." After a successful reset:
+  - (a) every other session of that user is revoked; the session that completed the reset stays signed in;
+  - (b) changes to payment instructions are blocked for 24 hours. The server rejects them and the UI shows "Demi keamanan, rekening baru bisa diubah {tanggal, jam}.";
+  - (c) an `auth.password_reset` audit event is written.
+- [ ] **B11b (auto)** Given a signed-in seller changes their password, then other sessions are revoked and `auth.password_changed` is audited. The 24-hour payment-instruction block applies only to resets and email changes, not to a normal password change by a signed-in seller who knows the current password.
+- [ ] **B11c (auto) Staff-assisted recovery:** Given Rakyt staff run the recovery artisan command (never ad-hoc SQL) to set a new verified email for the account, then all sessions are revoked, a reset link goes to the new email, payment-instruction changes are blocked for 24 hours, and `auth.account_recovered` is audited with actor `rakyt_staff:<name>`.
+- [ ] **B12 (auto) Email change:** Given a signed-in seller changes their sign-in email, then the change takes effect only after they click a verification link sent to the new address (the old address is told the change was requested). On verification, other sessions are revoked, payment-instruction changes are blocked for 24 hours, and `auth.email_changed` is audited with the old and new email.
+
+### Slice C — Hardening (week 6)
+
+- [ ] **C1** A review lists every seller-owned resource and route shipped in P0 (at least: organizations profile, organization members, trips, trip media, departures, bookings, date requests, payment instructions, payment records, payment evidence, audit events) and confirms each has a policy and a passing cross-tenant test (A2/A3, plus A5 for public routes). Gaps are launch-blocking.
+- [ ] **C2** Production config check passes: `APP_ENV=production`, `APP_DEBUG=false`, HTTPS enforced, trusted proxies configured so rate limits see real client IPs.
+- [ ] **C3** Second restore rehearsal (B8) done and recorded.
+
+## Data & rules
+
+### Tenancy model (ADR-0004)
+
+- One database. Every seller-owned table has `organization_id` (FK, not null, indexed). Composite indexes start with `organization_id` where lists are filtered by org.
+- **Current organization** is resolved server-side from the signed-in user's `organization_members` row. It is never taken from a route parameter, query string, body or header.
+- P0 assumes **one membership per user** (F-001 creates owner + organization atomically). The schema allows many; if a user somehow has more than one, the app refuses to guess and shows an error rather than picking one. Organization switching is out of scope.
+- Cross-tenant access returns **404, not 403**, so IDs of other sellers' records are not confirmed to exist.
+- Route model binding for nested routes is scoped (child must belong to parent, parent must belong to current org).
+- Validation `exists` rules on IDs are org-scoped.
+- Cache keys and queued-job payloads that touch seller data include `organization_id`.
+- System jobs that intentionally cross organizations (hold expiry, deadline auto-close) are the **only** code allowed to remove the global scope, are listed in one allowlist, and are covered by A8.
+- No in-app super-admin bypass in P0. Production data fixes by Rakyt staff go through artisan commands that write audit events (actor `rakyt_staff:<name>`).
+- **Customer access** (no account, ADR-0016): a customer reaches their booking/payment page through an **unguessable access token** (at least 128 random bits) in the URL, never through the human-readable booking reference alone. `RKB-MMDD-NNNN` can be guessed and would expose other customers' names and phone numbers. (Built in F-005/F-006.)
+
+### Owner organization tables (built in slice A)
+
+Slice A creates the minimal `organizations` (id, timestamps, plus whatever F-001 adds) and `organization_members` (`organization_id`, `user_id`, `role` = `owner`) tables, the scoping trait, the current-organization resolver and the test harness. F-001 adds profile fields and the sign-up flow on top. Agree this split with F-001 before building.
+
+### `audit_events`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | bigint / ulid | |
+| `organization_id` | FK, not null | Tenant scope |
+| `actor_type` | string + `CHECK` | `user`, `customer`, `system`, `rakyt_staff` |
+| `actor_id` | nullable | User ID, booking ID for customer, job name for system, staff name |
+| `action` | string | Dot-namespaced, e.g. `departure.capacity_changed` |
+| `subject_type`, `subject_id` | string, id | No FK cascade — events outlive their subject |
+| `before`, `after` | `jsonb` | Only the changed fields. Money as integer rupiah. Never store password hashes or tokens |
+| `ip` | nullable string | For user/customer actions |
+| `created_at` | timestamp (UTC) | No `updated_at`; append-only |
+
+**Audited actions (P0):**
+
+| Area | Actions |
+|---|---|
+| Bookings | `booking.created`, `booking.status_changed`, `booking.hold_expired` (system) |
+| Payments | `payment.evidence_uploaded`, `payment.verified`, `payment.rejected`, `payment_record.amount_changed` |
+| Departures | `departure.created`, `departure.price_changed`, `departure.capacity_changed`, `departure.status_changed` (incl. auto-close by deadline, system), `departure.deleted` |
+| Trips | `trip.base_price_changed`, `trip.published`, `trip.unpublished` |
+| Payment instructions | `payment_instructions.changed` (bank / e-wallet / QRIS details, before/after) — high risk: a hijacked account could redirect customer payments |
+| Organization | `organization.slug_changed`, `organization.member_added`, `organization.member_removed` |
+| Auth | `auth.password_reset`, `auth.password_changed`, `auth.email_changed`, `auth.account_recovered` |
+
+Retention: kept indefinitely in P0. Not shown in seller UI in P0 (Q7).
+
+### Rate-limit defaults (config, tunable without deploy changes to code)
+
+| Endpoint | Key | Default |
+|---|---|---|
+| Seller sign-in attempts (ADR-0011) | email + IP | 5 per minute, then lockout per Laravel default |
+| Seller sign-in attempts | IP | 30 per 10 min |
+| Password-reset link request | email | 3 per 15 min |
+| Password-reset link request | IP | 20 per hour |
+| Sign-up | IP | 10 per hour |
+| Create booking / date request (public) | normalised phone | 5 per hour |
+| Create booking / date request (public) | IP | 30 per 10 min |
+| Upload payment evidence | booking token | 10 per hour |
+| Slug availability check | IP | 60 per min |
+
+Indonesian mobile carriers use carrier-grade NAT, so many customers share one IP. Per-IP limits are deliberately loose. The main key is the phone number or token for customers, and the email for sellers. All limits live in config.
+
+### Time
+
+- All timestamps are stored and compared in **UTC**; the scheduler runs in UTC.
+- Display and deadline calculations (e.g. "H-3, 23.59") use the organization's time zone (ADR-0013, proposed). Field and default are owned by F-001/F-003.
+
+### Logging & PII
+
+- Customer and seller phone numbers, names and bank details are personal data. Never in logs, error-tracker payloads or URLs other than the token-bearing customer link.
+- Log retention: 14 days on the host.
+
+### Backups & restore
+
+- DB: a consistent `pg_dump` daily; encrypted; stored off-host; retention per ADR-0015 / Q3.
+- Media: per Q3. Payment evidence is the only media that cannot be re-uploaded by the seller easily.
+- Runbook location: `docs/operations/restore.md` (created by the builder in slice B).
+
+### Concurrency / overbooking (what F-009 provides)
+
+- CI runs the test suite against **PostgreSQL** (ADR-0012), not SQLite, so row-lock and concurrency tests (ADR-0006, F-005 "two bookings for the last seat") mean something (A18a).
+- **`CHECK` constraints as the last line of defence** (the app still validates first). F-009 owns the audit and membership constraints (A18b). The capacity constraints are owned by F-003/F-005 and are listed here so reviewers check them: `trip_departures.capacity >= 0`; if a seat counter column exists, `seats_taken BETWEEN 0 AND capacity`; `bookings.participants >= 1`; money columns (`base_price`, `price_override`, amounts due/paid) `>= 0`. If seats are counted from bookings instead of a counter, the row lock in ADR-0006 is the guard and no counter constraint applies.
+- A test helper that runs two booking attempts on separate DB connections, used by F-005.
+- Scheduler failure never causes overbooking: capacity is enforced in the booking transaction and deadlines are checked at booking time (B5). A stalled scheduler can only cause *under*-booking (holds not released), which the heartbeat alert (B3) catches.
+
+### Edge cases
+
+- Seller with no trips/bookings yet: every list is empty; no "fallback" query ever drops the scope.
+- Seller tries another seller's ID in the URL, the payload, or a nested route (A2, A3, A5).
+- Customer guesses another booking reference (token required — Data & rules).
+- Two scheduler instances on two servers, or a slow run overlapping the next minute (B4).
+- Backup taken during writes (consistent snapshot); restore of a DB with holds already past expiry — the next scheduler run releases them and audits as `system`.
+- Session expires mid-form on a phone (419 page, A17); rate limit hit mid-form (A14 keeps input).
+- Signed evidence URL forwarded in WhatsApp: expires within 5 minutes (A20).
+- Referrer leakage of the customer token to `wa.me` or images: `no-referrer` on customer pages (A16).
+- Account takeover through a password reset, an email change or staff recovery: other sessions are revoked, payment-instruction changes are blocked for 24 hours, and the event is audited (B11–B12, ADR-0017).
+- Password reset requested for an email that isn't registered: same response as for a real account (A15a).
+- Reset link opened twice, or after a newer link was sent: rejected (B11).
+
+## Readiness
+
+Nothing blocks building. The database engine is decided (PostgreSQL, ADR-0012) and seller sign-in is email + password (ADR-0011), so all of slice A can start.
+Q2–Q5 have recommended defaults (most are captured in ADR-0015 and ADR-0017). They must be confirmed before slice B is closed at the Pilot-go gate (end of week 4), but they do not block building it. Q6–Q9 do not block anything.
 
 ## Open questions
 
-- [ ] Hosting target (managed vs VPS) and backup tooling.
-- [ ] Error tracking service.
+- [x] **Q1 Database engine.** Resolved 2026-10-17: **PostgreSQL** (ADR-0012, accepted). CI runs on PostgreSQL (A18a) and `CHECK` constraints back up key rules (A18b, Data & rules).
+- [ ] **Q2 Hosting target and backup storage** — Rengga. *Recommended (ADR-0015):* one VPS managed with Laravel Forge (or an equivalent managed Laravel host) in Singapore or Jakarta, with backups written to S3-compatible object storage at a different provider. The code stays host-agnostic, so this blocks only the closing of slice B.
+- [ ] **Q3 Backup policy (RPO / retention / media)** — Rengga. *Recommended (ADR-0015):* daily DB backup, keep 14 daily and 8 weekly; accept up to 24 hours of data loss during the pilot (bookings also exist in WhatsApp chats); use point-in-time recovery if the database is managed; turn on 30-day versioning for the media bucket. Revisit before public launch.
+- [ ] **Q4 Error tracker and alert channel** — Rengga. *Recommended (ADR-0015):* Sentry (free tier, official Laravel SDK, built-in PII scrubbing); alerts to the founder's email and phone push. Low-stakes and reversible, so the builder may go ahead with this if there is no answer.
+- [ ] **Q5 Staff-assisted recovery when the seller has lost their email: what proof is enough?** — Rengga. Self-serve reset, session revocation and the 24-hour block are settled in ADR-0017. Only the identity check for staff-assisted recovery is still open. *Recommended:* the founder verifies that (a) the requester writes from the WhatsApp number stored on the organization profile, (b) their KTP name matches the account-holder name in the payment instructions, and (c) they can name two recent booking references with amounts. Then the B11c command sets the new email. Why: a takeover lets an attacker swap the bank account and collect customers' transfers. This is needed for the runbook (B10), not for the code.
+- [ ] **Q6 Rakyt staff access to seller data in P0** — Rengga. *Recommended:* no in-app cross-tenant access; production DB access only for named people; fixes via audited artisan commands. A support view is a separate decision (F-007 open question).
+- [ ] **Q7 Should sellers see an audit/history trail in P0?** — Rengga. *Recommended:* no. Capture now, show later (e.g. booking history in F-007) if pilots ask.
+- [ ] **Q8 Time zones (WIB / WITA / WIT)**: tracked in ADR-0013 (proposed); F-001/F-003 own it. *Recommended:* an organization time-zone field, default `Asia/Jakarta`, with `Asia/Makassar` and `Asia/Jayapura` selectable; deadlines like "H-3 23.59" use it. Does not block F-009, which only requires "store in UTC".
+- [ ] **Q9 Privacy notice and Indonesia's PDP law (UU 27/2022)** — Rengga. *Recommended:* before pilot, publish a short privacy notice and terms (Bahasa), linked from sign-up and the booking form; handle deletion/access requests manually; get a formal review before public launch. Kept outside F-009 scope unless you want it here.
 
 ## Changelog
 
 - 2026-10-17 — created
+- 2026-10-17 — planner pass: split into slices A/B/C; testable Given/When/Then criteria for tenancy, audit, rate limits, media, logs, ops, backups and recovery; data rules (current-org resolution, 404 on cross-tenant, customer access token, audit schema and action list, rate-limit defaults, UTC); edge cases; resolved "error tracking service" as a non-blocking default (Q4); status stays `draft`, blocked only by Q1 (DB engine)
+- 2026-10-17 — after decisions: Q1 closed with PostgreSQL (ADR-0012); CI on PostgreSQL and `CHECK` constraints added (A18a, A18b). Recovery rewritten for email + password (ADR-0011, ADR-0017): self-serve reset link, revoke other sessions, 24-hour payment-instruction block on reset, email change or staff recovery (B11–B12). Sign-in and reset rate limits keyed by email + IP; customer limits stay phone-keyed. Added links to ADR-0013/0014/0015/0016; dropped ADR-0009. Status → `ready`

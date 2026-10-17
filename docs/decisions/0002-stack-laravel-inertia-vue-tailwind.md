@@ -24,6 +24,8 @@ Blueprint §2 and §4. We need a modern, mobile-first UI and app-like seller das
 
 **Database engine — PostgreSQL or MySQL.** The blueprint says both are adequate. Decide before the first migration and record it here (or in a superseding ADR). Consider what Herd/your host provides and team familiarity.
 
+**Resolved 2026-10-17:** PostgreSQL — see [ADR-0012](0012-database-postgresql.md).
+
 ## Consequences
 
 - Good: one codebase, shared auth/routing, fast iteration.
