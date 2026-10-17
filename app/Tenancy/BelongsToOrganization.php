@@ -52,6 +52,23 @@ trait BelongsToOrganization
     }
 
     /**
+     * A non-numeric id in the URL is a 404, not a PostgreSQL type error (500).
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     */
+    public function resolveRouteBinding($value, $field = null): ?Model
+    {
+        $field ??= $this->getRouteKeyName();
+
+        if ($field === $this->getKeyName() && $this->getKeyType() === 'int' && ! ctype_digit((string) $value)) {
+            return null;
+        }
+
+        return parent::resolveRouteBinding($value, $field);
+    }
+
+    /**
      * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo

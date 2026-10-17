@@ -8,11 +8,12 @@
 return [
 
     /*
-    | Code that may query seller data across organizations without a signed-in
-    | seller (F-009 A8). Only reviewed system jobs belong here: hold expiry and
-    | deadline auto-close (F-005, F-003). Admin read queries live under
-    | app/Admin/Queries instead (A8a, ADR-0011). A test asserts this list is
-    | exactly the set of files that bypass the organization scope.
+    | Code that may query seller data without the organization scope (F-009
+    | A8): Eloquent bypasses (acrossOrganizations, withoutGlobalScope) and raw
+    | query builder calls (DB::table, DB::select, …). Only reviewed system jobs
+    | belong here: hold expiry and deadline auto-close (F-005, F-003). Admin
+    | read queries live under app/Admin/Queries instead (A8a, ADR-0011). A test
+    | scans app/ and routes/ and asserts this list is exactly what it finds.
     */
     'cross_organization_allowlist' => [
         // e.g. 'app/Bookings/Jobs/ExpireSeatHolds.php',

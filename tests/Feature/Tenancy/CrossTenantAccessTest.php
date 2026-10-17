@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Tenancy;
 
+use App\Models\Organization;
 use App\Models\User;
 use App\Tenancy\CurrentOrganization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Tests\Fixtures\Tenancy\ProbeNote;
 use Tests\Fixtures\Tenancy\RegistersProbeNotes;
 use Tests\Support\InteractsWithTenants;
@@ -86,6 +88,32 @@ class CrossTenantAccessTest extends TestCase
         $this->actingAsTenant($a)
             ->postJson('/probe-notes', ['title' => 'Anak', 'related_note_id' => $own->id])
             ->assertCreated();
+    }
+
+    public function test_non_numeric_ids_are_404_in_urls_and_422_in_payloads(): void
+    {
+        [$a] = $this->createTenants();
+
+        $this->actingAsTenant($a)->getJson('/probe-notes/abc')->assertNotFound();
+        $this->actingAsTenant($a)->getJson('/probe-notes/1abc')->assertNotFound();
+
+        $this->actingAsTenant($a)
+            ->postJson('/probe-notes', ['title' => 'x', 'related_note_id' => 'abc'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('related_note_id');
+    }
+
+    public function test_another_organization_itself_is_404_through_its_policy(): void
+    {
+        [$a, $b] = $this->createTenants();
+        Route::middleware(['web', 'auth'])->get('/probe-org/{organization}', function (Organization $organization) {
+            Gate::authorize('view', $organization);
+
+            return ['id' => $organization->id];
+        });
+
+        $this->actingAsTenant($a)->getJson("/probe-org/{$a->id()}")->assertOk();
+        $this->actingAsTenant($a)->getJson("/probe-org/{$b->id()}")->assertNotFound();
     }
 
     public function test_guests_cannot_reach_seller_routes(): void

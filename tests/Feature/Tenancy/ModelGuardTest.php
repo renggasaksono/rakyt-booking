@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Tenancy;
 
+use App\Models\Organization;
 use App\Tenancy\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,6 +38,12 @@ class ModelGuardTest extends TestCase
         }
 
         $this->assertGreaterThan(0, $checked);
+    }
+
+    public function test_the_tenant_model_itself_has_a_policy(): void
+    {
+        // organizations has no organization_id, so the loop above skips it.
+        $this->assertNotNull(Gate::getPolicyFor(Organization::class));
     }
 
     /**

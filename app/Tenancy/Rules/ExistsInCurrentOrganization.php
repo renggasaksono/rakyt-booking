@@ -23,6 +23,8 @@ class ExistsInCurrentOrganization implements ValidationRule
 
         $exists = $organizationId !== null
             && is_scalar($value)
+            // Integer keys: reject non-numeric input before PostgreSQL does (it would be a 500).
+            && ($this->column !== 'id' || ctype_digit((string) $value))
             && DB::table($this->table)
                 ->where($this->column, $value)
                 ->where('organization_id', $organizationId)
