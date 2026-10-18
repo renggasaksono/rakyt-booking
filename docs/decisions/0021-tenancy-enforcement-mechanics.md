@@ -3,11 +3,13 @@ id: 0021
 title: How organization scoping is enforced in code
 status: accepted
 date: 2026-10-17
-deciders: [Rengga, builder agent]
+deciders: [Rengga]
 related: [ADR-0004, ADR-0011, F-009]
 ---
 
 # 0021. How organization scoping is enforced in code
+
+*Proposed by the builder agent on 2026-10-17; accepted by Rengga on 2026-10-18.*
 
 ## Context
 
@@ -28,16 +30,21 @@ seller.
   models are already scoped and another seller's id is a 404.
 - **Policies extend `OrganizationOwnedPolicy`** and deny with 404 (`denyAsNotFound`), a second layer behind the scope.
 - **Payload ids** are validated with `ExistsInCurrentOrganization`, never a bare `exists:` rule.
-- **Bypassing the scope** (`acrossOrganizations()`, `withoutGlobalScope(s)`) and the raw query builder (`DB::table`,
-  `DB::select`, …, which never applies the scope) are allowed only in files listed in
+- **Bulk writes** go through `TenantBuilder` (the trait's Eloquent builder): `insert`, `insertGetId`, `insertOrIgnore`,
+  `upsert` and `fillAndInsert*` get the same organization rule as the `creating` hook; `insertUsing` is refused;
+  updates, upserts and increments may never touch `organization_id`.
+- **Bypassing the scope** — `acrossOrganizations()`, `withoutGlobalScope(s)`, `newModelQuery()`,
+  `newQueryWithoutScope(s)`, `toBase()`, `getQuery()`, `getConnection()`, and any database access outside Eloquent
+  (`DB::` except transaction control, `app('db')`, `DatabaseManager`) — is allowed only in files listed in
   `config/rakyt.php → cross_organization_allowlist` (system jobs), under `app/Admin/Queries` (ADR-0011), or in the
-  three tenancy mechanism files. A test scans `app/` and `routes/` and fails on any other use.
+  four tenancy mechanism files. A test scans `app/` and `routes/` and fails on any other use.
 - **The `Organization` model** is not scoped (it is the tenant); `OrganizationPolicy` allows only the current
   organization and answers others with 404. Non-numeric ids in URLs are a 404, in payloads a 422.
 - **Guards in CI:** a schema test (every table has a NOT NULL, indexed, FK'd `organization_id` unless allowlisted) and
   a model test (every such model uses the trait, has a policy and does not make `organization_id` fillable).
 - **Audit events** are written through `App\Audit\AuditLog` inside the change's transaction (it throws otherwise); a
-  model guard and a PostgreSQL trigger make `audit_events` append-only.
+  model guard and PostgreSQL triggers (row-level UPDATE/DELETE, statement-level TRUNCATE) make `audit_events`
+  append-only.
 
 ## Consequences
 

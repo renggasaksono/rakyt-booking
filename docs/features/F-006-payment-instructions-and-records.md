@@ -38,6 +38,9 @@ Customers need to know exactly where to pay; sellers need to see who has paid. R
 - [ ] After `rejected`, can the customer upload again, and does the 2-hour clock restart or resume? (Upload stops the clock while under review — ADR-0006.)
 - [ ] DP 50% appears in mockup 1e/2f — P0 or P1?
 
+**F-009 hand-offs (2026-10-18):** payment evidence uses `UploadRules::paymentEvidence()`, `MediaPath` and the private disk via `PrivateMedia::temporaryUrl()` (≤ 5 min), issued only after the seller policy or the customer token check — that closes **F-009 A20/A21**. Before then, resolve **F-009 R2**: the local private disk's `serve => true` also registers a signed upload route; stream evidence from an authorised controller instead, or ban `temporaryUploadUrl()` with a guard test. `throttle:evidence-upload` needs the route parameter to be named `token` (**R1**).
+
 ## Changelog
 
 - 2026-10-17 — created
+- 2026-10-18 — F-009 slice A hand-offs noted (A20/A21, R1, R2)

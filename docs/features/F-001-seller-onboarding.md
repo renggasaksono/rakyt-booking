@@ -210,6 +210,7 @@ photo upload (C3); lost connection mid-step (C13); stale draft with past dates (
 - **F-006** — payment-method model. Onboarding (weeks 2–3) needs bank / e-wallet methods before F-006 is scheduled (week 4): the payment-method model and its form must be pulled forward into weeks 2–3.
 - **F-002** — public page renders the published trip and enforces "drafts never public".
 - **F-007** — dashboard landing after E3; Pengaturan nav entry that hosts sections A (Akun) and F (Profil usaha); the dashboard greeting uses `users.name`.
+- **F-009 hand-offs (2026-10-18)** — built and ready: `BelongsToOrganization`, `OrganizationOwnedPolicy`, `OrganizationPolicy`, `ExistsInCurrentOrganization`, the cross-tenant harness (`tests/Support/InteractsWithTenants`), `AuditLog`, the named limiters (`throttle:seller-login`, `password-reset`, `signup`, `slug-check`) and Bahasa validation messages in `lang/id`. F-001 owns: **F-009 A14b** (show the `rate_limit` error on the form, input kept), **A15a** (reset response identical for unknown emails), **R4** (`AuditLog` must resolve a `User` subject through its membership so `auth.password_reset` works for a guest; throw on organization mismatch), **R7** (Inertia-aware rendering of 409/419/429 instead of Inertia's error modal) and **R3** (pixel-dimension cap on photo uploads, shared with F-003). Do not re-add an unscoped `Organization::users()` relation (ADR-0021).
 - **Ops / F-009** — a transactional email provider (with SPF/DKIM on the sending domain) is needed before pilot for reset and verification emails; `log` mailer is enough to build.
 - **Legal** — "Syarat" and "Privasi" pages need content before pilot (A1 links); placeholder pages are fine for building.
 - **Design** — sign-up, sign-in, reset screens and Pengaturan → Akun / Profil usaha are not mocked (4a/4b show the rejected WhatsApp-code flow); build from tokens and the 4a/4b patterns.
@@ -240,3 +241,4 @@ None block building. The spec uses the recommended default for each; override an
 - 2026-10-17 — section A rewritten for email + password (ADR-0012, ADR-0009 rejected); WhatsApp number moved to step 1 as unverified contact; DB = PostgreSQL (ADR-0013); description optional (Q11); trip-type presets aligned with F-003; mockup 4a/4b divergence and time-budget recheck noted; status → `ready`
 - 2026-10-17 — Free-plan trip limit removed from P0 (ADR-0019): sign-up copy "Gratis untuk mulai.", D3 asserts no limit
 - 2026-10-17 — ADR-0014 accepted; Q8 closed
+- 2026-10-18 — F-009 slice A hand-offs listed under Dependencies (A14b, A15a, R3, R4, R7)

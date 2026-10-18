@@ -3,11 +3,13 @@ id: 0020
 title: App scaffold, module layout and tooling
 status: accepted
 date: 2026-10-17
-deciders: [Rengga, builder agent]
+deciders: [Rengga]
 related: [ADR-0002, ADR-0013, F-009]
 ---
 
 # 0020. App scaffold, module layout and tooling
+
+*Proposed by the builder agent on 2026-10-17; accepted by Rengga on 2026-10-18.*
 
 ## Context
 

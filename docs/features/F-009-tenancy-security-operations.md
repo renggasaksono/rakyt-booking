@@ -274,19 +274,24 @@ Primitives are exercised by a test-only resource (`tests/Fixtures/Tenancy/ProbeN
 - **A19 path prefix** follows ADR-0015 (`org/{organization public_id}/…`); `organizations.public_id` (UUID) was added for it. Criterion reworded.
 - **A14** reworded to redirect-with-error for Inertia forms, 429 for JSON and plain requests (approved 2026-10-17).
 - **Two-connection concurrency helper** (Data & rules) moves to F-005, which owns the last-seat test and the tables it locks (noted in F-005).
-- **Scope-bypass guard** also covers the raw query builder (`DB::table`, `DB::select`, …) in `app/` and `routes/`; only the three tenancy mechanism files are exempt.
-- **Non-numeric ids** are a 404 in URLs (trait route binding) and a 422 in payloads, never a PostgreSQL 500. Scoped child bindings on a non-tenant parent still need checking when the first one is added.
+- **Scope-bypass guard** covers Eloquent bypasses (`newModelQuery`, `newQueryWithoutScope(s)`, `toBase`, `getQuery`, `getConnection`) and any database access outside Eloquent (`DB::` except transaction control, `app('db')`, `DatabaseManager`) in `app/` and `routes/`; only the four tenancy mechanism files are exempt.
+- **Every log channel** redacts (`RedactLogs` tap); objects and models in log context are flattened and scrubbed; traces carry no argument values.
+- **`audit_events`** also rejects `TRUNCATE` (statement-level trigger).
+- **Fields never flashed** to the session live in one list (`App\Security\SensitiveInput`), used by both the exception handler and the rate-limit redirect.
+- **Non-numeric or out-of-range ids** (beyond bigint) are a 404 in URLs (trait route binding) and a 422 in payloads, never a PostgreSQL 500 (`App\Tenancy\IntegerKey`). Scoped child bindings on a non-tenant parent still need checking when the first one is added.
 
-**Review follow-ups (2026-10-17 review, not yet done):**
+**Review follow-ups** (from the 2026-10-17 and 2026-10-18 reviews; each is also noted in its owning spec):
 
 - [ ] **R1** Empty phone/email collapses everyone into one rate-limit bucket (`booking-phone:`); return `Limit::none()` for an empty key (the IP limit still applies) and fail loudly if `evidence-upload` has no `token` route parameter. — before F-005.
 - [ ] **R2** The local `private` disk's `serve => true` also registers a signed `PUT /storage/{path}` upload route; before A20, stream evidence from an authorised controller (`serve => false`) or ban `temporaryUploadUrl()` with a guard test. — F-006.
 - [ ] **R3** Cap pixel dimensions for public photos (`dimensions:max_width,max_height` or a `getimagesize` check) before GD decodes them. — F-001/F-003 photo upload.
 - [ ] **R4** `AuditLog` should throw when the subject's organization differs from the current one (the trait silently overrides it), and resolve a `User` subject through its membership so `auth.password_reset` works for a guest. — F-001 (reset flow).
-- [ ] **R5** Query-builder updates (`Model::whereKey()->update(['organization_id' => …])`) skip the trait's `updating` guard; add a trigger or guard test. — slice C.
+- [x] **R5** Query-builder writes: done 2026-10-18 via `TenantBuilder` — bulk inserts/upserts get the organization rule, `insertUsing` is refused, updates/upserts/increments cannot touch `organization_id`.
 - [ ] **R6** `DatabaseSeeder` uses `WithoutModelEvents`, which disables the tenancy and audit hooks; drop it when seeders are written.
 - [ ] **R7** Inertia visits that hit 409/419/429 HTML pages show them in Inertia's error modal; add an Inertia-aware renderer with F-001.
 - [ ] **R8** Rate limits use `$request->ip()`; configure trusted proxies with hosting (C2).
+- [ ] **R9** Laravel's `emergency` logger (used only when a configured log channel cannot be built) takes no taps, so it is not redacted. Accept, or wrap it, at slice C.
+- [ ] **R10** `ExistsInCurrentOrganization` ignores soft deletes; add a `whereNull('deleted_at')` option when the first soft-deleting model arrives.
 
 ## Readiness
 
@@ -315,3 +320,4 @@ Q2–Q5 have recommended defaults (most are captured in ADR-0016 and ADR-0018). 
 - 2026-10-17 — merged with admin panel (F-010–F-015, ADR-0011): admin panel out of F-009 scope, A8a added, `platform_admin` audit actor, Q6 superseded; branch ADRs renumbered 0012–0019
 - 2026-10-17 — slice A built (builder): tenancy primitives, guards and harness, audit events, rate limiters, security headers, Bahasa error pages, media primitives, `.env.example` guard, JSON logs, CI. A1–A4, A6–A8, A10–A17, A18b, A19, A22–A24 ticked; A5, A8a, A9, A15a, A18, A18a, A20, A21 wait on the features named above. ADR-0020, ADR-0021 added. Status → `in-progress`
 - 2026-10-17 — review fixes: exception and SQL-binding redaction in logs (A24), raw-query coverage in the bypass guard (A8), non-numeric ids → 404/422, `OrganizationPolicy`, Bahasa copy moved to `lang/id` with Indonesian validation/auth/password messages and `id` locale defaults. A14 reworded and split (A14b → F-001); A10/A11 unticked until their owning features audit; A19 reworded to ADR-0015. Review follow-ups R1–R8 recorded
+- 2026-10-18 — second review fixes: log redaction covers objects/models, argument-free traces and every channel (A24); bulk inserts/upserts and query-builder updates enforce the organization rule (`TenantBuilder`, R5 closed); wider scope-bypass guard; ids beyond bigint → 404/422; `audit_events` rejects TRUNCATE; reset tokens never flashed; unscoped `Organization::users()` removed; HSTS on any HTTPS response; same-site back links; `0062…` phone numbers; ADR-0020/0021 accepted by Rengga; hand-offs noted in F-001, F-003, F-006; CI lock file fixed. R9, R10 added
