@@ -44,6 +44,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
 | Transactional email provider (SPF/DKIM) | — | [F-001](../features/F-001-seller-onboarding.md#dependencies) | Pilot |
+| **Pre-pilot gate:** ADR-0018 24-hour block on payment-instruction changes after a password reset or email change, and the change notice to the sign-in email — not built by F-001 | Build with F-006 Pengaturan → Pembayaran | [F-001 Q16](../features/F-001-seller-onboarding.md#open-questions) · [ADR-0018](../decisions/0018-account-recovery-and-payment-instruction-protection.md) | Pilot (blocks "Pilot go") |
 | Syarat & Privasi text; PDP law (UU 27/2022) | Short Bahasa notice before pilot; formal review before launch | [F-009 Q9](../features/F-009-tenancy-security-operations.md#open-questions) | Pilot |
 | Free-tier limits and pricing | Decide after pilot | [ADR-0019](../decisions/0019-defer-free-tier-limits.md) | After pilot |
 
@@ -66,7 +67,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Ask "Nama Anda" at sign-up | Yes | [F-001 Q13](../features/F-001-seller-onboarding.md#open-questions) |
 | Password confirmation field | No; show/hide toggle | [F-001 Q14](../features/F-001-seller-onboarding.md#open-questions) |
 | Email change: at once (F-001 A11) or after verifying the new address (F-009 B12) | At once for P0; reword F-009 B12 | [F-001 Q15](../features/F-001-seller-onboarding.md#open-questions) |
-| ADR-0018 24-hour payment-instruction block and change notice | Build with F-006 Pengaturan → Pembayaran, before pilot | [F-001 Q16](../features/F-001-seller-onboarding.md#open-questions) |
 | Auth events of a seller without an organization yet | Not audited in P0 | [F-001 Q17](../features/F-001-seller-onboarding.md#open-questions) |
 
 ### Draft specs — to resolve when the spec is made `ready`
@@ -111,6 +111,6 @@ see [`year-1-commercial.md`](year-1-commercial.md).
 
 | Gate | When | Question | Evidence |
 |---|---|---|---|
-| Pilot go | End wk 4 | Is the core loop safe for real customers? | No known overbooking or cross-tenant leaks; backup restore tested |
+| Pilot go | End wk 4 | Is the core loop safe for real customers? | No known overbooking or cross-tenant leaks; backup restore tested; ADR-0018 payment-instruction block and notice built (F-001 Q16) |
 | Continue / pivot | End wk 6 | Do operators use it without us? | Time to first trip < 10 min · independent onboarding · first real booking ≤ 14 days · repeat use |
 | Enterprise pilot | Month 5–6 | Will an established operator pay? | Qualified pipeline; paid pilot scope |
