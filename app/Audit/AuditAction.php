@@ -20,6 +20,7 @@ enum AuditAction: string
     case DeparturePriceChanged = 'departure.price_changed';
     case DepartureCapacityChanged = 'departure.capacity_changed';
     case DepartureStatusChanged = 'departure.status_changed';
+    case DepartureDeadlineChanged = 'departure.deadline_changed';
     case DepartureDeleted = 'departure.deleted';
 
     case TripBasePriceChanged = 'trip.base_price_changed';

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Tenancy\CurrentOrganization;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -37,7 +38,18 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            //
+            'flash' => fn () => [
+                'toast' => $request->session()->get('toast'),
+                'notice' => $request->session()->get('notice'),
+            ],
+            // Seller layout copy and links (F-003 minimal layout); F-001/F-007 add more items.
+            'seller' => fn () => $request->user() === null || ! app(CurrentOrganization::class)->check() ? null : [
+                'nav' => [
+                    ['key' => 'trips', 'label' => __('trips.nav.trips'), 'url' => route('trips.index'), 'active' => $request->routeIs('trips.*', 'departures.*')],
+                ],
+                'brand' => __('trips.nav.brand'),
+                'menu_label' => __('trips.nav.menu'),
+            ],
         ];
     }
 }

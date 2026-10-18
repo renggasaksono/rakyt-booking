@@ -6,6 +6,7 @@ use App\Security\Middleware\NoReferrer;
 use App\Security\Middleware\SecurityHeaders;
 use App\Security\SensitiveInput;
 use App\Security\ThrottledResponse;
+use App\Tenancy\Middleware\EnsureCurrentOrganization;
 use App\Tenancy\Middleware\ResolveCurrentOrganization;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -13,6 +14,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -37,7 +39,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'no-referrer' => NoReferrer::class,
+            'organization' => EnsureCurrentOrganization::class,
         ]);
+
+        // Seller sign-in arrives with F-001; until then guests go to the home page.
+        $middleware->redirectGuestsTo(fn () => Route::has('login') ? route('login') : route('home'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

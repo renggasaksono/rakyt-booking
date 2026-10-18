@@ -19,6 +19,12 @@ class Organization extends Model
 
     protected $guarded = ['id', 'public_id'];
 
+    /** Database defaults, so new instances carry them too (ADR-0014, F-003 Q6). */
+    protected $attributes = [
+        'timezone' => 'Asia/Jakarta',
+        'default_booking_deadline_preset' => 'h3',
+    ];
+
     protected static function booted(): void
     {
         static::creating(function (Organization $organization) {
