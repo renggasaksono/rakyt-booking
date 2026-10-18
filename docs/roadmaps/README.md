@@ -13,7 +13,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 |---|---|
 | Week 1 — resolve open questions, confirm proposed ADRs, scaffold Laravel app | scaffold done (ADR-0020); ADR-0011 still proposed |
 | [F-009](../features/F-009-tenancy-security-operations.md) Tenancy & security baseline (slice A wk 2 · ops wk 4 · hardening wk 6) | in-progress — slice A built; B, C to do |
-| [F-003](../features/F-003-trips-and-departures.md) Trips & departures | in-progress — built on `feat/F-003-trips-and-departures`; 38/42 ACs covered by tests; AC-3/7/41 partly covered, AC-35 is a pilot check; device review after F-001 section A |
+| [F-003](../features/F-003-trips-and-departures.md) Trips & departures | in-progress — built on `feat/F-003-trips-and-departures`; 37/42 ACs covered by tests; AC-3/7/41 partly covered, AC-35 is a pilot check, AC-40 waits on Q12; device review after F-001 section A |
 | [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | ready (spec) — **next to build**; binds F-003's `PaymentReadiness` |
 | [F-002](../features/F-002-public-booking-page.md) Public booking page | planned |
 | [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | planned |
@@ -37,7 +37,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
 | Platform admin inside the same app, gated, no impersonation; admin login = email + password + TOTP | Accept | [ADR-0011](../decisions/0011-platform-admin-access.md) · F-010–F-015 | Before admin build (wk 4) |
-| F-003 implementation choices: PostgreSQL sessions in UTC, composite tenant FKs, payment/booking seams, photo pixel cap, H-1/H-3/H-7 defaults only, auto-close as a scheduled command, Vitest | Accept | [ADR-0022](../decisions/0022-trips-implementation-choices.md) · F-003 | Before merging F-003 |
+| F-003 implementation choices: PostgreSQL sessions in UTC, composite tenant FKs, payment/booking seams, photo memory budget (320 MB → 29 MP, originals ≤ 2560 px), H-1/H-3/H-7 defaults only, auto-close as a scheduled command, Vitest | Accept | [ADR-0022](../decisions/0022-trips-implementation-choices.md) · F-003 | Before merging F-003 |
 
 ### Week 1 — choices outside the specs
 

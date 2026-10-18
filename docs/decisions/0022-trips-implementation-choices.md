@@ -31,10 +31,14 @@ could later ask "why?" about.
 4. **URLs use a lower-case ULID `public_id`.** Route values that are not integer keys must be short, valid UTF-8
    without NUL bytes (`App\Tenancy\RouteKey`), so malformed input is a 404, never a database error. The same check
    covers `withTrashed()` and `scopeBindings()` routes (F-009 R15, R16).
-5. **Photo pixel cap: 8 000 px per side and 40 megapixels** (F-009 R3), read from the file header before GD decodes it.
-   GD needs about 4 bytes per pixel; 40 MP is about 160 MB, still enough for 12–48 MP phone photos. Values are in
-   `config/rakyt.php`. Variants (400/800/1 600 px, never upscaled) are made by a queued job from the stored,
-   EXIF-free original.
+5. **Photo memory budget: 320 MB; the megapixel cap is derived from it** (F-009 R3; corrected 2026-10-18, see the
+   amendment below). `App\Media\PhotoBudget` uses 8 bytes per pixel and 96 MB of headroom, so the cap is
+   (320 − 96) MB / 8 ≈ **29 MP**, plus 8 000 px per side. Both are read from the file header before GD decodes
+   anything. `PublicImage::sanitize()` raises `memory_limit` to the budget (never lowers it), scales the image down
+   to **2 560 px** on the longest side, then applies the EXIF orientation to the small copy. The stored original is
+   that ≤ 2 560 px, EXIF-free image. The variants job (400/800/1 600 px, never upscaled) works from it under the same
+   budget. Over-cap photos get a Bahasa message; files GD cannot decode get a 422. All numbers are in
+   `config/rakyt.php`.
 6. **An organization's default deadline is H-1, H-3 or H-7.** "Sampai hari keberangkatan" needs a meeting time,
    which a new trip (and every onboarding trip) may not have, so it cannot be a default.
 7. **Auto-close is a scheduled Artisan command** (`departures:close-past-deadline`, every minute,
@@ -67,3 +71,17 @@ could later ask "why?" about.
 - `same_day` as an allowed default with a fallback: hides a silent change of meaning.
 - A queued auto-close job: needs a worker to close anything; the scheduler alone is simpler.
 - Component tests with jsdom and @vue/test-utils: heavier; the logic worth testing was pulled into plain modules.
+
+## Amendment 2026-10-18 (review B1)
+
+The first version of §5 assumed GD needs 4 bytes per pixel and allowed 40 MP. Measured on PHP 8.4 with GD,
+`sanitize()` peaked at **8.3 bytes per pixel**: the decoded image plus a full-size clone made by auto-orientation.
+Under the default `memory_limit=128M`, a 16 MP photo was a fatal "memory exhausted". Decoding alone takes about
+4.6 B/px for JPEG and WebP and 7.6 B/px for PNG. Scaling first and orienting the small copy removes the clone.
+
+The cap is now derived from an explicit budget instead of being chosen by hand. `tests/Feature/Media/PhotoMemoryBudgetTest`
+asserts that cap × bytes per pixel + headroom ≤ limit. It measures GD's bytes per pixel for each format against the
+configured 8, and processes cap-sized PNG, JPEG, sideways JPEG and WebP files in a child process running at exactly
+the configured limit. Peaks at the cap were 233 MB (PNG) and 173 MB (JPEG/WebP). Photos above 29 MP (e.g. 48 MP
+"high-res" camera modes) are refused with a message asking for a lower resolution. Resizing in the browser was
+considered and rejected by Rengga: everything stays on the server.
