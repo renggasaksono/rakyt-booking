@@ -89,6 +89,12 @@ checkout made before the rename may still show `Pages/`: fix it once with `mv re
   with Vitest tests in `tests/js` (`npm test`).
 - In tests the current organization stays on the last request's user: create seller rows inside `asTenant()`, and
   assert with `assertDatabase*` or `acrossOrganizations()`.
+- `Organization::factory()` is past onboarding by default (`onboarding_skipped_at` set), so seller pages open normally;
+  use `->onboarding()` (or `BuildsOnboarding::onboardingTenant()`) for a seller still in the guided flow — their page
+  visits redirect to the resume step (F-001 E2). Find a user's organization with
+  `ResolveCurrentOrganization::membershipOf()`, never a new unscoped query.
+- Reset and verification links in `storage/logs/mail.log` are redacted on purpose; use an SMTP catcher (e.g. Mailpit)
+  to click them locally. Inertia requests in tests need `X-Inertia-Version` once a build manifest exists, or they get 409.
 
 ## Keeping the docs true (definition of done)
 
