@@ -135,7 +135,8 @@ class OnboardingController extends Controller
                 // Q7: a generic set in onboarding.
                 'inclusion_suggestions' => __('onboarding.trip.inclusion_suggestions'),
             ],
-            'tripCopy' => __('trips'),
+            // Mockup 4c labels the picker "+ Galeri", also once the draft exists.
+            'tripCopy' => array_replace_recursive(__('trips'), ['photos' => ['add' => __('onboarding.trip.add_photos')]]),
             'urls' => [
                 'store' => route('onboarding.trip'),
                 'back' => route('onboarding.organization'),

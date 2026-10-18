@@ -141,7 +141,10 @@ class GuidedTripTest extends TestCase
             ->assertUnprocessable();
 
         $this->actingAsTenant($this->seller)->get(route('onboarding.trip'))
-            ->assertInertia(fn (AssertableInertia $page) => $page->has('trip.photos', 2)->where('urls.photos', route('trips.photos.store', $trip)));
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('trip.photos', 2)
+                ->where('urls.photos', route('trips.photos.store', $trip))
+                ->where('tripCopy.photos.add', '+ Galeri'));
     }
 
     public function test_ac_c5_c7_scheduled_trips_get_a_price_and_one_departure(): void
