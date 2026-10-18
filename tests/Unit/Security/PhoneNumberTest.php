@@ -19,6 +19,7 @@ class PhoneNumberTest extends TestCase
             'no plus' => ['6281234567890', '+6281234567890'],
             'spaces and dashes' => ['0812-3456 7890', '+6281234567890'],
             'without leading zero' => ['81234567890', '+6281234567890'],
+            'international prefix' => ['006281234567890', '+6281234567890'],
         ];
     }
 

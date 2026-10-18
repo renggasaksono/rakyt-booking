@@ -4,6 +4,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Security\Middleware\AssignRequestId;
 use App\Security\Middleware\NoReferrer;
 use App\Security\Middleware\SecurityHeaders;
+use App\Security\SensitiveInput;
 use App\Security\ThrottledResponse;
 use App\Tenancy\Middleware\ResolveCurrentOrganization;
 use Illuminate\Foundation\Application;
@@ -46,10 +47,5 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(fn (ThrottleRequestsException $e, Request $request) => ThrottledResponse::render($e, $request));
 
         // Never send passwords or tokens back into the session as old input.
-        $exceptions->dontFlash([
-            'current_password',
-            'password',
-            'password_confirmation',
-            'token',
-        ]);
+        $exceptions->dontFlash(SensitiveInput::FIELDS);
     })->create();

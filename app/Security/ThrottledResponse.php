@@ -15,15 +15,13 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class ThrottledResponse
 {
-    private const NEVER_FLASH = ['password', 'password_confirmation', 'current_password', '_token'];
-
     public static function render(ThrottleRequestsException $e, Request $request): ?Response
     {
         $message = self::message($e);
 
         if ($request->header('X-Inertia') && ! $request->isMethod('GET')) {
             return back()
-                ->withInput($request->except(self::NEVER_FLASH))
+                ->withInput($request->except(SensitiveInput::FIELDS))
                 ->withErrors(['rate_limit' => $message]);
         }
 

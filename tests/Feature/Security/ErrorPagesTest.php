@@ -65,4 +65,16 @@ class ErrorPagesTest extends TestCase
 
         $this->post('/test/form')->assertStatus(419)->assertSee('Sesi Anda sudah habis');
     }
+
+    public function test_back_links_never_point_to_another_site(): void
+    {
+        config(['app.debug' => false]);
+        Route::get('/test/error', fn () => throw new HttpException(429));
+
+        $this->withHeader('Referer', 'https://evil.example/phish')
+            ->get('/test/error')
+            ->assertStatus(429)
+            ->assertDontSee('evil.example')
+            ->assertSee('href="'.url('/').'"', false);
+    }
 }

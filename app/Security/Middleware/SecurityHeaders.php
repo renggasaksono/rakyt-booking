@@ -28,7 +28,8 @@ class SecurityHeaders
             $headers->set('Content-Security-Policy', "frame-ancestors 'none'");
         }
 
-        if (app()->environment('production')) {
+        // Browsers ignore HSTS over plain HTTP, so send it on every HTTPS response (staging too).
+        if ($request->isSecure() || app()->environment('production')) {
             $headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
         }
 

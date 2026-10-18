@@ -28,6 +28,11 @@ class SecurityHeadersTest extends TestCase
         $this->get('/up')->assertHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     }
 
+    public function test_ac_a16_hsts_on_any_https_response(): void
+    {
+        $this->get('https://localhost/up')->assertHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    }
+
     public function test_ac_a16_customer_pages_send_no_referrer(): void
     {
         Route::middleware(['web', 'no-referrer'])->get('/test/pesanan/{token}', fn () => 'ok');

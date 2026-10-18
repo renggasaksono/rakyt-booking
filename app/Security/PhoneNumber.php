@@ -16,6 +16,11 @@ final class PhoneNumber
             return null;
         }
 
+        // International dialling prefix: 0062… is +62…
+        if (str_starts_with($digits, '00')) {
+            $digits = substr($digits, 2);
+        }
+
         $national = match (true) {
             str_starts_with($digits, '62') => substr($digits, 2),
             str_starts_with($digits, '0') => substr($digits, 1),

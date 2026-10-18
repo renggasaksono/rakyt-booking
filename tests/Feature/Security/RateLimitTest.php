@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Security;
 
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -14,8 +13,6 @@ class RateLimitTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        RateLimiter::clear('*');
 
         Route::middleware(['web', 'throttle:seller-login'])->post('/test/masuk', fn () => 'ok');
         Route::middleware(['web', 'throttle:password-reset'])->post('/test/lupa-password', fn () => 'ok');
@@ -38,6 +35,25 @@ class RateLimitTest extends TestCase
             ->assertSessionHasErrors(['rate_limit' => 'Terlalu banyak percobaan. Coba lagi dalam 1 menit.'])
             ->assertSessionHasInput('email', 'budi@contoh.id')
             ->assertSessionMissing('_old_input.password');
+    }
+
+    public function test_ac_a14_throttled_forms_never_flash_reset_tokens(): void
+    {
+        [$max] = config('rakyt.rate_limits.password_reset.per_email');
+        $payload = ['email' => 'budi@contoh.id', 'token' => 'reset-token-123', 'password' => 'baru12345', 'password_confirmation' => 'baru12345'];
+
+        for ($i = 0; $i < $max; $i++) {
+            $this->post('/test/lupa-password', $payload);
+        }
+
+        $this->from('/atur-ulang')
+            ->withHeader('X-Inertia', 'true')
+            ->post('/test/lupa-password', $payload)
+            ->assertRedirect('/atur-ulang')
+            ->assertSessionHasInput('email', 'budi@contoh.id')
+            ->assertSessionMissing('_old_input.token')
+            ->assertSessionMissing('_old_input.password')
+            ->assertSessionMissing('_old_input.password_confirmation');
     }
 
     public function test_ac_a14_json_clients_get_429_with_the_message(): void
