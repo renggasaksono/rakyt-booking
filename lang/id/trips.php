@@ -238,6 +238,7 @@ return [
         'saved' => 'Tersimpan',
         'last_departure' => 'Trip tetap tampil, tapi belum ada tanggal yang bisa dipesan.',
         'booked_unchanged' => ':n keberangkatan yang sudah ada pesanan tidak berubah.',
+        'closed_by_meeting_time' => ':n keberangkatan hari ini langsung tertutup karena tutup pesan sudah lewat.',
         'published' => 'Trip sudah terbit.',
         'unpublished' => 'Trip disembunyikan dari halaman publik.',
         'deleted' => 'Trip dihapus.',

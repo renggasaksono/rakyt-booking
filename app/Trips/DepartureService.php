@@ -306,13 +306,16 @@ final class DepartureService
     /**
      * After a trip's duration or meeting time changed (inside the trip's transaction):
      * departures without bookings get new end dates (Q3); "same day" deadlines follow
-     * the meeting time (AC-24).
+     * the meeting time (AC-24). An open departure whose new deadline has already
+     * passed is closed straight away (reason deadline), so it never looks bookable.
      *
-     * @return int upcoming departures with bookings whose dates were kept
+     * @return array{kept: int, closed: int} departures with bookings whose dates were kept; departures closed
      */
-    public function syncWithTrip(Trip $trip, bool $durationChanged, bool $meetingTimeChanged): int
+    public function syncWithTrip(Trip $trip, bool $durationChanged, bool $meetingTimeChanged): array
     {
         $kept = 0;
+        $closed = 0;
+        $now = CarbonImmutable::now();
         $duration = $trip->duration();
 
         foreach ($this->upcoming($trip, lock: true) as $departure) {
@@ -333,6 +336,12 @@ final class DepartureService
                     $trip->meeting_time,
                     $trip->organization->timezone,
                 );
+
+                if ($departure->isOpen() && ! $now->lessThan($departure->booking_deadline_at)) {
+                    $departure->status = DepartureStatus::Closed;
+                    $departure->closed_reason = ClosedReason::Deadline;
+                    $closed++;
+                }
             }
 
             if ($departure->isDirty()) {
@@ -341,7 +350,7 @@ final class DepartureService
             }
         }
 
-        return $kept;
+        return ['kept' => $kept, 'closed' => $closed];
     }
 
     /**

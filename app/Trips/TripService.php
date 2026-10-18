@@ -101,13 +101,16 @@ final class TripService
                 );
             }
 
-            $kept = ($durationChanged || $meetingTimeChanged)
+            $synced = ($durationChanged || $meetingTimeChanged)
                 ? $this->departures->syncWithTrip($locked, $durationChanged, $meetingTimeChanged)
-                : 0;
+                : ['kept' => 0, 'closed' => 0];
 
             $trip->setRawAttributes($locked->getAttributes(), true);
 
-            return $kept > 0 ? [__('trips.notices.booked_unchanged', ['n' => $kept])] : [];
+            return array_values(array_filter([
+                $synced['kept'] > 0 ? __('trips.notices.booked_unchanged', ['n' => $synced['kept']]) : null,
+                $synced['closed'] > 0 ? __('trips.notices.closed_by_meeting_time', ['n' => $synced['closed']]) : null,
+            ]));
         });
     }
 

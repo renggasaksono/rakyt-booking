@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Trips;
 
+use App\Models\AuditEvent;
 use App\Models\Trip;
 use App\Models\TripDeparture;
 use App\Trips\Contracts\DepartureBookings;
@@ -296,6 +297,30 @@ class DepartureTest extends TestCase
         $this->actingAsTenant($a)->patchJson(route('trips.autosave', $trip), ['meeting_time' => '08:00'])->assertOk();
 
         $this->assertSame('2024-10-24 07:00', $this->freshDeparture($departure)->booking_deadline_at->setTimezone('Asia/Jakarta')->format('Y-m-d H:i'));
+    }
+
+    public function test_ac_24_a_meeting_time_change_that_puts_a_same_day_deadline_in_the_past_closes_the_departure_with_a_notice(): void
+    {
+        // Now Thu 10 Okt 10.00. Kumpul 12.00 today → closes 11.00; moved to 10.30 → closes 09.30 (past).
+        [$a] = $this->createTenants();
+        $trip = $this->tripFor($a, ['meeting_time' => '12:00']);
+        $today = $this->departureFor($a, $trip, '2024-10-10', ['booking_deadline_preset' => 'same_day', 'booking_deadline_at' => '2024-10-10 04:00:00']);
+        $later = $this->departureFor($a, $trip, '2024-10-24', ['booking_deadline_preset' => 'same_day', 'booking_deadline_at' => '2024-10-24 04:00:00']);
+
+        $this->actingAsTenant($a)->patchJson(route('trips.autosave', $trip), ['meeting_time' => '10:30'])
+            ->assertOk()
+            ->assertJsonPath('notices', ['1 keberangkatan hari ini langsung tertutup karena tutup pesan sudah lewat.']);
+
+        $closed = $this->freshDeparture($today);
+        $this->assertSame(['closed', 'deadline'], [$closed->status->value, $closed->closed_reason->value]);
+        $this->assertSame('2024-10-10 09:30', $closed->booking_deadline_at->setTimezone('Asia/Jakarta')->format('Y-m-d H:i'));
+        $this->assertSame('open', $this->freshDeparture($later)->status->value);
+        $this->assertSame('2024-10-24 09:30', $this->freshDeparture($later)->booking_deadline_at->setTimezone('Asia/Jakarta')->format('Y-m-d H:i'));
+
+        $events = AuditEvent::acrossOrganizations()->where('subject_id', (string) $today->id)->orderBy('id')->get();
+        $this->assertSame(['departure.status_changed', 'departure.deadline_changed'], $events->pluck('action')->all());
+        $this->assertSame(['user', (string) $a->owner->id], [$events[0]->actor_type, $events[0]->actor_id]);
+        $this->assertEquals(['status' => 'closed', 'closed_reason' => 'deadline'], $events[0]->after);
     }
 
     public function test_ac_24_custom_deadlines_are_not_moved_but_re_validated(): void

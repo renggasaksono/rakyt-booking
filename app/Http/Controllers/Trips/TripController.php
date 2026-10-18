@@ -104,7 +104,7 @@ class TripController extends Controller
 
         $notices = $this->trips->update($trip, $request->fields());
 
-        return back()->with('toast', __('trips.notices.saved'))->with('notice', $notices[0] ?? null);
+        return back()->with('toast', __('trips.notices.saved'))->with('notice', $notices === [] ? null : implode(' ', $notices));
     }
 
     public function publish(Trip $trip): RedirectResponse
