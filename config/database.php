@@ -97,6 +97,9 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // ADR-0014: Laravel writes timestamps without an offset; the session
+            // zone must be UTC or timestamptz columns shift by the server's zone.
+            'timezone' => 'UTC',
         ],
 
         'sqlsrv' => [
