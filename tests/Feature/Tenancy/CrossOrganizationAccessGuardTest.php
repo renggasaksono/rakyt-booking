@@ -100,6 +100,36 @@ class CrossOrganizationAccessGuardTest extends TestCase
         }
     }
 
+    /**
+     * F-009 R14: `exists:` / `unique:` and Rule::exists / Rule::unique are not
+     * organization-scoped. Use ExistsInCurrentOrganization / UniqueInCurrentOrganization.
+     */
+    private const BARE_RULE_PATTERN = '/[\'"|](exists|unique):|Rule::(exists|unique)\(/';
+
+    public function test_r14_no_bare_exists_or_unique_rules(): void
+    {
+        $offending = [];
+
+        foreach (self::SCANNED as $directory) {
+            foreach (Finder::create()->files()->in(base_path($directory))->name('*.php') as $file) {
+                if (preg_match(self::BARE_RULE_PATTERN, $file->getContents())) {
+                    $offending[] = $directory.'/'.$file->getRelativePathname();
+                }
+            }
+        }
+
+        $this->assertSame([], $offending, 'Use ExistsInCurrentOrganization / UniqueInCurrentOrganization instead of bare exists/unique rules.');
+    }
+
+    public function test_r14_the_bare_rule_guard_detects_the_patterns(): void
+    {
+        foreach (["'trip_id' => 'required|exists:trips,id'", "['exists:trips,id']", '"unique:trips,slug"', 'Rule::exists(\'trips\')', 'Rule::unique(\'trips\')'] as $code) {
+            $this->assertMatchesRegularExpression(self::BARE_RULE_PATTERN, $code);
+        }
+
+        $this->assertDoesNotMatchRegularExpression(self::BARE_RULE_PATTERN, 'new ExistsInCurrentOrganization(\'trips\')');
+    }
+
     public function test_mechanism_files_exist(): void
     {
         foreach (self::MECHANISM as $path) {
