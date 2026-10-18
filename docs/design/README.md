@@ -54,6 +54,10 @@ Every status = tint + deep text + its own glyph + a word. Never colour alone; ne
 | Ditolak | ✕ | `#A1281E` |
 | Dibatalkan | – | `#4F4741` |
 
+Departure statuses (F-003 AC-27) follow the same rule with their own glyphs: Buka ● (Lunas green), Tutup ○
+(`#4F4741`), Penuh ◼ (nila), Sudah lewat ◁ (`#4F4741`). Tints are tokens in `resources/css/app.css`
+(`--color-status-*-tint`); never hard-code them.
+
 ## Rules
 
 - **One gold button per screen**, for the step that moves the booking forward. Everything else is ink outline.

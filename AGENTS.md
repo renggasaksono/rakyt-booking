@@ -53,10 +53,13 @@ php artisan test          # PHPUnit on PostgreSQL (rakyt_booking_test)
 ./vendor/bin/pint         # PHP format/lint (CI runs --test)
 npm run lint              # ESLint (CI runs --max-warnings=0)
 npm run build             # Vite production build
+npm test                  # Vitest (UI helpers)
 ```
 
 For plain-HTTP local dev set `SESSION_SECURE_COOKIE=false` in `.env` (or run `herd secure`).
 Never drop or reset the dev database to "start clean"; tests reset their own test database.
+
+When you add or change an npm dependency, regenerate `package-lock.json` with the latest npm 11 (`npx -y npm@11 install` may resolve to your local npm; pin the newest 11.x, e.g. `npx -y npm@11.21.1 install --package-lock-only`). Older local npm drops optional peer entries (e.g. `react` under `@laravel/multiplex`), and CI's `npm ci` then fails.
 
 Inertia pages live in `resources/js/pages` (lower case; CI runs on case-sensitive Linux). macOS ignores case, so a
 checkout made before the rename may still show `Pages/`: fix it once with `mv resources/js/Pages resources/js/p && mv resources/js/p resources/js/pages`.
@@ -77,6 +80,13 @@ checkout made before the rename may still show `Pages/`: fix it once with `mv re
 - Audited actions go through `App\Audit\AuditLog`, inside the same `DB::transaction` as the change.
 - Public endpoints get a named limiter (`throttle:public-booking`, …); customer token pages get `no-referrer`.
 - Test names: `test_ac_<id>_…` in lower case (Pint rewrites `test_AC_…` to `test_a_c_…`).
+- Timestamps: PostgreSQL sessions run in UTC and Laravel writes Carbon values **without an offset**. Convert to UTC
+  (`->utc()`) before storing or comparing in a query; compute local times with the organization's `timezone`.
+- In tests Laravel caches controller instances per route: bind fakes (`PaymentReadiness`, `DepartureBookings`) **before**
+  the first request of the test. `jsonb` does not keep key order: compare audit before/after with `assertEquals`.
+- Seat changes lock the departure row (`lockForUpdate()`) inside `DB::transaction` and re-read `seats_taken`; reuse
+  `DepartureService` rather than updating `capacity`/`seats_taken` directly. JS UI logic lives in `resources/js/lib`
+  with Vitest tests in `tests/js` (`npm test`).
 - In tests the current organization stays on the last request's user: create seller rows inside `asTenant()`, and
   assert with `assertDatabase*` or `acrossOrganizations()`.
 

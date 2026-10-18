@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-weeks-2-3
 mockups: [4a, 4b, 4c, 4d, 4e, 4f]
 decisions: ["0003", "0004", "0005", "0007", "0008", "0010", "0012", "0013", "0019"]
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # F-001 · Seller onboarding & organization profile
@@ -117,7 +117,7 @@ from the rate-limit table in F-009; tests read the configured values rather than
 - [ ] **C1** Each step header shows "Langkah n dari 4 · <nama langkah>" and a static "±m menit lagi" from the budget Akun 1′ · Usaha 1′ · Trip 4′ · Jadwal 2′ · Rekening 2′: step 1 → ±9, step 2 (Trip) → ±8, step 3 (Jadwal) → ±4, step 4 (Pembayaran) → ±2. Step names: Usaha, Trip, Jadwal, Pembayaran. Sign-up / sign-in screens carry no step header. Minute values live in one config / translation entry so they can be retuned (Q12).
 - [ ] **C2** Step 2 (Trip): "Jenis trip" offers Open trip ("Jadwal tetap, gabung"), Private ("Pelanggan ajukan tanggal"), Day trip ("Beberapa jam / 1 hari"). Choosing one presets (aligned with F-003): Open trip → booking mode `scheduled`, duration 3H2M; Day trip → `scheduled`, duration 1 hari; Private → `request_date`, no duration preset. The seller can change the duration. Jenis trip is required.
 - [ ] **C3** Step 2 photos: "+ Galeri" opens the phone's picker (multiple select); the first photo is the cover ("sampul"); each photo shows upload progress and a retry on failure; the seller can remove a photo. File type and size limits follow F-003. Photos are stored under the organization's media prefix (ADR-0004).
-- [ ] **C4** Step 2 fields: "Nama trip" required (3–100 chars); "Durasi" required, using the F-003 duration picker (presets + "Atur sendiri", nights ≤ days); "Termasuk apa saja?" optional multi-select chips plus "+ Lainnya" (free text, max 40 chars per item). **No description field** (optional to publish; added later from the dashboard). Gold CTA "Lanjut ke harga & jadwal". On submit the trip is saved as **draft** in the seller's organization.
+- [ ] **C4** Step 2 fields: "Nama trip" required (3–80 chars, F-003 `TripRules`; F-003 Q11); "Durasi" required, using the F-003 duration picker (presets + "Atur sendiri", nights ≤ days); "Termasuk apa saja?" optional multi-select chips plus "+ Lainnya" (free text, max 40 chars per item). **No description field** (optional to publish; added later from the dashboard). Gold CTA "Lanjut ke harga & jadwal". On submit the trip is saved as **draft** in the seller's organization.
 - [ ] **C5** Step 3 (Jadwal), scheduled trips: "Harga per orang" (required integer rupiah, 1.000–100.000.000, shown with thousand separators "1.250.000", numeric keyboard); "Tanggal berangkat pertama" (required, today or later in the organization's timezone; end date shown read-only from duration: "s.d. Sab 26 Okt" + "Tanggal selesai otomatis dari durasi 3H2M."); "Jumlah kursi" (required integer 1–500, helper "Kapasitas kapal / homestay"); "Tutup pemesanan" via the F-003 deadline picker, shown as a real date.
 - [ ] **C6** Step 3 deadline default: the organization's default deadline (initially H-3, per mockup 4d). Given the default would fall in the past (e.g. departure in 2 days), then past presets are disabled and the nearest valid preset is preselected. A deadline in the past or after the departure start is rejected.
 - [ ] **C7** Step 3 shows a plain-words summary that updates live: "16 kursi · Rp1.250.000/orang · pesanan ditutup Senin 21 Okt 23.59". Gold CTA "Lanjut ke pembayaran". On submit, the base price is saved on the trip and one departure is created (price override empty, `seats_taken = 0`, status open).
@@ -150,6 +150,7 @@ from the rate-limit table in F-009; tests read the configured values rather than
 - [ ] **F1** The owner can edit "Nama usaha", "Kota basis", "Nomor WhatsApp usaha" (same validation as B3, not verified), "Logo" (JPG/PNG/WebP, ≤ 2 MB, shown square) and "Bio singkat" (≤ 160 chars). Changes appear on the public page (F-002) immediately.
 - [ ] **F2** The slug is shown read-only after first publish with "Hubungi Rakyt untuk mengganti link." (Q3). Before first publish it is editable with the B5–B7, B10 rules.
 - [ ] **F3** Account settings (email, password, sign-out) live in Pengaturan → Akun (A6, A11, A12), separate from the business profile.
+- [ ] **F4** Given an organization with future departures that use a relative deadline preset (`same_day`, `h1`, `h3`, `h7`), when the owner changes the time zone in Profil usaha, then those deadlines are recomputed in the new zone with F-003's `DeadlineCalculator`, inside the same transaction, each change audited as `departure.deadline_changed`; custom deadlines keep their instant (ADR-0014, F-003 Q15).
 
 ### Tenant isolation (ADR-0004, F-009) — tests required
 
@@ -207,6 +208,7 @@ photo upload (C3); lost connection mid-step (C13); stale draft with past dates (
 
 - **F-009** — tenancy base (organization scope, policies, 404 vs 403 convention), audit events, the rate-limit table used by A4, A7, A10 and B12. F-001 creates the first tenant, so B8 and T1–T6 need F-009's scoping in place.
 - **F-003** — trip & departure models, duration picker, deadline picker, photo limits, publish checklist (name required, description optional), trip-type presets (C2 must match). F-001 steps 2–3 reuse these; they must not fork them.
+- **F-003 is built first (2026-10-18)** — it adds `organizations.timezone` and `default_booking_deadline_preset`, a minimal seller layout, and a `PaymentReadiness` interface for checklist item 5 whose default answer is "no method". F-001 adds the `payment_methods` table and form, binds the real `PaymentReadiness`, adds the time-zone field to Profil usaha, and reuses F-003's R3 pixel cap. See F-003 → *Build order*.
 - **F-006** — payment-method model. Onboarding (weeks 2–3) needs bank / e-wallet methods before F-006 is scheduled (week 4): the payment-method model and its form must be pulled forward into weeks 2–3.
 - **F-002** — public page renders the published trip and enforces "drafts never public".
 - **F-007** — dashboard landing after E3; Pengaturan nav entry that hosts sections A (Akun) and F (Profil usaha); the dashboard greeting uses `users.name`.
@@ -242,3 +244,5 @@ None block building. The spec uses the recommended default for each; override an
 - 2026-10-17 — Free-plan trip limit removed from P0 (ADR-0019): sign-up copy "Gratis untuk mulai.", D3 asserts no limit
 - 2026-10-17 — ADR-0014 accepted; Q8 closed
 - 2026-10-18 — F-009 slice A hand-offs listed under Dependencies (A14b, A15a, R3, R4, R7)
+- 2026-10-18 — F-003 now builds first; hand-back (payment_methods + real PaymentReadiness, time-zone field) noted under Dependencies
+- 2026-10-18 — Trip name 3–80 chars (F-003 Q11); F4 added: time-zone change recomputes preset deadlines (F-003 Q15)

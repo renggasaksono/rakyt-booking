@@ -16,7 +16,8 @@ return [
     | scans app/ and routes/ and asserts this list is exactly what it finds.
     */
     'cross_organization_allowlist' => [
-        // e.g. 'app/Bookings/Jobs/ExpireSeatHolds.php',
+        // F-003 AC-37: lists due departure ids, then closes each as its organization.
+        'app/Trips/Jobs/CloseDeparturesPastDeadline.php',
     ],
 
     'admin_query_path' => 'app/Admin/Queries',
@@ -58,6 +59,19 @@ return [
         'trip_photo' => [
             'mimetypes' => ['image/jpeg', 'image/png', 'image/webp'],
             'max_kb' => 10 * 1024,
+            // F-009 R3 / ADR-0022 §5: checked from the file header before GD decodes it.
+            // The megapixel cap is derived from this budget (App\Media\PhotoBudget);
+            // the upload and the variants job raise memory_limit to it.
+            'memory_limit_mb' => 320,
+            'memory_headroom_mb' => 96,
+            'bytes_per_pixel' => 8,
+            'max_side_px' => 8000,
+            // The stored original is downscaled to this longest side (EXIF stripped).
+            'stored_max_side_px' => 2560,
+            // ADR-0015: at most this many photos per trip.
+            'max_per_trip' => 10,
+            // ADR-0015: resized variants for F-002, generated on the queue.
+            'variant_widths' => [400, 800, 1600],
         ],
         'payment_evidence' => [
             'mimetypes' => ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],

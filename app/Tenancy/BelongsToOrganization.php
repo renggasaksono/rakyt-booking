@@ -101,13 +101,61 @@ trait BelongsToOrganization
      */
     public function resolveRouteBinding($value, $field = null): ?Model
     {
-        $field ??= $this->getRouteKeyName();
-
-        if ($field === $this->getKeyName() && $this->getKeyType() === 'int' && ! IntegerKey::isValid($value)) {
+        if (! RouteKey::isAcceptable($this, $value, $field)) {
             return null;
         }
 
         return parent::resolveRouteBinding($value, $field);
+    }
+
+    /**
+     * Same for withTrashed() routes (F-009 R15).
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     */
+    public function resolveSoftDeletableRouteBinding($value, $field = null): ?Model
+    {
+        if (! RouteKey::isAcceptable($this, $value, $field)) {
+            return null;
+        }
+
+        return parent::resolveSoftDeletableRouteBinding($value, $field);
+    }
+
+    /**
+     * Same for scopeBindings() child routes, checked against the child model (F-009 R16).
+     *
+     * @param  string  $childType
+     * @param  mixed  $value
+     * @param  string|null  $field
+     */
+    public function resolveChildRouteBinding($childType, $value, $field): ?Model
+    {
+        if (! RouteKey::isAcceptable($this->childRouteBindingModel($childType), $value, $field)) {
+            return null;
+        }
+
+        return parent::resolveChildRouteBinding($childType, $value, $field);
+    }
+
+    /**
+     * @param  string  $childType
+     * @param  mixed  $value
+     * @param  string|null  $field
+     */
+    public function resolveSoftDeletableChildRouteBinding($childType, $value, $field): ?Model
+    {
+        if (! RouteKey::isAcceptable($this->childRouteBindingModel($childType), $value, $field)) {
+            return null;
+        }
+
+        return parent::resolveSoftDeletableChildRouteBinding($childType, $value, $field);
+    }
+
+    private function childRouteBindingModel(string $childType): Model
+    {
+        return $this->{$this->childRouteBindingRelationshipName($childType)}()->getRelated();
     }
 
     /**
