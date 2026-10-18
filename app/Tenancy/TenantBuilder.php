@@ -21,6 +21,9 @@ use Illuminate\Database\Eloquent\Builder;
  * (forwarded unscoped to the base query) and truncate. Use the model
  * methods (create, updateOrCreate, save) instead.
  *
+ * forceDelete() and "remove all scopes" keep the organization scope; only
+ * acrossOrganizations() (allowlisted, A8) removes it.
+ *
  * @template TModel of \Illuminate\Database\Eloquent\Model
  *
  * @extends Builder<TModel>
@@ -89,6 +92,27 @@ class TenantBuilder extends Builder
     public function updateFrom(array $values): never
     {
         throw BulkWriteBypassesTenancy::for('updateFrom');
+    }
+
+    /**
+     * Laravel's forceDelete() runs on the base query before any global scope is applied.
+     */
+    public function forceDelete()
+    {
+        return $this->withoutGlobalScopesExcept([OrganizationScope::class])->toBase()->delete();
+    }
+
+    /**
+     * Without arguments Laravel removes every scope (Relation::rawUpdate() and touch() do this);
+     * keep the organization's. Removing it by name is the allowlisted acrossOrganizations() path.
+     */
+    public function withoutGlobalScopes(?array $scopes = null)
+    {
+        if ($scopes === null) {
+            $scopes = array_values(array_diff(array_keys($this->scopes), [OrganizationScope::class]));
+        }
+
+        return parent::withoutGlobalScopes($scopes);
     }
 
     public function truncate(): never

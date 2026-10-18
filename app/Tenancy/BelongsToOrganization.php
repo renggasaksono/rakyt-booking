@@ -53,6 +53,36 @@ trait BelongsToOrganization
     }
 
     /**
+     * Saves, deletes and reloads by key also match the organization, so a model
+     * built by hand or hydrated from an unscoped query cannot touch another
+     * organization's row (refresh, fresh, update, delete, touch, restore).
+     *
+     * @param  Builder<static>|\Illuminate\Database\Query\Builder  $query
+     */
+    protected function setKeysForSaveQuery($query)
+    {
+        return parent::setKeysForSaveQuery($query)
+            ->where($this->qualifyColumn('organization_id'), $this->organizationIdForKeyQuery());
+    }
+
+    /**
+     * @param  Builder<static>|\Illuminate\Database\Query\Builder  $query
+     */
+    protected function setKeysForSelectQuery($query)
+    {
+        return parent::setKeysForSelectQuery($query)
+            ->where($this->qualifyColumn('organization_id'), $this->organizationIdForKeyQuery());
+    }
+
+    /**
+     * The current organization; without one (system jobs), the organization the row was loaded with.
+     */
+    private function organizationIdForKeyQuery(): mixed
+    {
+        return app(CurrentOrganization::class)->id() ?? $this->getOriginal('organization_id');
+    }
+
+    /**
      * Applies the organization rule to bulk inserts/upserts; refuses mass updates of organization_id.
      *
      * @param  \Illuminate\Database\Query\Builder  $query

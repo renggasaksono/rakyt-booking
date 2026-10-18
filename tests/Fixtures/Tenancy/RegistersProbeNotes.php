@@ -29,6 +29,14 @@ trait RegistersProbeNotes
             $table->unique(['organization_id', 'slug']);
         });
 
+        Schema::create('probe_trashable_notes', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('organization_id')->constrained();
+            $table->string('title');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
         Gate::policy(ProbeNote::class, ProbeNotePolicy::class);
 
         Route::middleware(['web', 'auth'])->prefix('probe-notes')->group(function () {

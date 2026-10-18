@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Tenancy;
 
+use App\Models\OrganizationMember;
 use App\Tenancy\CurrentOrganization;
 use App\Tenancy\Exceptions\BulkWriteBypassesTenancy;
 use App\Tenancy\Exceptions\MissingOrganizationContext;
@@ -9,6 +10,7 @@ use App\Tenancy\Exceptions\OrganizationIdImmutable;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Fixtures\Tenancy\ProbeNote;
+use Tests\Fixtures\Tenancy\ProbeTrashableNote;
 use Tests\Fixtures\Tenancy\RegistersProbeNotes;
 use Tests\Support\InteractsWithTenants;
 use Tests\TestCase;
@@ -262,5 +264,116 @@ class OrganizationScopingTest extends TestCase
 
         $this->asTenant($a, fn () => ProbeNote::query()->whereKey($note->id)->update(['title' => 'baru']));
         $this->assertDatabaseHas('probe_notes', ['id' => $note->id, 'title' => 'baru', 'organization_id' => $a->id()]);
+    }
+
+    public function test_ac_a2_force_delete_stays_inside_the_current_organization(): void
+    {
+        [$a, $b] = $this->createTenants();
+        $foreign = $this->asTenant($b, fn () => ProbeNote::create(['title' => 'Milik B']));
+        $this->asTenant($a, fn () => ProbeNote::create(['title' => 'Milik A']));
+
+        $this->asTenant($a, function () use ($foreign, $b) {
+            $this->assertSame(0, ProbeNote::query()->whereKey($foreign->id)->forceDelete());
+            $this->assertSame(1, ProbeNote::query()->forceDelete());
+            $this->assertSame(0, $b->organization->members()->forceDelete());
+            $this->assertSame(0, $b->owner->memberships()->forceDelete());
+        });
+
+        $this->assertDatabaseHas('probe_notes', ['id' => $foreign->id]);
+        $this->assertDatabaseMissing('probe_notes', ['organization_id' => $a->id()]);
+        $this->assertDatabaseHas('organization_members', ['organization_id' => $b->id()]);
+    }
+
+    public function test_ac_a2_force_delete_on_soft_deleting_models_stays_inside_the_current_organization(): void
+    {
+        [$a, $b] = $this->createTenants();
+        $foreign = $this->asTenant($b, function () {
+            $note = ProbeTrashableNote::create(['title' => 'Milik B']);
+            $note->delete();
+
+            return $note;
+        });
+        $own = $this->asTenant($a, function () {
+            $note = ProbeTrashableNote::create(['title' => 'Milik A']);
+            $note->delete();
+
+            return $note;
+        });
+
+        $this->asTenant($a, function () use ($foreign) {
+            $this->assertSame(0, ProbeTrashableNote::withTrashed()->whereKey($foreign->id)->forceDelete());
+            $this->assertSame(1, ProbeTrashableNote::onlyTrashed()->forceDelete());
+        });
+
+        $this->assertDatabaseHas('probe_trashable_notes', ['id' => $foreign->id]);
+        $this->assertDatabaseMissing('probe_trashable_notes', ['id' => $own->id]);
+    }
+
+    public function test_ac_a8_allowlisted_system_code_can_still_force_delete_across_organizations(): void
+    {
+        [$a, $b] = $this->createTenants();
+        $this->asTenant($a, fn () => ProbeNote::create(['title' => 'A']));
+        $this->asTenant($b, fn () => ProbeNote::create(['title' => 'B']));
+        app(CurrentOrganization::class)->set(null);
+
+        $this->assertSame(2, ProbeNote::acrossOrganizations()->forceDelete());
+    }
+
+    public function test_ac_a2_hand_made_or_hydrated_models_cannot_write_to_another_organization(): void
+    {
+        [$a, $b] = $this->createTenants();
+        $foreign = $this->asTenant($b, fn () => ProbeNote::create(['title' => 'Milik B']));
+        $trashed = $this->asTenant($b, fn () => ProbeTrashableNote::create(['title' => 'Milik B']));
+
+        $this->asTenant($a, function () use ($foreign, $trashed) {
+            $forged = (new ProbeNote)->newFromBuilder(['id' => $foreign->id, 'organization_id' => $foreign->organization_id, 'title' => 'Milik B']);
+            $forged->title = 'PWNED';
+            $forged->save();
+            $forged->touch();
+            $forged->delete();
+
+            $hydrated = ProbeNote::hydrate([['id' => $foreign->id, 'title' => 'x', 'organization_id' => $foreign->organization_id]])->first();
+            $hydrated->update(['title' => 'PWNED']);
+            $this->assertNull($hydrated->fresh());
+
+            $forgedTrash = (new ProbeTrashableNote)->newFromBuilder(['id' => $trashed->id, 'organization_id' => $trashed->organization_id, 'title' => 'x']);
+            $forgedTrash->forceDelete();
+            $forgedTrash->restore();
+        });
+
+        $this->assertDatabaseHas('probe_notes', ['id' => $foreign->id, 'title' => 'Milik B']);
+        $this->assertDatabaseHas('probe_trashable_notes', ['id' => $trashed->id, 'deleted_at' => null]);
+    }
+
+    public function test_ac_a2_relation_raw_updates_keep_the_organization_scope(): void
+    {
+        [$a, $b] = $this->createTenants();
+
+        $this->asTenant($a, fn () => $b->organization->members()->rawUpdate(['role' => 'owner', 'updated_at' => now()->subYear()]));
+
+        $this->assertSame(0, OrganizationMember::acrossOrganizations()
+            ->where('organization_id', $b->id())
+            ->where('updated_at', '<', now()->subMonth())
+            ->count());
+    }
+
+    public function test_ac_a2_owners_still_work_with_their_own_models_by_key(): void
+    {
+        [$a] = $this->createTenants();
+        $note = $this->asTenant($a, fn () => ProbeNote::create(['title' => 'Lama']));
+
+        $this->asTenant($a, function () use ($note) {
+            $note->update(['title' => 'Baru']);
+            $this->assertSame('Baru', $note->fresh()->title);
+            $note->delete();
+        });
+
+        // Without a context (system job) the model's own organization is used.
+        $other = $this->asTenant($a, fn () => ProbeNote::create(['title' => 'Sistem']));
+        app(CurrentOrganization::class)->set(null);
+        $other->update(['title' => 'Diubah sistem']);
+
+        $this->assertDatabaseMissing('probe_notes', ['id' => $note->id]);
+        $this->assertDatabaseHas('probe_notes', ['id' => $other->id, 'title' => 'Diubah sistem']);
     }
 }
