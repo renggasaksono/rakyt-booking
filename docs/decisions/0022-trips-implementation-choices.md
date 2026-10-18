@@ -1,7 +1,7 @@
 ---
 id: 0022
 title: Implementation choices for trips and departures (F-003)
-status: proposed
+status: accepted
 date: 2026-10-18
 deciders: [Rengga]
 related: [F-003, F-009, ADR-0004, ADR-0005, ADR-0006, ADR-0014, ADR-0015, ADR-0020, ADR-0021]
@@ -9,7 +9,7 @@ related: [F-003, F-009, ADR-0004, ADR-0005, ADR-0006, ADR-0014, ADR-0015, ADR-00
 
 # 0022. Implementation choices for trips and departures (F-003)
 
-*Proposed by the builder agent on 2026-10-18 while building F-003.*
+*Proposed by the builder agent on 2026-10-18 while building F-003. Accepted by Rengga on 2026-10-18.*
 
 ## Context
 

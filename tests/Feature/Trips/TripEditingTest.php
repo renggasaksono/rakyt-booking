@@ -105,6 +105,23 @@ class TripEditingTest extends TestCase
         $this->assertDatabaseCount('trips', 0);
     }
 
+    public function test_ac_2_name_must_be_3_to_80_characters(): void
+    {
+        [$a] = $this->createTenants();
+
+        $this->actingAsTenant($a)->postJson(route('trips.store'), ['name' => 'Ab'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['name' => __('trips.errors.name_min', ['min' => 3])]);
+        $this->actingAsTenant($a)->postJson(route('trips.store'), ['name' => str_repeat('a', 81)])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('name');
+        $this->assertDatabaseCount('trips', 0);
+
+        $this->actingAsTenant($a)->postJson(route('trips.store'), ['name' => 'Abc'])->assertCreated();
+        $this->actingAsTenant($a)->postJson(route('trips.store'), ['name' => str_repeat('a', 80)])->assertCreated();
+        $this->assertDatabaseCount('trips', 2);
+    }
+
     public function test_ac_2_slugs_are_unique_per_organization_and_never_change(): void
     {
         [$a, $b] = $this->createTenants();

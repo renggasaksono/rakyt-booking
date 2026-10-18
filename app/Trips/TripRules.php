@@ -12,6 +12,8 @@ use Illuminate\Validation\Rule;
  */
 final class TripRules
 {
+    public const NAME_MIN = 3;
+
     public const NAME_MAX = 80;
 
     public const SHORT_DESCRIPTION_MAX = 300;
@@ -49,7 +51,7 @@ final class TripRules
         return [
             'type' => [...$sometimes, $partial ? 'required' : 'nullable', Rule::enum(TripType::class)],
             'booking_mode' => [...$sometimes, 'nullable', Rule::enum(BookingMode::class)],
-            'name' => [...$sometimes, 'required', 'string', 'max:'.self::NAME_MAX],
+            'name' => [...$sometimes, 'required', 'string', 'min:'.self::NAME_MIN, 'max:'.self::NAME_MAX],
             'short_description' => [...$sometimes, 'nullable', 'string', 'max:'.self::SHORT_DESCRIPTION_MAX],
             'duration_label' => [...$sometimes, 'nullable', Rule::in(['hours', 'days'])],
             'duration_days' => [...$sometimes, 'nullable', 'required_if:duration_label,days', 'integer', 'between:1,'.Duration::MAX_DAYS],
@@ -75,6 +77,7 @@ final class TripRules
     {
         return [
             'name.required' => __('trips.errors.name_required'),
+            'name.min' => __('trips.errors.name_min', ['min' => self::NAME_MIN]),
             'duration_nights.lte' => __('trips.duration.nights_max'),
             'inclusions.max' => __('trips.errors.items_max', ['max' => self::LIST_MAX_ITEMS]),
             'exclusions.max' => __('trips.errors.items_max', ['max' => self::LIST_MAX_ITEMS]),

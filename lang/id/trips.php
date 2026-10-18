@@ -253,6 +253,7 @@ return [
     'errors' => [
         'generic' => 'Terjadi kesalahan. Coba lagi.',
         'name_required' => 'Isi nama trip dulu.',
+        'name_min' => 'Nama trip minimal :min karakter.',
         'price_range' => 'Harga antara Rp1.000 dan Rp100.000.000.',
         'capacity_range' => 'Jumlah kursi 1–999.',
         'items_max' => 'Maksimal :max item.',
