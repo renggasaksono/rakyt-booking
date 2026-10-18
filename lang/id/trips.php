@@ -106,6 +106,8 @@ return [
         'move_earlier' => 'Geser ke depan',
         'move_later' => 'Geser ke belakang',
         'make_cover' => 'Jadikan sampul',
+        'cover_confirm' => 'Jadikan foto ini sampul? Sampul langsung tampil di halaman publik dan pratinjau link.',
+        'cover_remove_confirm' => 'Hapus foto sampul? Foto berikutnya langsung jadi sampul di halaman publik.',
         'save_first' => 'Isi nama trip dulu, lalu tambahkan foto.',
     ],
 

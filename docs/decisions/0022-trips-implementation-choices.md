@@ -46,7 +46,7 @@ could later ask "why?" about.
    across organizations (allowlisted) and closes each one as its own organization, under the row lock, audited as
    the system.
 8. **Changes to photos and departures of a published trip apply immediately.** "Simpan perubahan" (AC-4) covers the
-   trip's own fields. To keep the checklist true, a published trip cannot lose its last photo or its base price.
+   trip's own fields. To keep the checklist true, a published trip cannot lose its last photo or its base price. Moving another photo into first place or removing the cover asks for confirmation first (F-003 AC-7a, decided 2026-10-18).
 9. **The concurrency test uses a second process.** AC-39 needs two database connections with committed rows, so that
    test class does not wrap tests in a transaction; it runs a PHP child process that books seats with the conditional
    update F-005 will use, and makes the next test class rebuild the schema (audit events are append-only).

@@ -1,17 +1,20 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { firstError, sendJson, upload } from '../lib/http.js';
+import { changesCover } from '../lib/photos.js';
 import { t } from '../lib/text.js';
 
 /**
  * Trip photos (mockup 1f §01, AC-7): gallery or camera, progress per photo,
  * first = cover, reorder and remove. The server strips EXIF and checks
  * type, size and the 10-photo limit; the same checks run here first.
+ * With confirmCover (published trips), a change of cover asks first (Q13).
  */
 const props = defineProps({
     photos: { type: Array, required: true },
     uploadUrl: { type: String, default: null },
     reorderUrl: { type: String, default: null },
+    confirmCover: { type: Boolean, default: false },
     limits: { type: Object, required: true },
     copy: { type: Object, required: true },
 });
@@ -81,14 +84,29 @@ async function reorder(ids) {
     }
 }
 
+function coverChangeAllowed(afterIds, key) {
+    const beforeIds = props.photos.map((photo) => photo.id);
+
+    return !props.confirmCover || !changesCover(beforeIds, afterIds) || window.confirm(t(props.copy, key));
+}
+
 function move(index, offset) {
     const ids = props.photos.map((photo) => photo.id);
     const [moved] = ids.splice(index, 1);
     ids.splice(Math.max(0, Math.min(ids.length, index + offset)), 0, moved);
-    reorder(ids);
+
+    if (coverChangeAllowed(ids, 'photos.cover_confirm')) {
+        reorder(ids);
+    }
 }
 
 async function remove(photo) {
+    const ids = props.photos.map((entry) => entry.id).filter((id) => id !== photo.id);
+
+    if (!coverChangeAllowed(ids, 'photos.cover_remove_confirm')) {
+        return;
+    }
+
     try {
         emit('changed', await sendJson('DELETE', photo.destroy_url));
     } catch (failure) {

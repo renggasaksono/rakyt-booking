@@ -61,7 +61,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Sign-in before F-001 exists | No dev login shortcut; feature tests only, device review after F-001 section A | [F-003 Q10](../features/F-003-trips-and-departures.md#open-questions) |
 | Trip name length (F-001 says 3–100, F-003 says ≤ 80) | ≤ 80, shared `TripRules` | [F-003 Q11](../features/F-003-trips-and-departures.md#open-questions) |
 | Foreign ids in payloads: 404 (AC-40) or 422 (ADR-0021) | 422; reword AC-40 | [F-003 Q12](../features/F-003-trips-and-departures.md#open-questions) |
-| Photos/departures of a published trip apply without "Simpan perubahan" | Keep; last photo and base price stay | [F-003 Q13](../features/F-003-trips-and-departures.md#open-questions) |
 | Org default deadline excludes "Sampai hari keberangkatan" | Keep (H-1/H-3/H-7) | [F-003 Q14](../features/F-003-trips-and-departures.md#open-questions) |
 | Recompute preset deadlines on time-zone change | Ships with F-001's time-zone field | [F-003 Q15](../features/F-003-trips-and-departures.md#open-questions) |
 | Booking link change after publish | Only before first publish; then via support, no redirects | [F-001 Q3](../features/F-001-seller-onboarding.md#open-questions) |

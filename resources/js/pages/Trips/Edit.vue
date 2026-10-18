@@ -380,6 +380,7 @@ const inputClass = (field) => [
                             :photos="tripState?.photos ?? []"
                             :upload-url="urlState.photos"
                             :reorder-url="urlState.photos_reorder"
+                            :confirm-cover="isPublished"
                             :limits="options.limits"
                             :copy="copy"
                             @changed="onPhotos"
