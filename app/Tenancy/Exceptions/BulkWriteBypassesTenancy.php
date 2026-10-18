@@ -9,7 +9,7 @@ class BulkWriteBypassesTenancy extends LogicException
     public static function for(string $method): self
     {
         return new self(sprintf(
-            '%s() skips model events and the organization fill. Use create()/save(), or an allowlisted system query (config/rakyt.php).',
+            '%s cannot be kept inside the current organization. Use create(), save() or updateOrCreate(), or an allowlisted system query (config/rakyt.php).',
             $method,
         ));
     }

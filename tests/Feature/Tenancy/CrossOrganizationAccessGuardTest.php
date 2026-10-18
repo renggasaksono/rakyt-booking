@@ -17,14 +17,21 @@ class CrossOrganizationAccessGuardTest extends TestCase
 {
     /**
      * Eloquent scope bypasses, unscoped model queries, and any database access
-     * outside Eloquent (facade, connection, container). DB::transaction*,
+     * outside Eloquent: the DB facade (also aliased), the container ('db',
+     * DatabaseManager) and injected connections. DB::transaction*,
      * beginTransaction, commit, rollBack and afterCommit stay allowed.
+     *
+     * A safety net, not a proof (ADR-0021): code review and the C1 audit
+     * still check tenant scoping.
      */
     private const BYPASS_PATTERN = '/'
         .'acrossOrganizations\(|withoutGlobalScopes?\(|newQueryWithoutScopes?\(|newModelQuery\('
         .'|->toBase\(|->getQuery\(|->getConnection\(|->getPdo\('
         .'|DB::(?!transaction|transactionLevel\(|beginTransaction\(|commit\(|rollBack\(|afterCommit\()\w+\('
-        .'|\b(app|resolve)\(\s*[\'"](db|db\.connection)[\'"]\s*\)|DatabaseManager::class'
+        .'|\b(app|resolve)\(\s*[\'"](db|db\.connection)[\'"]\s*\)|DatabaseManager'
+        .'|->make\(\s*[\'"]db(\.connection)?[\'"]|App::make\(\s*[\'"]db|\[\s*[\'"]db(\.connection)?[\'"]\s*\]'
+        .'|\bresolveConnection\(|ConnectionInterface|ConnectionResolverInterface|Illuminate\\\\Database\\\\Connection\b'
+        .'|Facades\\\\DB\s+as\s'
         .'/';
 
     /** The scope's own mechanism; reviewed with ADR-0021. */
@@ -71,6 +78,14 @@ class CrossOrganizationAccessGuardTest extends TestCase
             "app('db')->table('trips');",
             "resolve('db')->select('x');",
             'app(DatabaseManager::class)->table(\'trips\');',
+            'use Illuminate\\Support\\Facades\\DB as Database;',
+            "app()->make('db')->table('trips');",
+            "App::make('db')->table('trips');",
+            "\$this->app['db']->table('trips');",
+            'public function __construct(private ConnectionInterface $db) {}',
+            'public function __construct(ConnectionResolverInterface $resolver) {}',
+            'public function handle(\\Illuminate\\Database\\Connection $db) {}',
+            'Trip::resolveConnection()->table(\'trips\');',
         ] as $code) {
             $this->assertMatchesRegularExpression(self::BYPASS_PATTERN, $code);
         }

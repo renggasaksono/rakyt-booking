@@ -127,7 +127,7 @@ class OrganizationScopingTest extends TestCase
         ProbeNote::create(['title' => 'tanpa organisasi']);
     }
 
-    public function test_ac_a4_bulk_inserts_and_upserts_cannot_write_into_another_organization(): void
+    public function test_ac_a4_bulk_inserts_cannot_write_into_another_organization(): void
     {
         [$a, $b] = $this->createTenants();
         $row = fn (string $title) => ['title' => $title, 'organization_id' => $b->id(), 'created_at' => now(), 'updated_at' => now()];
@@ -137,12 +137,97 @@ class OrganizationScopingTest extends TestCase
             ProbeNote::insert([$row('static insert'), $row('static insert 2')]);
             ProbeNote::query()->insertGetId($row('insertGetId'));
             ProbeNote::query()->insertOrIgnore([$row('insertOrIgnore')]);
-            ProbeNote::query()->upsert([$row('upsert')], ['id'], ['title']);
             ProbeNote::query()->fillAndInsert([['title' => 'fillAndInsert']]);
         });
 
         $this->assertDatabaseMissing('probe_notes', ['organization_id' => $b->id()]);
-        $this->assertDatabaseCount('probe_notes', 7);
+        $this->assertDatabaseCount('probe_notes', 6);
+    }
+
+    public function test_ac_a4_empty_bulk_writes_write_nothing(): void
+    {
+        [$a] = $this->createTenants();
+
+        $this->asTenant($a, function () {
+            $this->assertTrue(ProbeNote::query()->insert([]));
+            $this->assertSame(0, ProbeNote::query()->insertOrIgnore([]));
+            $this->assertSame(0, ProbeNote::query()->upsert([], ['organization_id', 'slug']));
+        });
+
+        $this->assertDatabaseCount('probe_notes', 0);
+    }
+
+    public function test_ac_a4_upsert_on_a_conflict_target_without_organization_id_is_refused(): void
+    {
+        [$a, $b] = $this->createTenants();
+        $foreign = $this->asTenant($b, fn () => ProbeNote::create(['title' => 'Milik B', 'slug' => 'komodo']));
+
+        foreach ([
+            fn () => ProbeNote::query()->upsert([['id' => $foreign->id, 'title' => 'PWNED']], ['id'], ['title']),
+            fn () => ProbeNote::query()->upsert([['id' => $foreign->id, 'title' => 'PWNED']], ['id']),
+            fn () => ProbeNote::query()->upsert(['id' => $foreign->id, 'title' => 'PWNED'], 'id'),
+        ] as $upsert) {
+            try {
+                $this->asTenant($a, $upsert);
+                $this->fail('Upsert without organization_id in the conflict target should be refused.');
+            } catch (BulkWriteBypassesTenancy) {
+            }
+        }
+
+        $this->assertDatabaseHas('probe_notes', ['id' => $foreign->id, 'title' => 'Milik B', 'organization_id' => $b->id()]);
+    }
+
+    public function test_ac_a4_upsert_conflicts_stay_inside_the_current_organization(): void
+    {
+        [$a, $b] = $this->createTenants();
+        $foreign = $this->asTenant($b, fn () => ProbeNote::create(['title' => 'Milik B', 'slug' => 'komodo']));
+        $own = $this->asTenant($a, fn () => ProbeNote::create(['title' => 'Lama', 'slug' => 'bromo']));
+
+        $this->asTenant($a, function () {
+            // Default update columns (null): organization_id must never be among them.
+            ProbeNote::query()->upsert([
+                ['slug' => 'komodo', 'title' => 'Baru A'],
+                ['slug' => 'bromo', 'title' => 'Diubah A'],
+            ], ['organization_id', 'slug']);
+
+            // A single associative row with explicit update columns.
+            ProbeNote::query()->upsert(['slug' => 'bromo', 'title' => 'Diubah lagi'], ['organization_id', 'slug'], ['title']);
+        });
+
+        $this->assertDatabaseHas('probe_notes', ['id' => $foreign->id, 'title' => 'Milik B', 'organization_id' => $b->id()]);
+        $this->assertDatabaseHas('probe_notes', ['id' => $own->id, 'title' => 'Diubah lagi', 'organization_id' => $a->id()]);
+        $this->assertDatabaseHas('probe_notes', ['slug' => 'komodo', 'title' => 'Baru A', 'organization_id' => $a->id()]);
+    }
+
+    public function test_ac_a4_upserts_cannot_update_organization_id(): void
+    {
+        [$a] = $this->createTenants();
+
+        $this->expectException(OrganizationIdImmutable::class);
+
+        $this->asTenant($a, fn () => ProbeNote::query()->upsert([['slug' => 'x', 'title' => 'x']], ['organization_id', 'slug'], ['organization_id']));
+    }
+
+    public function test_ac_a4_unscoped_writes_are_refused(): void
+    {
+        [$a, $b] = $this->createTenants();
+        $foreign = $this->asTenant($b, fn () => ProbeNote::create(['title' => 'Milik B', 'slug' => 'komodo']));
+
+        foreach ([
+            'insertUsing' => fn () => ProbeNote::query()->insertUsing(['title'], ProbeNote::query()->select('title')),
+            'updateOrInsert' => fn () => ProbeNote::query()->updateOrInsert(['id' => $foreign->id], ['title' => 'PWNED']),
+            'updateFrom' => fn () => ProbeNote::query()->where('probe_notes.id', $foreign->id)->updateFrom(['title' => 'PWNED']),
+            'truncate' => fn () => ProbeNote::query()->truncate(),
+            'static truncate' => fn () => ProbeNote::truncate(),
+        ] as $method => $write) {
+            try {
+                $this->asTenant($a, $write);
+                $this->fail("{$method} should be refused.");
+            } catch (BulkWriteBypassesTenancy) {
+            }
+        }
+
+        $this->assertDatabaseHas('probe_notes', ['id' => $foreign->id, 'title' => 'Milik B', 'organization_id' => $b->id()]);
     }
 
     public function test_ac_a4_bulk_writes_without_context_must_name_the_organization(): void
@@ -155,24 +240,6 @@ class OrganizationScopingTest extends TestCase
 
         $this->expectException(MissingOrganizationContext::class);
         ProbeNote::query()->insert([['title' => 'tanpa organisasi']]);
-    }
-
-    public function test_ac_a4_inserts_from_a_select_are_refused(): void
-    {
-        [$a] = $this->createTenants();
-
-        $this->expectException(BulkWriteBypassesTenancy::class);
-
-        $this->asTenant($a, fn () => ProbeNote::query()->insertUsing(['title'], ProbeNote::query()->select('title')));
-    }
-
-    public function test_ac_a4_upserts_cannot_update_organization_id(): void
-    {
-        [$a, $b] = $this->createTenants();
-
-        $this->expectException(OrganizationIdImmutable::class);
-
-        $this->asTenant($a, fn () => ProbeNote::query()->upsert([['id' => 1, 'title' => 'x']], ['id'], ['organization_id']));
     }
 
     public function test_ac_a4_query_builder_updates_cannot_change_organization_id(): void

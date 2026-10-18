@@ -12,9 +12,14 @@ use Illuminate\Database\Eloquent\Builder;
  *
  * Bulk inserts and upserts skip model events, so they get the same rule as
  * the `creating` hook here: with a current organization every row gets its
- * organization_id; without one every row must name it. Inserts whose rows
- * cannot be checked (insert … select) are refused. Updates and increments
- * may never touch organization_id (F-009 A4).
+ * organization_id; without one every row must name it. Updates and
+ * increments may never touch organization_id (F-009 A4).
+ *
+ * Writes the scope cannot reach are refused: insert … select, upserts whose
+ * conflict target lacks organization_id (ON CONFLICT ignores the scope and
+ * would hit another organization's row), updateOrInsert / updateFrom
+ * (forwarded unscoped to the base query) and truncate. Use the model
+ * methods (create, updateOrCreate, save) instead.
  *
  * @template TModel of \Illuminate\Database\Eloquent\Model
  *
@@ -24,6 +29,10 @@ class TenantBuilder extends Builder
 {
     public function insert(array $values)
     {
+        if ($values === []) {
+            return true;
+        }
+
         return $this->toBase()->insert($this->withOrganization($values));
     }
 
@@ -34,6 +43,10 @@ class TenantBuilder extends Builder
 
     public function insertOrIgnore(array $values)
     {
+        if ($values === []) {
+            return 0;
+        }
+
         return $this->toBase()->insertOrIgnore($this->withOrganization($values));
     }
 
@@ -44,10 +57,43 @@ class TenantBuilder extends Builder
 
     public function upsert(array $values, $uniqueBy, $update = null)
     {
-        $columns = $update ?? array_keys(reset($values) ?: []);
-        $this->guardOrganizationId(array_map(fn ($key, $value) => is_int($key) ? $value : $key, array_keys($columns), $columns));
+        if ($values === []) {
+            return 0;
+        }
 
-        return parent::upsert($this->withOrganization($values), $uniqueBy, $update);
+        if (! in_array('organization_id', (array) $uniqueBy, true)) {
+            throw BulkWriteBypassesTenancy::for('upsert without organization_id in $uniqueBy');
+        }
+
+        if ($update !== null) {
+            $this->guardOrganizationId(array_map(
+                fn ($key, $value) => is_int($key) ? $value : $key,
+                array_keys($update),
+                $update,
+            ));
+        }
+
+        $rows = $this->withOrganization($values);
+
+        // Laravel's default updates every column; never organization_id.
+        $update ??= array_values(array_diff(array_keys($rows[0]), ['organization_id']));
+
+        return parent::upsert($rows, $uniqueBy, $update);
+    }
+
+    public function updateOrInsert(array $attributes, array|callable $values = []): never
+    {
+        throw BulkWriteBypassesTenancy::for('updateOrInsert');
+    }
+
+    public function updateFrom(array $values): never
+    {
+        throw BulkWriteBypassesTenancy::for('updateFrom');
+    }
+
+    public function truncate(): never
+    {
+        throw BulkWriteBypassesTenancy::for('truncate');
     }
 
     public function insertUsing(array $columns, $query): never
@@ -101,6 +147,7 @@ class TenantBuilder extends Builder
      */
     private function withOrganization(array $values): array
     {
+        // One associative row or a list of rows, as Laravel accepts.
         $rows = array_is_list($values) && is_array($values[0] ?? null) ? $values : [$values];
         $current = app(CurrentOrganization::class)->id();
 

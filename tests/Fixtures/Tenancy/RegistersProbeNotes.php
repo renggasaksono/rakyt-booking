@@ -21,9 +21,12 @@ trait RegistersProbeNotes
             $table->id();
             $table->foreignId('organization_id')->constrained();
             $table->string('title');
+            $table->string('slug')->nullable();
             $table->foreignId('related_note_id')->nullable();
             $table->boolean('archived')->default(false);
             $table->timestamps();
+
+            $table->unique(['organization_id', 'slug']);
         });
 
         Gate::policy(ProbeNote::class, ProbeNotePolicy::class);
