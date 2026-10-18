@@ -8,7 +8,8 @@ tracking — with customers paying the seller directly.
 
 ## Status
 
-Pre-build. Product strategy and hi-fi mockups are done; the Laravel app is not scaffolded yet.
+MVP build. The Laravel app is scaffolded and the tenancy & security baseline (F-009 slice A) is in place.
+Setup and commands: [`AGENTS.md`](AGENTS.md#commands).
 See the [roadmap](docs/roadmaps/README.md) for what is next.
 
 ## Where things live

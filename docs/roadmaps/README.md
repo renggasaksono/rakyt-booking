@@ -11,8 +11,8 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 
 | Item | Status |
 |---|---|
-| Week 1 — resolve open questions, confirm proposed ADRs, scaffold Laravel app | planned |
-| [F-009](../features/F-009-tenancy-security-operations.md) Tenancy & security baseline (slice A wk 2 · ops wk 4 · hardening wk 6) | ready (spec) |
+| Week 1 — resolve open questions, confirm proposed ADRs, scaffold Laravel app | scaffold done (ADR-0020); ADR-0011 still proposed |
+| [F-009](../features/F-009-tenancy-security-operations.md) Tenancy & security baseline (slice A wk 2 · ops wk 4 · hardening wk 6) | in-progress — slice A built; B, C to do |
 | [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | ready (spec) |
 | [F-003](../features/F-003-trips-and-departures.md) Trips & departures | ready (spec) |
 | [F-002](../features/F-002-public-booking-page.md) Public booking page | planned |
@@ -50,7 +50,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 
 | Decision | Recommended | Source |
 |---|---|---|
-| Rakyt staff access to seller data | None in-app; audited artisan commands | [F-009 Q6](../features/F-009-tenancy-security-operations.md#open-questions) |
 | Sellers see a change history in P0 | No; capture now, show later | [F-009 Q7](../features/F-009-tenancy-security-operations.md#open-questions) |
 | Changing a trip's duration when departures have bookings | Only unbooked departures move; notice shown | [F-003 Q3](../features/F-003-trips-and-departures.md#open-questions) |
 | Deleting a departure with bookings | Not allowed; close only; cancel flow in wk 4 | [F-003 Q4](../features/F-003-trips-and-departures.md#open-questions) |
