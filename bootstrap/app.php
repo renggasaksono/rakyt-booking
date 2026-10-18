@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureOnboardingFinished;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Security\InertiaErrorResponse;
 use App\Security\Middleware\AssignRequestId;
 use App\Security\Middleware\NoReferrer;
 use App\Security\Middleware\SecurityHeaders;
@@ -14,7 +16,8 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Session\Middleware\AuthenticateSession;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -27,6 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecurityHeaders::class);
 
         $middleware->web(append: [
+            // A password change or reset signs out other sessions (F-001 A9, A12).
+            AuthenticateSession::class,
             ResolveCurrentOrganization::class,
             HandleInertiaRequests::class,
         ]);
@@ -40,10 +45,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'no-referrer' => NoReferrer::class,
             'organization' => EnsureCurrentOrganization::class,
+            'onboarded' => EnsureOnboardingFinished::class,
         ]);
 
-        // Seller sign-in arrives with F-001; until then guests go to the home page.
-        $middleware->redirectGuestsTo(fn () => Route::has('login') ? route('login') : route('home'));
+        $middleware->redirectGuestsTo(fn () => route('login'));
+        $middleware->redirectUsersTo(fn () => route('dashboard'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
@@ -51,6 +57,9 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         $exceptions->render(fn (ThrottleRequestsException $e, Request $request) => ThrottledResponse::render($e, $request));
+
+        // F-009 R7: Inertia visits get an Inertia page, not the HTML error page in a modal.
+        $exceptions->respond(fn (Response $response, Throwable $e, Request $request) => InertiaErrorResponse::render($response, $request));
 
         // Never send passwords or tokens back into the session as old input.
         $exceptions->dontFlash(SensitiveInput::FIELDS);

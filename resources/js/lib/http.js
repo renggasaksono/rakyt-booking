@@ -97,3 +97,18 @@ export function firstError(error, fallback) {
 
     return error?.body?.message || fallback;
 }
+
+/**
+ * Inertia visit callbacks for a lost connection or a non-Inertia error
+ * response: keep the form as typed and let the page say "Gagal menyimpan"
+ * instead of Inertia's error modal (F-001 C13).
+ */
+export function saveFailureHandlers(onFail) {
+    const handle = () => {
+        onFail();
+
+        return false;
+    };
+
+    return { onNetworkError: handle, onHttpException: handle };
+}

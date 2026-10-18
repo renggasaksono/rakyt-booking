@@ -3,7 +3,7 @@
 What is in scope **now**, **next** and **later**. Agents only build items under **Now**.
 Dated plans live alongside this file; this page is the summary that must always be current.
 
-_Last updated: 2026-10-18_
+_Last updated: 2026-10-19_
 
 ## Now — MVP build (P0)
 
@@ -14,7 +14,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | Week 1 — resolve open questions, confirm proposed ADRs, scaffold Laravel app | scaffold done (ADR-0020); ADR-0011 still proposed |
 | [F-009](../features/F-009-tenancy-security-operations.md) Tenancy & security baseline (slice A wk 2 · ops wk 4 · hardening wk 6) | in-progress — slice A built; B, C to do |
 | [F-003](../features/F-003-trips-and-departures.md) Trips & departures | in-progress — built on `feat/F-003-trips-and-departures`; 38/43 ACs covered by tests; AC-3/7/7a/41 partly covered, AC-35 is a pilot check; device review after F-001 section A |
-| [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | ready (spec) — **next to build**; binds F-003's `PaymentReadiness` |
+| [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | in-progress — built on `feat/F-001-seller-onboarding`; 58/63 ACs covered by tests; C3/F1/T3 partly covered, D7 waits on F-002, P1 device review; ADR-0023 accepted; PR #5 |
 | [F-002](../features/F-002-public-booking-page.md) Public booking page | planned |
 | [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | planned |
 | [F-004](../features/F-004-request-a-date.md) Request-a-date | planned |
@@ -43,6 +43,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
 | Transactional email provider (SPF/DKIM) | — | [F-001](../features/F-001-seller-onboarding.md#dependencies) | Pilot |
+| **Pre-pilot gate:** ADR-0018 24-hour block on payment-instruction changes after a password reset or email change, and the change notice to the sign-in email — not built by F-001 | Build with F-006 Pengaturan → Pembayaran | [F-001 Q16](../features/F-001-seller-onboarding.md#open-questions) · [ADR-0018](../decisions/0018-account-recovery-and-payment-instruction-protection.md) | Pilot (blocks "Pilot go") |
 | Syarat & Privasi text; PDP law (UU 27/2022) | Short Bahasa notice before pilot; formal review before launch | [F-009 Q9](../features/F-009-tenancy-security-operations.md#open-questions) | Pilot |
 | Free-tier limits and pricing | Decide after pilot | [ADR-0019](../decisions/0019-defer-free-tier-limits.md) | After pilot |
 
@@ -56,8 +57,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Default booking deadline | H-3 | [F-003 Q6](../features/F-003-trips-and-departures.md#open-questions) |
 | "Sampai hari keberangkatan" cut-off | 1 h before meeting time; hidden without one | [F-003 Q7](../features/F-003-trips-and-departures.md#open-questions) |
 | Mobile trip editor without a mockup | Build from onboarding patterns; device review wk 3 | [F-003 Q8](../features/F-003-trips-and-departures.md#open-questions) |
-| Payment-method check before F-001 exists | `PaymentReadiness` interface, default "no method"; F-001 binds the real one | [F-003 Q9](../features/F-003-trips-and-departures.md#open-questions) |
-| Sign-in before F-001 exists | No dev login shortcut; feature tests only, device review after F-001 section A | [F-003 Q10](../features/F-003-trips-and-departures.md#open-questions) |
 | Booking link change after publish | Only before first publish; then via support, no redirects | [F-001 Q3](../features/F-001-seller-onboarding.md#open-questions) |
 | Onboarding "selesai dalam" timer | Show only if published ≤ 60 min after sign-up | [F-001 Q5](../features/F-001-seller-onboarding.md#open-questions) |
 | "Termasuk apa saja?" chips | Generic set (Transportasi, Penginapan, Makan, Guide, …) | [F-001 Q7](../features/F-001-seller-onboarding.md#open-questions) |
@@ -66,6 +65,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Onboarding time budget (±9/8/4/2 min) | Keep for build; retime in wk-1 user tests | [F-001 Q12](../features/F-001-seller-onboarding.md#open-questions) |
 | Ask "Nama Anda" at sign-up | Yes | [F-001 Q13](../features/F-001-seller-onboarding.md#open-questions) |
 | Password confirmation field | No; show/hide toggle | [F-001 Q14](../features/F-001-seller-onboarding.md#open-questions) |
+| Auth events of a seller without an organization yet | Not audited in P0 | [F-001 Q17](../features/F-001-seller-onboarding.md#open-questions) |
 
 ### Draft specs — to resolve when the spec is made `ready`
 
@@ -109,6 +109,6 @@ see [`year-1-commercial.md`](year-1-commercial.md).
 
 | Gate | When | Question | Evidence |
 |---|---|---|---|
-| Pilot go | End wk 4 | Is the core loop safe for real customers? | No known overbooking or cross-tenant leaks; backup restore tested |
+| Pilot go | End wk 4 | Is the core loop safe for real customers? | No known overbooking or cross-tenant leaks; backup restore tested; ADR-0018 payment-instruction block and notice built (F-001 Q16) |
 | Continue / pivot | End wk 6 | Do operators use it without us? | Time to first trip < 10 min · independent onboarding · first real booking ≤ 14 days · repeat use |
 | Enterprise pilot | Month 5–6 | Will an established operator pay? | Qualified pipeline; paid pilot scope |

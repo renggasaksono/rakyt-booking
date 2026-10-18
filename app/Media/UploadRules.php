@@ -20,6 +20,16 @@ final class UploadRules
     }
 
     /**
+     * Organization logo (F-001 F1): same pixel cap as trip photos (F-009 R3).
+     *
+     * @return list<string|Closure>
+     */
+    public static function logo(): array
+    {
+        return ['bail', ...self::rules('logo'), self::pixelCap()];
+    }
+
+    /**
      * @return list<string>
      */
     public static function paymentEvidence(): array

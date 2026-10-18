@@ -4,6 +4,7 @@ namespace App\Trips;
 
 use App\Audit\AuditAction;
 use App\Audit\AuditLog;
+use App\Models\Organization;
 use App\Models\Trip;
 use App\Models\TripDeparture;
 use App\Models\TripPhoto;
@@ -138,6 +139,15 @@ final class TripService
             $locked->status = TripStatus::Published;
             $locked->published_at = now();
             $locked->save();
+
+            // F-001 D2, F2: the organization's first publish, from any screen, fixes the
+            // booking link and ends the "time to first published trip" metric.
+            $organization = Organization::query()->whereKey($locked->organization_id)->lockForUpdate()->firstOrFail();
+
+            if ($organization->first_published_at === null) {
+                $organization->first_published_at = now();
+                $organization->save();
+            }
 
             $this->audit->record(AuditAction::TripPublished, $locked, ['status' => TripStatus::Draft->value], ['status' => TripStatus::Published->value]);
         });

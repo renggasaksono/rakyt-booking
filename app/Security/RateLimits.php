@@ -45,6 +45,15 @@ final class RateLimits
         RateLimiter::for('slug-check', fn (Request $request) => [
             self::limit('slug_check.per_ip', 'slug-ip:'.$request->ip()),
         ]);
+
+        // Signed-in routes only: keyed on the user (F-001 A10–A12).
+        RateLimiter::for('verification-resend', fn (Request $request) => [
+            self::limit('verification_resend.per_user', 'verify:'.$request->user()?->getKey()),
+        ]);
+
+        RateLimiter::for('account-change', fn (Request $request) => [
+            self::limit('account_change.per_user', 'account:'.$request->user()?->getKey()),
+        ]);
     }
 
     /**

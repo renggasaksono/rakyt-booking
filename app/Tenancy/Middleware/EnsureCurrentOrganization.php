@@ -8,8 +8,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Seller routes need an organization. A signed-in user without one sees a 404
- * until F-001 (E1) redirects them to onboarding instead.
+ * Seller routes need an organization. A signed-in user without one is sent to
+ * onboarding step 1 (F-001 E1); JSON and form writes get a 404.
  */
 class EnsureCurrentOrganization
 {
@@ -17,7 +17,11 @@ class EnsureCurrentOrganization
 
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless($this->current->check(), 404);
+        if (! $this->current->check()) {
+            abort_unless($request->isMethod('GET') && ! $request->expectsJson(), 404);
+
+            return redirect()->route('onboarding.organization');
+        }
 
         return $next($request);
     }
