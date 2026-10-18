@@ -40,10 +40,11 @@ Bookings via chat get lost and seats get double-sold.
 - [x] Hold length and whether proof upload freezes it — decided 2026-10-17: 2 h fixed, upload stops the clock, no manual extension (ADR-0006 accepted).
 - [ ] Reference format: does "1024" encode departure date (24 Okt) or booking date?
 
-**Note from F-009 slice A (2026-10-17):** the two-connection test helper for the last-seat race (F-009 Data & rules) is owned here, because it needs the departure tables it locks. F-009 also provides `E.164` normalisation (`App\Security\PhoneNumber`) and the `throttle:public-booking` limiter; see F-009 review follow-up R1 (empty-phone bucket) before using it.
+**Note from F-009 slice A (2026-10-17):** the two-connection test helper for the last-seat race (F-009 Data & rules) is owned here, because it needs the departure tables it locks. F-009 also provides `E.164` normalisation (`App\Security\PhoneNumber`) and the `throttle:public-booking` limiter; see F-009 review follow-up R1 (empty-phone bucket) before using it. Also owned here: **F-009 R17** (queued jobs: pass ids or load relations inside `handle()` under `ScopedToOrganization`) and **R20** (redact the `/b/{token}` access token from logged paths).
 
 ## Changelog
 
 - 2026-10-17 — created
 - 2026-10-17 — hold rules from ADR-0006 (accepted) added
 - 2026-10-17 — concurrency test helper moved here from F-009 slice A
+- 2026-10-18 — F-009 hand-offs R17, R20 noted

@@ -58,6 +58,9 @@ npm run build             # Vite production build
 For plain-HTTP local dev set `SESSION_SECURE_COOKIE=false` in `.env` (or run `herd secure`).
 Never drop or reset the dev database to "start clean"; tests reset their own test database.
 
+Inertia pages live in `resources/js/pages` (lower case; CI runs on case-sensitive Linux). macOS ignores case, so a
+checkout made before the rename may still show `Pages/`: fix it once with `mv resources/js/Pages resources/js/p && mv resources/js/p resources/js/pages`.
+
 ## Working in the code
 
 - Seller-owned model → `use BelongsToOrganization`, a policy extending `OrganizationOwnedPolicy`, and

@@ -182,7 +182,7 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 - **F-004:** decides whether accepted requests create departures (they would appear in this list).
 - **F-007:** "Edit cepat" on Hari ini opens this feature's quick-edit sheet.
 - **ADR-0013:** database is PostgreSQL (row locks via `SELECT … FOR UPDATE`, as ADR-0006 assumes).
-- **F-009 hand-offs (2026-10-18):** trips, departures and trip media use `BelongsToOrganization` + a policy extending `OrganizationOwnedPolicy` + the cross-tenant harness (guard tests fail otherwise). Photos use `MediaPath`, `UploadRules::tripPhoto()` and `PublicImage::sanitize()`; add the pixel-dimension cap first (**F-009 R3**). The deadline auto-close job must be added to `config/rakyt.php → cross_organization_allowlist` and audit with `Actor::system()` (**F-009 A11**).
+- **F-009 hand-offs (2026-10-18):** trips, departures and trip media use `BelongsToOrganization` + a policy extending `OrganizationOwnedPolicy` + the cross-tenant harness (guard tests fail otherwise). Photos use `MediaPath`, `UploadRules::tripPhoto()` and `PublicImage::sanitize()`; add the pixel-dimension cap first (**F-009 R3**). The deadline auto-close job must be added to `config/rakyt.php → cross_organization_allowlist` and audit with `Actor::system()` (**F-009 A11**). Also owned here: **F-009 R14** (`UniqueInCurrentOrganization` for the trip slug; no bare `exists:`/`unique:` rules), **R15** (soft-delete route binding) and **R16** (nested `scopeBindings()` routes) — non-numeric ids must be a 404, not a 500.
 
 ## Open questions
 
@@ -205,3 +205,4 @@ None of these block building; each has a default that the builder implements unl
 - 2026-10-17 — Free-plan trip limit removed from P0 (ADR-0019): Scope item dropped, AC-14 now asserts no limit, Q5 closed
 - 2026-10-17 — ADR-0014 and ADR-0015 accepted; Q1 and Q2 closed
 - 2026-10-18 — F-009 slice A hand-offs noted (R3 photo dimension cap, A11 auto-close audit)
+- 2026-10-18 — F-009 hand-offs R14–R16 noted

@@ -93,9 +93,9 @@ Tags: **(auto)** = automated test in CI · **(ops)** = verified by a rehearsal o
 - [ ] **A15a (auto)** Given a password-reset request for an email that has no account, then the response and its timing match a request for a real account ("Jika email terdaftar, link reset sudah dikirim."), so sign-up emails cannot be enumerated.
 - [x] **A16 (auto)** Responses carry: `Strict-Transport-Security` (every HTTPS response, so staging too), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` (customer booking/payment pages: `no-referrer`), and `frame-ancestors 'none'` (CSP) or `X-Frame-Options: DENY`. Session cookies are `Secure`, `HttpOnly`, `SameSite=Lax`.
 - [x] **A17 (auto)** Given an expired CSRF token / session (419), a missing page (404), a rate limit (429), a server error (500) or maintenance (503), then the user sees a Bahasa Indonesia page that fits a 360 px wide screen without horizontal scroll, uses ink-outline buttons only (no gold CTA — nothing moves a booking forward), and never shows a stack trace.
-- [ ] **A18a (auto)** CI runs the full test suite against **PostgreSQL** (ADR-0013), the same major version as production — never SQLite — so row locks, `CHECK` constraints and concurrency tests behave as they do in production.
+- [x] **A18a (auto)** CI runs the full test suite against **PostgreSQL** (ADR-0013), the same major version as production — never SQLite — so row locks, `CHECK` constraints and concurrency tests behave as they do in production.
 - [x] **A18b (auto)** Database `CHECK` constraints back up the application rules F-009 owns: `audit_events.actor_type IN ('user','customer','system','rakyt_staff','platform_admin')`, and `organization_members.role IN ('owner')` (widened when roles arrive in P1). A test inserts a bad value directly and expects the database to reject it. The capacity constraints owned by F-003/F-005 are listed under Data & rules.
-- [ ] **A18 (auto)** CI runs `composer audit` and `npm audit --audit-level=high` and a secret scanner (e.g. gitleaks) on every PR; a high-severity finding or a detected secret fails the build.
+- [x] **A18 (auto)** CI runs `composer audit` and `npm audit --audit-level=high` and a secret scanner (e.g. gitleaks) on every PR; a high-severity finding or a detected secret fails the build.
 
 ### Slice A — Media
 
@@ -263,7 +263,6 @@ Primitives are exercised by a test-only resource (`tests/Fixtures/Tenancy/ProbeN
 - **A8a** admin queries — the bypass guard already permits only `app/Admin/Queries`; the `platform-admin` gate comes with F-010.
 - **A9** harness exists and is proven on the probe resource; ticks when F-001, F-003–F-007 use it for their resources.
 - **A15a** reset enumeration — the reset screen is F-001 (A7 there); the `password-reset` limiter is ready.
-- **A18 / A18a** — CI is configured; tick after the first green run on GitHub. Gitleaks did not run locally.
 - **A20 / A21** — private disk and ≤ 5-minute signed URLs are built and tested; the policy/token check that issues them comes with payment evidence (F-006).
 
 - **A10 / A11** — audit writer and system actor are built; each audited action ticks with its owning feature.
@@ -277,21 +276,35 @@ Primitives are exercised by a test-only resource (`tests/Fixtures/Tenancy/ProbeN
 - **Scope-bypass guard** covers Eloquent bypasses (`newModelQuery`, `newQueryWithoutScope(s)`, `toBase`, `getQuery`, `getConnection`, `resolveConnection`) and any database access outside Eloquent (`DB::` except transaction control, an aliased `DB` import, the container's `db` binding, `DatabaseManager`, injected connections) in `app/` and `routes/`; only the four tenancy mechanism files are exempt. It is a safety net, not a proof: review and C1 still check scoping.
 - **Every log channel** redacts (`RedactLogs` tap). Eloquent models are logged as class + key only; collections item by item; name, email, bank and ID-number fields are withheld by key (`[pii]`); other objects are flattened and scrubbed; traces carry no argument values.
 - **`audit_events`** also rejects `TRUNCATE` (statement-level trigger).
+- **PDO errors** are logged as their first line only: PostgreSQL's `DETAIL` line echoes row values (password hashes, tokens, emails).
+- **Key queries** (save, delete, refresh) on tenant models also match `organization_id`; `forceDelete()` and "remove all scopes" keep the organization scope.
 - **Fields never flashed** to the session live in one list (`App\Security\SensitiveInput`), used by both the exception handler and the rate-limit redirect.
 - **Non-numeric or out-of-range ids** (beyond bigint) are a 404 in URLs (trait route binding) and a 422 in payloads, never a PostgreSQL 500 (`App\Tenancy\IntegerKey`). Scoped child bindings on a non-tenant parent still need checking when the first one is added.
 
-**Review follow-ups** (from the 2026-10-17 and 2026-10-18 reviews; each is also noted in its owning spec):
+**Review follow-ups** (from the 2026-10-17 and 2026-10-18 reviews, the last an exhaustive pass over every builder and model write path; each is also noted in its owning spec):
 
 - [ ] **R1** Empty phone/email collapses everyone into one rate-limit bucket (`booking-phone:`); return `Limit::none()` for an empty key (the IP limit still applies) and fail loudly if `evidence-upload` has no `token` route parameter. — before F-005.
 - [ ] **R2** The local `private` disk's `serve => true` also registers a signed `PUT /storage/{path}` upload route; before A20, stream evidence from an authorised controller (`serve => false`) or ban `temporaryUploadUrl()` with a guard test. — F-006.
 - [ ] **R3** Cap pixel dimensions for public photos (`dimensions:max_width,max_height` or a `getimagesize` check) before GD decodes them. — F-001/F-003 photo upload.
 - [ ] **R4** `AuditLog` should throw when the subject's organization differs from the current one (the trait silently overrides it), and resolve a `User` subject through its membership so `auth.password_reset` works for a guest. — F-001 (reset flow).
-- [x] **R5** Query-builder writes: done 2026-10-18 via `TenantBuilder` — bulk inserts get the organization rule; upserts must include `organization_id` in the conflict target and never update it; `insertUsing`, `updateOrInsert`, `updateFrom` and `truncate` are refused; updates/increments cannot touch `organization_id`. Covered by conflict-based cross-tenant tests.
+- [x] **R5** Query-builder writes: done 2026-10-18 via `TenantBuilder` — bulk inserts get the organization rule; upserts must include `organization_id` in the conflict target and never update it; `insertUsing`, `updateOrInsert`, `updateFrom` and `truncate` are refused; updates/increments cannot touch `organization_id`; `forceDelete()` and "remove all scopes" keep the organization scope. Covered by conflict-based cross-tenant tests.
 - [ ] **R6** `DatabaseSeeder` uses `WithoutModelEvents`, which disables the tenancy and audit hooks; drop it when seeders are written.
 - [ ] **R7** Inertia visits that hit 409/419/429 HTML pages show them in Inertia's error modal; add an Inertia-aware renderer with F-001.
 - [ ] **R8** Rate limits use `$request->ip()`; configure trusted proxies with hosting (C2).
 - [ ] **R9** Laravel's `emergency` logger (used only when a configured log channel cannot be built) takes no taps, so it is not redacted. Accept, or wrap it, at slice C.
 - [ ] **R10** `ExistsInCurrentOrganization` ignores soft deletes; add a `whereNull('deleted_at')` option when the first soft-deleting model arrives.
+- [x] **R11** Models built by hand or hydrated from unscoped queries saved, deleted and reloaded by bare id. Done 2026-10-18: key queries (`setKeysForSaveQuery` / `setKeysForSelectQuery`) also match `organization_id` (current organization, else the row's own).
+- [x] **R12** `Relation::rawUpdate()` / `touch()` removed every scope. Done 2026-10-18: `withoutGlobalScopes()` without arguments keeps `OrganizationScope`.
+- [ ] **R13** Bypass guard patterns still missing: `withoutGlobalScopesExcept(`, `newQueryForRestoration(`, `fromQuery(`, `->getBaseQuery(`, `->rawUpdate(`, `getConnectionResolver(`, `app()->get('db')` / `$this->app->get('db')`, `Schema::getConnection(` / `Schema::connection(`, `->getReadPdo(`, `new PDO(`, `Capsule\Manager`, `DB ::`; flag `forceDelete(` and `hydrate(` for review. — F-009, slice C at the latest.
+- [ ] **R14** Bare `exists:`, `Rule::exists` and `Rule::unique` are not org-scoped (A3 risk, existence oracle). Add `UniqueInCurrentOrganization` (first use: trip slug) and flag the bare rules in the guard. — F-003.
+- [ ] **R15** A `withTrashed()` route with a non-numeric id is a 500; override `resolveSoftDeletableRouteBinding` with the `IntegerKey` check. — first soft-deleting model (F-003/F-005).
+- [ ] **R16** A `scopeBindings()` child route with a non-numeric id is a 500; override `resolveChildRouteBinding` with the `IntegerKey` check. — F-003 nested routes.
+- [ ] **R17** `SerializesModels` restores relations without an organization context, so they come back empty (silent data loss, not a leak). Pass ids, or `#[WithoutRelations]` and load inside `handle()` under `ScopedToOrganization`. — first queued job (F-005/F-008).
+- [ ] **R18** A24 polish: PII keys the pattern misses (camelCase `customerName`/`firstName`, `full-name`, `fullname`, `nama`, `bank_account`, `account_no`, `nomor_rekening`, `ktp_number`, `nik_number`); emails in values and under neutral keys (`to`, `recipient`); paginators and `JsonResource` bypass class + key (unwrap `items()` / `resource`); over-redaction of `queue_name`, `job_name`, `connection_name`, `table_name`; backed enums should log `->value`. — F-009.
+- [ ] **R19** S3 presigned URL parameters (`X-Amz-Signature`, `X-Amz-Security-Token`, `X-Amz-Credential`) are not redacted. — F-006, before the private disk moves to S3.
+- [ ] **R20** The booking access token in the `/b/{token}` path is not redacted in logs. — F-005.
+- [ ] **R21** Secret keys the pattern misses: `pwd`, `pass`, `pin`, `otp`, `credentials`, `private_key`, and `Bearer …` values under neutral keys. — F-009.
+- [ ] **R22** `insertGetId([])` and `insertOrIgnoreReturning([])` build an organization-only row while `insert([])` is a no-op; make them consistent. — F-009 (nit).
 
 ## Readiness
 
@@ -322,3 +335,4 @@ Q2–Q5 have recommended defaults (most are captured in ADR-0016 and ADR-0018). 
 - 2026-10-17 — review fixes: exception and SQL-binding redaction in logs (A24), raw-query coverage in the bypass guard (A8), non-numeric ids → 404/422, `OrganizationPolicy`, Bahasa copy moved to `lang/id` with Indonesian validation/auth/password messages and `id` locale defaults. A14 reworded and split (A14b → F-001); A10/A11 unticked until their owning features audit; A19 reworded to ADR-0015. Review follow-ups R1–R8 recorded
 - 2026-10-18 — second review fixes: log redaction covers objects/models, argument-free traces and every channel (A24); bulk inserts/upserts and query-builder updates enforce the organization rule (`TenantBuilder`, R5 closed); wider scope-bypass guard; ids beyond bigint → 404/422; `audit_events` rejects TRUNCATE; reset tokens never flashed; unscoped `Organization::users()` removed; HSTS on any HTTPS response; same-site back links; `0062…` phone numbers; ADR-0020/0021 accepted by Rengga; hand-offs noted in F-001, F-003, F-006; CI lock file fixed. R9, R10 added
 - 2026-10-18 — third review fixes: upserts must target `organization_id` and never update it; `updateOrInsert`, `updateFrom`, `truncate` refused; empty bulk writes are no-ops; models logged as class + key and personal fields withheld by key; bypass guard covers aliases, container lookups and injected connections; A16 wording (HSTS on any HTTPS). CI: pages folder lower-cased for Linux, gitleaks given `pull-requests: read`
+- 2026-10-18 — final review fixes: `forceDelete()` scoped (B1); PDO `DETAIL` lines no longer logged, tested against real PostgreSQL constraint failures (B2); key queries match the organization (R11); "remove all scopes" keeps the organization's (R12). A18 and A18a ticked after the first green CI run. Follow-ups R13–R22 recorded with owners

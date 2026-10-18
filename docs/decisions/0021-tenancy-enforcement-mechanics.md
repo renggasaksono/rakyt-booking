@@ -9,7 +9,7 @@ related: [ADR-0004, ADR-0011, F-009]
 
 # 0021. How organization scoping is enforced in code
 
-*Proposed by the builder agent on 2026-10-17; accepted by Rengga on 2026-10-18.*
+*Proposed by the builder agent on 2026-10-17; accepted by Rengga on 2026-10-18. Amended before merge on 2026-10-18 (review rounds 3–4); re-accepted by Rengga.*
 
 ## Context
 
@@ -34,7 +34,9 @@ seller.
   and `fillAndInsert*` get the same organization rule as the `creating` hook. `upsert` must name `organization_id` in its
   conflict target (`ON CONFLICT` ignores the scope) and never updates it. Writes the scope cannot reach —
   `insertUsing`, `updateOrInsert`, `updateFrom`, `truncate` — are refused; use `create`, `save` or `updateOrCreate`.
-  Updates and increments may never touch `organization_id`.
+  Updates and increments may never touch `organization_id`. `forceDelete()` and `withoutGlobalScopes()` without
+  arguments keep the organization scope. Saves, deletes and reloads by key also match `organization_id`, so a model
+  built by hand or hydrated from an unscoped query cannot touch another organization's row.
 - **Bypassing the scope** — `acrossOrganizations()`, `withoutGlobalScope(s)`, `newModelQuery()`,
   `newQueryWithoutScope(s)`, `toBase()`, `getQuery()`, `getConnection()`, `resolveConnection()`, and any database access
   outside Eloquent (`DB::` except transaction control, an aliased `DB` import, the container's `db` binding,
