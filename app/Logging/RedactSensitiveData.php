@@ -4,7 +4,9 @@ namespace App\Logging;
 
 use App\Security\PhoneNumber;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Enumerable;
 use JsonSerializable;
 use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;
@@ -13,15 +15,21 @@ use Throwable;
 /**
  * Keeps secrets and personal data out of logs (F-009 A24, Data & rules "Logging & PII"):
  * passwords, reset/session/access tokens and signed-URL signatures are
- * replaced; Indonesian phone numbers are masked; exceptions and objects
- * (models included) are flattened and scrubbed; stack traces carry no
- * argument values; SQL errors never carry their bound values.
+ * replaced; names, emails and bank details are withheld by key; Indonesian
+ * phone numbers are masked; Eloquent models are logged as class + key only;
+ * other objects and exceptions are flattened and scrubbed; stack traces carry
+ * no argument values; SQL errors never carry their bound values.
  */
 class RedactSensitiveData implements ProcessorInterface
 {
     public const REDACTED = '[redacted]';
 
     private const SECRET_KEY_PATTERN = '/password|passwd|passphrase|token|secret|signature|authorization|cookie|session|api[_-]?key/i';
+
+    public const WITHHELD = '[pii]';
+
+    /** Personal data that is never logged, whatever the value looks like. */
+    private const PII_KEY_PATTERN = '/(^|_)(name|email|account_number|account_holder|ktp|nik|address)$/i';
 
     private const PHONE_PATTERN = '/(?<![\d+])(?:\+?62|0)[\s-]?8(?:[\s-]?\d){7,11}(?!\d)/';
 
@@ -57,6 +65,12 @@ class RedactSensitiveData implements ProcessorInterface
                 continue;
             }
 
+            if (is_string($key) && preg_match(self::PII_KEY_PATTERN, $key) && $value !== null) {
+                $values[$key] = self::WITHHELD;
+
+                continue;
+            }
+
             $values[$key] = $this->scrubValue($value);
         }
 
@@ -67,6 +81,9 @@ class RedactSensitiveData implements ProcessorInterface
     {
         return match (true) {
             $value instanceof Throwable => $this->scrubThrowable($value),
+            // Attributes hold names, emails and bank details; the key is enough to find the row.
+            $value instanceof Model => ['model' => $value::class, 'key' => $value->getKey()],
+            $value instanceof Enumerable => $this->scrubArray($value->all()),
             $value instanceof Arrayable => $this->scrubArray($value->toArray()),
             $value instanceof JsonSerializable => $this->scrubValue($value->jsonSerialize()),
             // Unknown objects would be serialised field by field, unscrubbed.

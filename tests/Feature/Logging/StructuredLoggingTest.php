@@ -7,7 +7,6 @@ use App\Logging\RedactSensitiveData;
 use App\Logging\UseJsonFormat;
 use App\Models\User;
 use DateTimeImmutable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Context;
@@ -107,25 +106,37 @@ class StructuredLoggingTest extends TestCase
         $this->assertSame(4, $record->context['passengers']);
     }
 
-    public function test_ac_a24_models_and_other_objects_in_context_are_scrubbed(): void
+    public function test_ac_a24_models_are_logged_as_class_and_key_only(): void
     {
-        $booking = new class extends Model
-        {
-            protected $guarded = [];
-        };
-        $booking->fill(['phone' => '+6281234567890', 'password' => 'rahasia123', 'participants' => 2]);
+        $user = User::factory()->make(['id' => 42, 'name' => 'Budi Santoso', 'email' => 'budi@contoh.id']);
 
-        $plain = new \stdClass;
-        $plain->phone = '081234567890';
-
-        $record = $this->redact('m', ['booking' => $booking, 'other' => $plain]);
+        $record = $this->redact('m', ['user' => $user, 'users' => collect([$user]), 'other' => new \stdClass]);
         $json = json_encode($record->context);
 
-        $this->assertStringNotContainsString('rahasia123', $json);
-        $this->assertStringNotContainsString('81234567890', $json);
+        $this->assertStringNotContainsString('Budi', $json);
+        $this->assertStringNotContainsString('budi@contoh.id', $json);
+        $this->assertSame(['model' => User::class, 'key' => 42], $record->context['user']);
+        $this->assertSame([['model' => User::class, 'key' => 42]], $record->context['users']);
+        $this->assertSame('[object stdClass]', $record->context['other']);
+    }
+
+    public function test_ac_a24_personal_fields_are_withheld_by_key(): void
+    {
+        $record = $this->redact('m', [
+            'booking' => [
+                'customer_name' => 'Siti Aminah',
+                'email' => 'siti@contoh.id',
+                'bank' => ['account_number' => '1234567890', 'account_holder' => 'Siti Aminah'],
+                'phone' => '081234567890',
+                'participants' => 2,
+            ],
+        ]);
+
+        $this->assertStringNotContainsString('Siti', json_encode($record->context));
+        $this->assertStringNotContainsString('1234567890', json_encode($record->context));
+        $this->assertSame('[pii]', $record->context['booking']['customer_name']);
         $this->assertSame('+62812****890', $record->context['booking']['phone']);
         $this->assertSame(2, $record->context['booking']['participants']);
-        $this->assertSame('[object stdClass]', $record->context['other']);
     }
 
     public function test_ac_a24_stack_traces_never_carry_argument_values(): void
