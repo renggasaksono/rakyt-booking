@@ -186,6 +186,13 @@ return [
         'long' => ':date pukul :time',
     ],
 
+    // Same names as Carbon's Indonesian locale, so client and server dates match.
+    'calendar' => [
+        'months_short' => ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'],
+        'days_short' => ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+        'days_long' => ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
+    ],
+
     'checklist' => [
         'title' => 'Siap terbit · :done/:total',
         'items' => [

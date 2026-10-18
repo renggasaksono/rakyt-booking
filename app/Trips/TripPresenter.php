@@ -119,6 +119,8 @@ final class TripPresenter
             'id' => $departure->public_id,
             'trip_id' => $trip->public_id,
             'trip_name' => $trip->name,
+            'trip_meeting_time' => $trip->meeting_time,
+            'trip_duration_days' => $trip->duration_days,
             'start_date' => $departure->start_date->toDateString(),
             'end_date' => $departure->end_date->toDateString(),
             'capacity' => $departure->capacity,

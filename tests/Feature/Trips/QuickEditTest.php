@@ -34,6 +34,7 @@ class QuickEditTest extends TestCase
         $this->actingAsTenant($a)->get(route('departures.upcoming'))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Departures/Upcoming')
                 ->has('departures', 3)
                 ->where('departures.0.trip_name', 'Karimunjawa')
                 ->where('departures.0.start_date', '2024-10-24')

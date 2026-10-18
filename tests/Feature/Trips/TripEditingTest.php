@@ -74,6 +74,7 @@ class TripEditingTest extends TestCase
         $this->actingAsTenant($a)->get(route('trips.create'))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Trips/Edit')
                 ->where('trip', null)
                 ->where('options.types.0', ['value' => 'open_trip', 'booking_mode' => 'scheduled', 'duration' => ['duration_label' => 'days', 'duration_days' => 3, 'duration_nights' => 2]])
                 ->where('options.types.1', ['value' => 'private', 'booking_mode' => 'request_date', 'duration' => null])

@@ -69,6 +69,9 @@ jobs:
       - name: Build assets
         run: npm run build
 
+      - name: Run JS unit tests
+        run: npm test
+
       - name: Run tests
         run: php artisan test
 
