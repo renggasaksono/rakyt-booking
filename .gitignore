@@ -31,3 +31,4 @@ Thumbs.db
 # Local agent state (keep shared instructions in AGENTS.md)
 .claude/settings.local.json
 .claude/worktrees/
+.claude/launch.json

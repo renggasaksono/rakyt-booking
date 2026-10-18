@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Logging;
 
+use App\Logging\RedactLogs;
 use App\Logging\RedactSensitiveData;
 use App\Logging\UseJsonFormat;
 use App\Models\User;
 use DateTimeImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Context;
@@ -35,6 +37,7 @@ class StructuredLoggingTest extends TestCase
         $handler = $logger->getLogger()->getHandlers()[0];
 
         $this->assertInstanceOf(JsonFormatter::class, $handler->getFormatter());
+        $this->assertContains(RedactLogs::class, config('logging.channels.json.tap'));
         $this->assertNotEmpty(array_filter(
             $logger->getLogger()->getProcessors(),
             fn ($processor) => $processor instanceof RedactSensitiveData,
@@ -102,6 +105,55 @@ class StructuredLoggingTest extends TestCase
 
         $this->assertStringNotContainsString('3456', $record->message);
         $this->assertSame(4, $record->context['passengers']);
+    }
+
+    public function test_ac_a24_models_and_other_objects_in_context_are_scrubbed(): void
+    {
+        $booking = new class extends Model
+        {
+            protected $guarded = [];
+        };
+        $booking->fill(['phone' => '+6281234567890', 'password' => 'rahasia123', 'participants' => 2]);
+
+        $plain = new \stdClass;
+        $plain->phone = '081234567890';
+
+        $record = $this->redact('m', ['booking' => $booking, 'other' => $plain]);
+        $json = json_encode($record->context);
+
+        $this->assertStringNotContainsString('rahasia123', $json);
+        $this->assertStringNotContainsString('81234567890', $json);
+        $this->assertSame('+62812****890', $record->context['booking']['phone']);
+        $this->assertSame(2, $record->context['booking']['participants']);
+        $this->assertSame('[object stdClass]', $record->context['other']);
+    }
+
+    public function test_ac_a24_stack_traces_never_carry_argument_values(): void
+    {
+        $check = function (string $password): never {
+            throw new RuntimeException('hash check failed');
+        };
+
+        try {
+            $check('rahasia-di-trace');
+        } catch (RuntimeException $e) {
+            $record = $this->redact($e->getMessage(), ['exception' => $e]);
+        }
+
+        $this->assertStringNotContainsString('rahasia-di-trace', json_encode($record->context));
+        $this->assertIsList($record->context['exception']['trace']);
+    }
+
+    public function test_ac_a24_every_log_channel_redacts(): void
+    {
+        foreach (config('logging.channels') as $name => $channel) {
+            // `emergency` is Laravel's fallback when a channel cannot be built; it takes no taps.
+            if ($name === 'emergency' || $channel['driver'] === 'stack') {
+                continue;
+            }
+
+            $this->assertContains(RedactLogs::class, $channel['tap'] ?? [], "Log channel [{$name}] must use the RedactLogs tap.");
+        }
     }
 
     public function test_ac_a24_request_logs_carry_request_user_and_organization_ids(): void

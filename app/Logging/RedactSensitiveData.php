@@ -3,7 +3,9 @@
 namespace App\Logging;
 
 use App\Security\PhoneNumber;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\QueryException;
+use JsonSerializable;
 use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;
 use Throwable;
@@ -11,8 +13,9 @@ use Throwable;
 /**
  * Keeps secrets and personal data out of logs (F-009 A24, Data & rules "Logging & PII"):
  * passwords, reset/session/access tokens and signed-URL signatures are
- * replaced; Indonesian phone numbers are masked; exceptions are flattened
- * and scrubbed, and SQL errors never carry their bound values.
+ * replaced; Indonesian phone numbers are masked; exceptions and objects
+ * (models included) are flattened and scrubbed; stack traces carry no
+ * argument values; SQL errors never carry their bound values.
  */
 class RedactSensitiveData implements ProcessorInterface
 {
@@ -54,15 +57,24 @@ class RedactSensitiveData implements ProcessorInterface
                 continue;
             }
 
-            $values[$key] = match (true) {
-                $value instanceof Throwable => $this->scrubThrowable($value),
-                is_array($value) => $this->scrubArray($value),
-                is_string($value) => $this->scrubString($value),
-                default => $value,
-            };
+            $values[$key] = $this->scrubValue($value);
         }
 
         return $values;
+    }
+
+    private function scrubValue(mixed $value): mixed
+    {
+        return match (true) {
+            $value instanceof Throwable => $this->scrubThrowable($value),
+            $value instanceof Arrayable => $this->scrubArray($value->toArray()),
+            $value instanceof JsonSerializable => $this->scrubValue($value->jsonSerialize()),
+            // Unknown objects would be serialised field by field, unscrubbed.
+            is_object($value) => '[object '.$value::class.']',
+            is_array($value) => $this->scrubArray($value),
+            is_string($value) => $this->scrubString($value),
+            default => $value,
+        };
     }
 
     /**
@@ -75,9 +87,29 @@ class RedactSensitiveData implements ProcessorInterface
             'message' => $this->scrubString($this->safeMessage($e)),
             'code' => $e->getCode(),
             'file' => $e->getFile().':'.$e->getLine(),
-            'trace' => $this->scrubString($e->getTraceAsString()),
+            'trace' => $this->traceWithoutArguments($e),
             'previous' => $e->getPrevious() ? $this->scrubThrowable($e->getPrevious()) : null,
         ];
+    }
+
+    /**
+     * Frames only: argument values (e.g. a password passed to Hash::check) never reach the log.
+     *
+     * @return list<string>
+     */
+    private function traceWithoutArguments(Throwable $e): array
+    {
+        return array_map(
+            fn (array $frame) => sprintf(
+                '%s:%s %s%s%s()',
+                $frame['file'] ?? '[internal]',
+                $frame['line'] ?? '?',
+                $frame['class'] ?? '',
+                $frame['type'] ?? '',
+                $frame['function'],
+            ),
+            $e->getTrace(),
+        );
     }
 
     private function safeMessage(Throwable $e): string
