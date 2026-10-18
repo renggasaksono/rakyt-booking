@@ -21,7 +21,7 @@ const props = defineProps({
     copy: { type: Object, required: true },
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'saved', 'failed']);
 
 const calendar = computed(() => props.copy.calendar);
 
@@ -50,8 +50,13 @@ function submit() {
     })).patch(props.departure.urls.quick, {
         preserveScroll: true,
         only: props.reload,
-        onSuccess: () => emit('close'),
+        onSuccess: () => {
+            emit('saved', props.departure.id);
+            emit('close');
+        },
         onError: (errors) => {
+            emit('failed', props.departure.id);
+
             // AC-33: bookings arrived meanwhile — show the current number.
             if (errors.capacity) {
                 form.capacity = Math.max(form.capacity ?? 0, props.departure.seats_taken);

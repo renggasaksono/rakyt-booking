@@ -32,6 +32,7 @@ return [
         'subtitle' => 'Ketuk untuk ubah harga, kursi, atau buka/tutup.',
         'empty' => 'Belum ada keberangkatan terdekat',
         'back' => 'Kembali ke daftar trip',
+        'more' => 'Tampilkan lebih banyak',
     ],
 
     'editor' => [

@@ -4,6 +4,7 @@ namespace Tests\Feature\Trips;
 
 use App\Models\TripDeparture;
 use App\Trips\Contracts\DepartureBookings;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\BuildsTrips;
@@ -174,6 +175,43 @@ class QuickEditTest extends TestCase
 
         $fresh = $this->freshDeparture($departure);
         $this->assertSame(['closed', 'manual', 18], [$fresh->status->value, $fresh->closed_reason->value, $fresh->capacity]);
+    }
+
+    public function test_the_upcoming_list_shows_20_nearest_first_and_loads_more_on_request(): void
+    {
+        [$a, $b] = $this->createTenants();
+        $trip = $this->tripFor($a);
+        $start = CarbonImmutable::parse('2024-10-11');
+
+        foreach (range(24, 0) as $day) {
+            $this->departureFor($a, $trip, $start->addDays($day)->toDateString());
+        }
+        $this->departureFor($b, $this->tripFor($b), '2024-10-11');
+
+        $first = null;
+        $this->actingAsTenant($a)->get(route('departures.upcoming'))
+            ->assertInertia(function (AssertableInertia $page) use (&$first) {
+                $page->has('departures', 20)
+                    ->where('departures.0.start_date', '2024-10-11')
+                    ->where('departures.19.start_date', '2024-10-30')
+                    ->where('pagination.page', 1)
+                    ->where('copy.upcoming.more', 'Tampilkan lebih banyak');
+                $first = $page->toArray()['props']['pagination']['next_url'];
+            });
+
+        $this->assertNotNull($first);
+
+        $this->actingAsTenant($a)->get($first)
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('departures', 5)
+                ->where('departures.0.start_date', '2024-10-31')
+                ->where('departures.4.start_date', '2024-11-04')
+                ->where('pagination.page', 2)
+                ->where('pagination.next_url', null));
+
+        // Seller B sees only their own departure.
+        $this->actingAsTenant($b)->get(route('departures.upcoming'))
+            ->assertInertia(fn (AssertableInertia $page) => $page->has('departures', 1)->where('pagination.next_url', null));
     }
 
     public function test_ac_42_no_upcoming_departures_shows_the_empty_state(): void

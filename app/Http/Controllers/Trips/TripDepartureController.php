@@ -31,25 +31,35 @@ class TripDepartureController extends Controller
         private TripPresenter $presenter,
     ) {}
 
+    /** Departures per page on the phone list (F-003 review N5). */
+    public const UPCOMING_PER_PAGE = 20;
+
     /**
-     * Upcoming departures across trips, for the phone quick-edit list (1g, AC-31, AC-42).
+     * Upcoming departures across trips, nearest first, 20 at a time, for the
+     * phone quick-edit list (1g, AC-31, AC-42). Scoped to the organization.
      */
     public function upcoming(): Response
     {
         $organization = $this->current->get();
         $today = TripDeparture::today($organization);
 
-        $departures = TripDeparture::query()
+        $page = TripDeparture::query()
             ->with('trip')
             ->whereDate('start_date', '>=', $today)
             ->orderBy('start_date')
             ->orderBy('id')
-            ->limit(100)
-            ->get()
+            ->simplePaginate(self::UPCOMING_PER_PAGE)
+            ->withQueryString();
+
+        $departures = collect($page->items())
             ->each(fn (TripDeparture $departure) => $departure->trip->setRelation('organization', $organization));
 
         return Inertia::render('Departures/Upcoming', [
-            'departures' => $departures->map(fn (TripDeparture $departure) => $this->presenter->departure($departure))->all(),
+            'departures' => $departures->map(fn (TripDeparture $departure) => $this->presenter->departure($departure))->values()->all(),
+            'pagination' => [
+                'page' => $page->currentPage(),
+                'next_url' => $page->nextPageUrl(),
+            ],
             'context' => $this->presenter->context($organization),
             'urls' => ['index' => route('trips.index')],
             'copy' => __('trips'),
