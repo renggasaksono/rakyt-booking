@@ -10,6 +10,7 @@ use Illuminate\Support\Enumerable;
 use JsonSerializable;
 use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;
+use PDOException;
 use Throwable;
 
 /**
@@ -134,6 +135,11 @@ class RedactSensitiveData implements ProcessorInterface
         if ($e instanceof QueryException) {
             // Placeholders only: bindings hold customer names, phones and amounts.
             return sprintf('SQLSTATE[%s] on connection [%s]: %s', $e->getCode(), $e->getConnectionName(), $e->getSql());
+        }
+
+        if ($e instanceof PDOException) {
+            // PostgreSQL's DETAIL line echoes row values: "Failing row contains (…)", "Key (email)=(…)".
+            return (string) strtok($e->getMessage(), "\n");
         }
 
         return $e->getMessage();

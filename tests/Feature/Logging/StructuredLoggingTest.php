@@ -10,13 +10,13 @@ use DateTimeImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\TestHandler;
 use Monolog\Level;
 use Monolog\LogRecord;
-use PDOException;
 use RuntimeException;
 use Tests\Support\InteractsWithTenants;
 use Tests\TestCase;
@@ -82,20 +82,36 @@ class StructuredLoggingTest extends TestCase
         $this->assertStringContainsString('+62812****890', $record->context['exception']['message']);
     }
 
-    public function test_ac_a24_sql_errors_never_log_bound_values(): void
+    public function test_ac_a24_real_database_errors_never_log_row_values(): void
     {
-        $e = new QueryException(
-            'pgsql',
-            'insert into bookings (phone, name) values (?, ?)',
-            ['081234567890', 'Budi Santoso'],
-            new PDOException('SQLSTATE[23505]: Unique violation'),
-        );
-        $record = $this->redact($e->getMessage(), ['exception' => $e]);
+        $handler = new TestHandler;
+        Log::channel('json')->getLogger()->pushHandler($handler);
+        $existing = User::factory()->create(['email' => 'budi@contoh.id']);
 
-        $json = json_encode([$record->message, $record->context]);
-        $this->assertStringNotContainsString('Budi Santoso', $json);
-        $this->assertStringNotContainsString('81234567890', $json);
-        $this->assertStringContainsString('insert into bookings (phone, name) values (?, ?)', $record->message);
+        $failures = [
+            // NOT NULL (23502): PostgreSQL's DETAIL repeats the whole row.
+            fn () => DB::table('users')->insert(['name' => null, 'email' => 'x@contoh.id', 'password' => 'HASH-X', 'remember_token' => 'TOK-X']),
+            // Unique (23505): DETAIL repeats the key value.
+            fn () => DB::table('users')->insert(['name' => 'Budi Santoso', 'email' => $existing->email, 'password' => 'HASH-Y']),
+        ];
+
+        foreach ($failures as $insert) {
+            try {
+                DB::transaction($insert);
+                $this->fail('The insert should fail.');
+            } catch (QueryException $e) {
+                $this->assertStringContainsString('DETAIL', $e->getPrevious()->getMessage(), 'Fixture should carry a DETAIL line.');
+                Log::channel('json')->error($e->getMessage(), ['exception' => $e]);
+            }
+        }
+
+        $logged = json_encode(array_map(fn ($record) => [$record->message, $record->context], $handler->getRecords()));
+
+        foreach (['HASH-X', 'HASH-Y', 'TOK-X', 'Failing row', 'DETAIL', 'budi@contoh.id', 'x@contoh.id', 'Budi Santoso'] as $leak) {
+            $this->assertStringNotContainsString($leak, $logged, "[{$leak}] leaked into the log.");
+        }
+        $this->assertStringContainsString('SQLSTATE[23502]', $logged);
+        $this->assertStringContainsString('SQLSTATE[23505]', $logged);
     }
 
     public function test_ac_a24_formatted_phone_numbers_are_masked_and_lookalike_keys_kept(): void
