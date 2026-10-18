@@ -31,3 +31,4 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0019](0019-defer-free-tier-limits.md) | Defer free-tier limits; no plan limit enforced in P0 | accepted | 2026-10-17 |
 | [0020](0020-app-scaffold-and-tooling.md) | App scaffold, module layout and tooling | accepted | 2026-10-17 |
 | [0021](0021-tenancy-enforcement-mechanics.md) | How organization scoping is enforced in code | accepted | 2026-10-17 |
+| [0022](0022-trips-implementation-choices.md) | Implementation choices for trips and departures (F-003) | proposed | 2026-10-18 |
