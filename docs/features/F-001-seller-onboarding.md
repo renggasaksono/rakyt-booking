@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-weeks-2-3
 mockups: [4a, 4b, 4c, 4d, 4e, 4f]
 decisions: ["0003", "0004", "0005", "0007", "0008", "0010", "0012", "0013", "0019"]
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # F-001 · Seller onboarding & organization profile
@@ -207,6 +207,7 @@ photo upload (C3); lost connection mid-step (C13); stale draft with past dates (
 
 - **F-009** — tenancy base (organization scope, policies, 404 vs 403 convention), audit events, the rate-limit table used by A4, A7, A10 and B12. F-001 creates the first tenant, so B8 and T1–T6 need F-009's scoping in place.
 - **F-003** — trip & departure models, duration picker, deadline picker, photo limits, publish checklist (name required, description optional), trip-type presets (C2 must match). F-001 steps 2–3 reuse these; they must not fork them.
+- **F-003 is built first (2026-10-18)** — it adds `organizations.timezone` and `default_booking_deadline_preset`, a minimal seller layout, and a `PaymentReadiness` interface for checklist item 5 whose default answer is "no method". F-001 adds the `payment_methods` table and form, binds the real `PaymentReadiness`, adds the time-zone field to Profil usaha, and reuses F-003's R3 pixel cap. See F-003 → *Build order*.
 - **F-006** — payment-method model. Onboarding (weeks 2–3) needs bank / e-wallet methods before F-006 is scheduled (week 4): the payment-method model and its form must be pulled forward into weeks 2–3.
 - **F-002** — public page renders the published trip and enforces "drafts never public".
 - **F-007** — dashboard landing after E3; Pengaturan nav entry that hosts sections A (Akun) and F (Profil usaha); the dashboard greeting uses `users.name`.
@@ -242,3 +243,4 @@ None block building. The spec uses the recommended default for each; override an
 - 2026-10-17 — Free-plan trip limit removed from P0 (ADR-0019): sign-up copy "Gratis untuk mulai.", D3 asserts no limit
 - 2026-10-17 — ADR-0014 accepted; Q8 closed
 - 2026-10-18 — F-009 slice A hand-offs listed under Dependencies (A14b, A15a, R3, R4, R7)
+- 2026-10-18 — F-003 now builds first; hand-back (payment_methods + real PaymentReadiness, time-zone field) noted under Dependencies

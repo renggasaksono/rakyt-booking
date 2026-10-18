@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-weeks-2-3
 mockups: [1f, 1g, 3a, 3b, 4c, 4d, 1e]
 decisions: ["0002", "0004", "0005", "0006", "0007", "0008", "0010", "0013", "0014", "0015", "0019"]
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # F-003 · Trips & departures management
@@ -69,7 +69,7 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 - [ ] **AC-3 Autosave.** Given a draft trip, when the seller changes a field and stops typing for 2 s (or leaves the field), then the change is saved and the header shows "Draf tersimpan HH.MM". When the save fails (offline/server error), then the form keeps the entered values, shows "Belum tersimpan · Coba lagi", and retries on reconnect; navigating away with unsaved changes asks for confirmation.
 - [ ] **AC-4 Published trips are not autosaved.** Given a published trip, when the seller edits it, then nothing goes live until they tap "Simpan perubahan"; on success the change is visible on the public page.
 - [ ] **AC-5 Duration presets.** Given the Durasi picker, then options are *Beberapa jam*, *1 hari*, *2 hari 1 malam*, *3 hari 2 malam*, *4 hari 3 malam* and *Atur sendiri*. When *Atur sendiri* is chosen, then Hari and Malam steppers appear with Hari 1–30 and Malam 0–Hari; trying to set Malam above Hari is prevented and shows "Malam maksimal sama dengan jumlah hari."
-- [ ] **AC-6 Inclusions.** Given the Termasuk field, then suggestion chips (Kapal, Homestay, Makan, Alat snorkel, Guide) can be toggled and "+ Lainnya" adds a free-text item; same input pattern (without suggestions) for Tidak termasuk.
+- [ ] **AC-6 Inclusions.** Given the Termasuk field, then suggestion chips (Kapal, Homestay, Makan, Alat snorkel, Guide) can be toggled and "+ Lainnya" adds a free-text item of at most 40 characters (longer input is stopped at 40 with a counter "n/40"); at most 20 items; same input pattern (without suggestions) for Tidak termasuk.
 - [ ] **AC-7 Photos.** Given the photo section, when the seller adds photos from the gallery/camera, then each is uploaded with a progress state, the first photo is labelled "sampul", photos can be reordered (the new first becomes the cover) and removed. A file that is not JPEG/PNG/WebP, is over 10 MB, or would exceed 10 photos per trip is rejected with a Bahasa message and the other photos are unaffected. Stored photos and their variants have EXIF metadata (incl. GPS) stripped (ADR-0015).
 - [ ] **AC-8 Money input.** Given any price field, then it accepts digits only (numeric keypad on phones), displays thousands with dots ("1.250.000"), and is stored as integer rupiah. Values below Rp1.000 or above Rp100.000.000 are rejected.
 
@@ -129,7 +129,7 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 - `status`: `draft` | `published`. (`published_at`.)
 - `name` (≤ 80 chars, required to save and to publish), `short_description` (≤ 300, optional — not required to publish).
 - Duration: `duration_days` (1–30), `duration_nights` (0–`duration_days`), `duration_label`: `hours` | `days` (`hours` = "Beberapa jam", stored as 1 day 0 nights). Nullable: *Private* trips start without one. A `scheduled` trip needs a duration before a departure can be added (the end date is derived from it); the departure form asks for it inline ("Pilih durasi dulu") if it is missing. `request_date` trips may stay without a duration.
-- `inclusions[]`, `exclusions[]` (each ≤ 20 items × ≤ 100 chars), `meeting_point` (≤ 200), `meeting_time` (HH:MM, nullable), `map_url` (http/https, nullable), `itinerary[]` (one optional line per day, ≤ 300 chars each), `terms` (≤ 2 000 chars).
+- `inclusions[]`, `exclusions[]` (each ≤ 20 items × ≤ 40 chars, trimmed, blank items dropped — same limit as F-001 C4; decided 2026-10-18), `meeting_point` (≤ 200), `meeting_time` (HH:MM, nullable), `map_url` (http/https, nullable), `itinerary[]` (one optional line per day, ≤ 300 chars each), `terms` (≤ 2 000 chars).
 - `base_price` (integer rupiah, Rp1.000–Rp100.000.000; required to publish).
 - Display labels: 3H2M = "3 hari 2 malam"; `hours` = "Beberapa jam"; 1/0 = "1 hari".
 
@@ -184,6 +184,21 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 - **ADR-0013:** database is PostgreSQL (row locks via `SELECT … FOR UPDATE`, as ADR-0006 assumes).
 - **F-009 hand-offs (2026-10-18):** trips, departures and trip media use `BelongsToOrganization` + a policy extending `OrganizationOwnedPolicy` + the cross-tenant harness (guard tests fail otherwise). Photos use `MediaPath`, `UploadRules::tripPhoto()` and `PublicImage::sanitize()`; add the pixel-dimension cap first (**F-009 R3**). The deadline auto-close job must be added to `config/rakyt.php → cross_organization_allowlist` and audit with `Actor::system()` (**F-009 A11**). Also owned here: **F-009 R14** (`UniqueInCurrentOrganization` for the trip slug; no bare `exists:`/`unique:` rules), **R15** (soft-delete route binding) and **R16** (nested `scopeBindings()` routes) — non-numeric ids must be a 404, not a 500.
 
+### Build order — F-003 before F-001 (2026-10-18)
+
+F-003 is built next, before F-001 (F-001's steps 2–3 reuse this feature's services, so it goes second). The app today
+has F-009 slice A only: `organizations` holds just `public_id`, there is no seller sign-in, no seller layout and no
+`payment_methods` table. F-003 therefore owns these pieces and leaves the rest to F-001:
+
+| Piece | F-003 builds | Left to F-001 |
+|---|---|---|
+| `organizations` columns | Migration adding `timezone` (default `Asia/Jakarta`; one of the three Indonesian zones) and `default_booking_deadline_preset` (default `h3`) | Profile fields; the time-zone field in Pengaturan → Profil usaha. `plan` is not added here (AC-14: publish never reads it) |
+| Default-deadline setting | The one field in Pengaturan → Pemesanan, authorised via `OrganizationPolicy` | The rest of Pengaturan |
+| Seller layout | Minimal authenticated layout (phone bottom nav / desktop side nav) showing only "Trip & keberangkatan" | Dashboard (F-007); onboarding redirect (F-001 E2) |
+| Sign-in | None — seller routes sit behind `auth` + the F-009 organization resolver and are covered by feature tests (Q10) | Sign-up / sign-in (section A) |
+| Checklist item 5 "Instruksi pembayaran" | Asked through one interface (e.g. `PaymentReadiness::hasActivePaymentMethod(Organization)`); the default binding returns `false`, tests bind a fake (Q9); the "atur rekening" link is hidden until its route exists | `payment_methods` table and form, and the real binding |
+| Photo pixel cap (F-009 R3) | Added here first | Reused by onboarding photos |
+
 ## Open questions
 
 None of these block building; each has a default that the builder implements unless the human overrides it.
@@ -196,6 +211,8 @@ None of these block building; each has a default that the builder implements unl
 - [ ] **Q6 Default deadline preset.** *Recommended:* H-3 (selected in mockups 3a and 4d); seller changes it in Pengaturan. — Rengga
 - [ ] **Q7 "Sampai hari keberangkatan" cut-off.** *Recommended:* 1 hour before meeting time (mockup 3a: 06.00 → 05.00); not offered when the trip has no meeting time. — Rengga
 - [ ] **Q8 Mobile trip editor mockup.** 1f is desktop-only; phone layout is specified by AC-41 reusing onboarding patterns (4c/4d). *Recommended:* build from those patterns; review on a device in week 3 rather than wait for a mockup. — design
+- [ ] **Q9 Payment-method check before F-001.** Checklist item 5 needs payment methods, which F-001 (pulled forward from F-006) creates. *Recommended:* F-003 asks through a `PaymentReadiness` interface whose default answer is "no method"; F-001 swaps in the real query. Nobody can publish in the app until F-001 lands, which is fine because nobody can sign in either. Alternative: F-003 creates the `payment_methods` table now — rejected because ADR-0018's protection of payment instructions belongs with the form that edits them. — Rengga
+- [ ] **Q10 Sign-in before F-001.** *Recommended:* no development login shortcut; F-003 is verified by feature tests, and the device review (Q8, AC-41) happens once F-001 section A ships. A local-only login link would be a backdoor that has to be proven absent in production. — Rengga
 
 ## Changelog
 
@@ -206,3 +223,5 @@ None of these block building; each has a default that the builder implements unl
 - 2026-10-17 — ADR-0014 and ADR-0015 accepted; Q1 and Q2 closed
 - 2026-10-18 — F-009 slice A hand-offs noted (R3 photo dimension cap, A11 auto-close audit)
 - 2026-10-18 — F-009 hand-offs R14–R16 noted
+- 2026-10-18 — Planner: F-003 is built before F-001; added "Build order" (organization columns, Pengaturan field, seller layout, payment-readiness interface, R3 first) and Q9/Q10 with defaults; stays `ready`
+- 2026-10-18 — Inclusion/exclusion items capped at 40 chars (was 100) to match F-001 C4 and keep chips readable on phones — decided by Rengga
