@@ -14,7 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * - Queries are scoped to the current organization (A1).
  * - `organization_id` is filled from the current organization on create and
- *   can never be mass-assigned or changed afterwards (A4).
+ *   can never be mass-assigned or changed afterwards (A4), including through
+ *   query-builder updates and bulk inserts (TenantBuilder).
  *
  * @mixin Model
  */
@@ -52,7 +53,18 @@ trait BelongsToOrganization
     }
 
     /**
-     * A non-numeric id in the URL is a 404, not a PostgreSQL type error (500).
+     * Applies the organization rule to bulk inserts/upserts; refuses mass updates of organization_id.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @return TenantBuilder<static>
+     */
+    public function newEloquentBuilder($query): TenantBuilder
+    {
+        return new TenantBuilder($query);
+    }
+
+    /**
+     * A non-numeric or out-of-range id in the URL is a 404, not a PostgreSQL error (500).
      *
      * @param  mixed  $value
      * @param  string|null  $field
@@ -61,7 +73,7 @@ trait BelongsToOrganization
     {
         $field ??= $this->getRouteKeyName();
 
-        if ($field === $this->getKeyName() && $this->getKeyType() === 'int' && ! ctype_digit((string) $value)) {
+        if ($field === $this->getKeyName() && $this->getKeyType() === 'int' && ! IntegerKey::isValid($value)) {
             return null;
         }
 

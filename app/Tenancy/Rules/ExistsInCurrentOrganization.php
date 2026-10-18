@@ -3,6 +3,7 @@
 namespace App\Tenancy\Rules;
 
 use App\Tenancy\CurrentOrganization;
+use App\Tenancy\IntegerKey;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Facades\DB;
@@ -23,8 +24,8 @@ class ExistsInCurrentOrganization implements ValidationRule
 
         $exists = $organizationId !== null
             && is_scalar($value)
-            // Integer keys: reject non-numeric input before PostgreSQL does (it would be a 500).
-            && ($this->column !== 'id' || ctype_digit((string) $value))
+            // Integer keys: reject non-numeric or out-of-range input before PostgreSQL does (a 500).
+            && ($this->column !== 'id' || IntegerKey::isValid($value))
             && DB::table($this->table)
                 ->where($this->column, $value)
                 ->where('organization_id', $organizationId)

@@ -150,7 +150,7 @@ class AuditLogTest extends TestCase
         $this->assertDatabaseHas('audit_events', ['id' => $event->id, 'action' => 'organization.slug_changed']);
     }
 
-    public function test_ac_a12_database_rejects_updates_and_deletes_that_bypass_the_model(): void
+    public function test_ac_a12_database_rejects_updates_deletes_and_truncate_that_bypass_the_model(): void
     {
         [$a] = $this->createTenants();
         $event = $this->recordEventFor($a->organization);
@@ -158,6 +158,7 @@ class AuditLogTest extends TestCase
         foreach ([
             fn () => DB::table('audit_events')->where('id', $event->id)->update(['action' => 'x']),
             fn () => DB::table('audit_events')->where('id', $event->id)->delete(),
+            fn () => DB::statement('TRUNCATE audit_events'),
         ] as $attempt) {
             try {
                 DB::transaction($attempt);

@@ -2,8 +2,11 @@
 
 namespace Tests\Feature\Tenancy;
 
+use App\Models\AuditEvent;
 use App\Models\Organization;
+use App\Policies\AuditEventPolicy;
 use App\Tenancy\BelongsToOrganization;
+use App\Tenancy\OrganizationOwnedPolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
@@ -20,6 +23,13 @@ class ModelGuardTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Reviewed policies that deliberately do not extend OrganizationOwnedPolicy.
+     */
+    private const POLICY_EXCEPTIONS = [
+        AuditEvent::class => AuditEventPolicy::class, // sellers never see audit events (F-009 Q7)
+    ];
+
     public function test_ac_a7_tenant_models_use_the_scoping_trait_and_have_a_policy(): void
     {
         $checked = 0;
@@ -33,7 +43,14 @@ class ModelGuardTest extends TestCase
 
             $checked++;
             $this->assertContains(BelongsToOrganization::class, class_uses_recursive($class), "{$class} must use BelongsToOrganization.");
-            $this->assertNotNull(Gate::getPolicyFor($class), "{$class} needs a policy.");
+            $policy = Gate::getPolicyFor($class);
+            $this->assertNotNull($policy, "{$class} needs a policy.");
+
+            if (isset(self::POLICY_EXCEPTIONS[$class])) {
+                $this->assertInstanceOf(self::POLICY_EXCEPTIONS[$class], $policy);
+            } else {
+                $this->assertInstanceOf(OrganizationOwnedPolicy::class, $policy, "{$class}'s policy must extend OrganizationOwnedPolicy (404 for other organizations).");
+            }
             $this->assertNotContains('organization_id', $model->getFillable(), "{$class} must not make organization_id fillable.");
         }
 

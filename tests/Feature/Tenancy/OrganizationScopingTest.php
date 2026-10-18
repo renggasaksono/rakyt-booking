@@ -3,6 +3,7 @@
 namespace Tests\Feature\Tenancy;
 
 use App\Tenancy\CurrentOrganization;
+use App\Tenancy\Exceptions\BulkWriteBypassesTenancy;
 use App\Tenancy\Exceptions\MissingOrganizationContext;
 use App\Tenancy\Exceptions\OrganizationIdImmutable;
 use Illuminate\Database\Eloquent\MassAssignmentException;
@@ -124,5 +125,75 @@ class OrganizationScopingTest extends TestCase
         $this->expectException(MissingOrganizationContext::class);
 
         ProbeNote::create(['title' => 'tanpa organisasi']);
+    }
+
+    public function test_ac_a4_bulk_inserts_and_upserts_cannot_write_into_another_organization(): void
+    {
+        [$a, $b] = $this->createTenants();
+        $row = fn (string $title) => ['title' => $title, 'organization_id' => $b->id(), 'created_at' => now(), 'updated_at' => now()];
+
+        $this->asTenant($a, function () use ($row) {
+            ProbeNote::query()->insert([$row('insert')]);
+            ProbeNote::insert([$row('static insert'), $row('static insert 2')]);
+            ProbeNote::query()->insertGetId($row('insertGetId'));
+            ProbeNote::query()->insertOrIgnore([$row('insertOrIgnore')]);
+            ProbeNote::query()->upsert([$row('upsert')], ['id'], ['title']);
+            ProbeNote::query()->fillAndInsert([['title' => 'fillAndInsert']]);
+        });
+
+        $this->assertDatabaseMissing('probe_notes', ['organization_id' => $b->id()]);
+        $this->assertDatabaseCount('probe_notes', 7);
+    }
+
+    public function test_ac_a4_bulk_writes_without_context_must_name_the_organization(): void
+    {
+        [$a] = $this->createTenants();
+        app(CurrentOrganization::class)->set(null);
+
+        ProbeNote::query()->insert([['title' => 'sistem', 'organization_id' => $a->id()]]);
+        $this->assertDatabaseHas('probe_notes', ['title' => 'sistem', 'organization_id' => $a->id()]);
+
+        $this->expectException(MissingOrganizationContext::class);
+        ProbeNote::query()->insert([['title' => 'tanpa organisasi']]);
+    }
+
+    public function test_ac_a4_inserts_from_a_select_are_refused(): void
+    {
+        [$a] = $this->createTenants();
+
+        $this->expectException(BulkWriteBypassesTenancy::class);
+
+        $this->asTenant($a, fn () => ProbeNote::query()->insertUsing(['title'], ProbeNote::query()->select('title')));
+    }
+
+    public function test_ac_a4_upserts_cannot_update_organization_id(): void
+    {
+        [$a, $b] = $this->createTenants();
+
+        $this->expectException(OrganizationIdImmutable::class);
+
+        $this->asTenant($a, fn () => ProbeNote::query()->upsert([['id' => 1, 'title' => 'x']], ['id'], ['organization_id']));
+    }
+
+    public function test_ac_a4_query_builder_updates_cannot_change_organization_id(): void
+    {
+        [$a, $b] = $this->createTenants();
+        $note = $this->asTenant($a, fn () => ProbeNote::create(['title' => 'x']));
+
+        foreach ([
+            fn () => ProbeNote::query()->whereKey($note->id)->update(['organization_id' => $b->id()]),
+            fn () => ProbeNote::query()->whereKey($note->id)->update(['probe_notes.organization_id' => $b->id()]),
+            fn () => ProbeNote::query()->whereKey($note->id)->increment('organization_id'),
+            fn () => ProbeNote::query()->whereKey($note->id)->increment('id', 0, ['organization_id' => $b->id()]),
+        ] as $write) {
+            try {
+                $this->asTenant($a, $write);
+                $this->fail('Changing organization_id through the query builder should throw.');
+            } catch (OrganizationIdImmutable) {
+            }
+        }
+
+        $this->asTenant($a, fn () => ProbeNote::query()->whereKey($note->id)->update(['title' => 'baru']));
+        $this->assertDatabaseHas('probe_notes', ['id' => $note->id, 'title' => 'baru', 'organization_id' => $a->id()]);
     }
 }

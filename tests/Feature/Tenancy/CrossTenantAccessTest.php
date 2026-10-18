@@ -90,12 +90,18 @@ class CrossTenantAccessTest extends TestCase
             ->assertCreated();
     }
 
-    public function test_non_numeric_ids_are_404_in_urls_and_422_in_payloads(): void
+    public function test_non_numeric_and_out_of_range_ids_are_404_in_urls_and_422_in_payloads(): void
     {
         [$a] = $this->createTenants();
 
         $this->actingAsTenant($a)->getJson('/probe-notes/abc')->assertNotFound();
         $this->actingAsTenant($a)->getJson('/probe-notes/1abc')->assertNotFound();
+        $this->actingAsTenant($a)->getJson('/probe-notes/99999999999999999999')->assertNotFound();
+        $this->actingAsTenant($a)->getJson('/probe-notes/0')->assertNotFound();
+
+        $this->actingAsTenant($a)
+            ->postJson('/probe-notes', ['title' => 'x', 'related_note_id' => '99999999999999999999'])
+            ->assertUnprocessable();
 
         $this->actingAsTenant($a)
             ->postJson('/probe-notes', ['title' => 'x', 'related_note_id' => 'abc'])

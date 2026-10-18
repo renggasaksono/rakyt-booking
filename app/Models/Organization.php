@@ -5,12 +5,12 @@ namespace App\Models;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 /**
- * The tenant boundary (ADR-0004). Not itself organization-scoped.
+ * The tenant boundary (ADR-0004). Not itself organization-scoped: route
+ * binding finds any organization, so authorise through OrganizationPolicy.
  */
 class Organization extends Model
 {
@@ -27,20 +27,14 @@ class Organization extends Model
     }
 
     /**
+     * Scoped like every OrganizationMember query: only the current
+     * organization's members are visible. There is deliberately no unscoped
+     * users() relation (ADR-0021).
+     *
      * @return HasMany<OrganizationMember, $this>
      */
     public function members(): HasMany
     {
         return $this->hasMany(OrganizationMember::class);
-    }
-
-    /**
-     * @return BelongsToMany<User, $this>
-     */
-    public function users(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'organization_members')
-            ->withPivot('role')
-            ->withTimestamps();
     }
 }
