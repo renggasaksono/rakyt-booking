@@ -54,6 +54,10 @@ final class RateLimits
         RateLimiter::for('account-change', fn (Request $request) => [
             self::limit('account_change.per_user', 'account:'.$request->user()?->getKey()),
         ]);
+
+        RateLimiter::for('payment-change', fn (Request $request) => [
+            self::limit('payment_change.per_user', 'payment:'.$request->user()?->getKey()),
+        ]);
     }
 
     /**

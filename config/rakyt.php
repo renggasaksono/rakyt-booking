@@ -55,6 +55,10 @@ return [
         'account_change' => [
             'per_user' => [10, 15],
         ],
+        // F-001 F5: Pengaturan → Rekening saves.
+        'payment_change' => [
+            'per_user' => [10, 15],
+        ],
     ],
 
     /*

@@ -141,6 +141,19 @@ class PaymentMethodsTest extends TestCase
         $this->assertSame(0, PaymentMethod::acrossOrganizations()->count());
     }
 
+    public function test_ac_f5_saves_have_their_own_limiter_apart_from_email_and_password_changes(): void
+    {
+        config(['rakyt.rate_limits.payment_change.per_user' => [2, 15]]);
+
+        $this->save([$this->bankBlock()])->assertSessionHasNoErrors();
+        $this->save([$this->bankBlock()])->assertSessionHasNoErrors();
+        $this->actingAsTenant($this->seller)->putJson(route('payment-methods.update'), ['methods' => [$this->bankBlock()]])->assertTooManyRequests();
+
+        // Email and password changes keep their own budget.
+        $this->actingAsTenant($this->seller)->putJson(route('settings.account.email'), ['email' => 'baru@example.com', 'current_password' => 'salah'])
+            ->assertUnprocessable();
+    }
+
     public function test_ac_f5_the_trip_editor_links_its_payment_checklist_item_here(): void
     {
         $trip = $this->tripFor($this->seller);

@@ -99,7 +99,7 @@ return [
         'account_holder' => 'Atas nama',
         'account_holder_hint' => 'Harus sama persis dengan buku tabungan. Ditampilkan ke pelanggan.',
         'add' => '+ Tambah rekening lain',
-        'qris_later' => 'QRIS diatur nanti di Pengaturan → Pembayaran.',
+        'qris_later' => 'QRIS bisa ditambahkan nanti.',
         'remove' => 'Hapus rekening ini',
         'account_n' => 'Rekening :n',
         'required' => 'Tambahkan minimal satu rekening untuk menerbitkan trip.',
