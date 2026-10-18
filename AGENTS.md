@@ -59,6 +59,8 @@ npm test                  # Vitest (UI helpers)
 For plain-HTTP local dev set `SESSION_SECURE_COOKIE=false` in `.env` (or run `herd secure`).
 Never drop or reset the dev database to "start clean"; tests reset their own test database.
 
+When you add or change an npm dependency, regenerate `package-lock.json` with the latest npm 11 (`npx -y npm@11 install` may resolve to your local npm; pin the newest 11.x, e.g. `npx -y npm@11.21.1 install --package-lock-only`). Older local npm drops optional peer entries (e.g. `react` under `@laravel/multiplex`), and CI's `npm ci` then fails.
+
 Inertia pages live in `resources/js/pages` (lower case; CI runs on case-sensitive Linux). macOS ignores case, so a
 checkout made before the rename may still show `Pages/`: fix it once with `mv resources/js/Pages resources/js/p && mv resources/js/p resources/js/pages`.
 
