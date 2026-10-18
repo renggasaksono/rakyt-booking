@@ -131,7 +131,7 @@ Operations follow ADR-0016.
   - (c) an `auth.password_reset` audit event is written.
 - [ ] **B11b (auto)** Given a signed-in seller changes their password, then other sessions are revoked and `auth.password_changed` is audited. The 24-hour payment-instruction block applies only to resets and email changes, not to a normal password change by a signed-in seller who knows the current password.
 - [ ] **B11c (auto) Staff-assisted recovery:** Given Rakyt staff run the recovery artisan command (never ad-hoc SQL) to set a new verified email for the account, then all sessions are revoked, a reset link goes to the new email, payment-instruction changes are blocked for 24 hours, and `auth.account_recovered` is audited with actor `rakyt_staff:<name>`.
-- [ ] **B12 (auto) Email change:** Given a signed-in seller changes their sign-in email, then the change takes effect only after they click a verification link sent to the new address (the old address is told the change was requested). On verification, other sessions are revoked, payment-instruction changes are blocked for 24 hours, and `auth.email_changed` is audited with the old and new email.
+- [ ] **B12 (auto) Email change:** Given a signed-in seller changes their sign-in email (current password required), then the change takes effect at once and the new address must be verified again; the old address is told about the change, other sessions are revoked, `auth.email_changed` is audited with the old and new email, and payment-instruction changes are blocked for 24 hours. *(Reworded 2026-10-19 per F-001 Q15, decided by Rengga: at once instead of after verifying the new address. Built in F-001 A11 except the 24-hour block — F-001 Q16, a pre-pilot gate.)*
 
 ### Slice C — Hardening (week 6)
 
@@ -339,3 +339,4 @@ Q2–Q5 have recommended defaults (most are captured in ADR-0016 and ADR-0018). 
 - 2026-10-18 — F-003 build: A11 (auto-close audited as the system), R3 (photo pixel cap), R14 (`UniqueInCurrentOrganization` + bare-rule guard), R15/R16 (malformed ids in soft-delete and child bindings → 404) done. PostgreSQL sessions now run in UTC (ADR-0022)
 - 2026-10-18 — R3 corrected (review B1): the 40 MP cap did not fit GD's real memory use (8.3 B/px). The cap is now derived from an explicit 320 MB budget (29 MP), proven by `PhotoMemoryBudgetTest`; re-ticked
 - 2026-10-18 — F-001 build: A14b, A15a, R4, R7 done. New limiters `verification-resend` and `account-change`; a `mail` log channel (redacted, HTML part dropped) for the local mailer. B12 conflicts with F-001 A11 (email change takes effect at once) — see F-001 Q15
+- 2026-10-19 — B12 reworded after F-001 Q15 (Rengga): the email change takes effect at once; the 24-hour payment-instruction block stays required (F-001 Q16)

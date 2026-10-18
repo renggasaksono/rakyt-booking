@@ -3,7 +3,7 @@
 What is in scope **now**, **next** and **later**. Agents only build items under **Now**.
 Dated plans live alongside this file; this page is the summary that must always be current.
 
-_Last updated: 2026-10-18_
+_Last updated: 2026-10-19_
 
 ## Now — MVP build (P0)
 
@@ -14,7 +14,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | Week 1 — resolve open questions, confirm proposed ADRs, scaffold Laravel app | scaffold done (ADR-0020); ADR-0011 still proposed |
 | [F-009](../features/F-009-tenancy-security-operations.md) Tenancy & security baseline (slice A wk 2 · ops wk 4 · hardening wk 6) | in-progress — slice A built; B, C to do |
 | [F-003](../features/F-003-trips-and-departures.md) Trips & departures | in-progress — built on `feat/F-003-trips-and-departures`; 38/43 ACs covered by tests; AC-3/7/7a/41 partly covered, AC-35 is a pilot check; device review after F-001 section A |
-| [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | in-progress — built on `feat/F-001-seller-onboarding`; 58/63 ACs covered by tests; C3/F1/T3 partly covered, D7 waits on F-002, P1 device review; ADR-0023 proposed |
+| [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | in-progress — built on `feat/F-001-seller-onboarding`; 58/63 ACs covered by tests; C3/F1/T3 partly covered, D7 waits on F-002, P1 device review; ADR-0023 accepted; PR #5 |
 | [F-002](../features/F-002-public-booking-page.md) Public booking page | planned |
 | [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | planned |
 | [F-004](../features/F-004-request-a-date.md) Request-a-date | planned |
@@ -37,7 +37,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
 | Platform admin inside the same app, gated, no impersonation; admin login = email + password + TOTP | Accept | [ADR-0011](../decisions/0011-platform-admin-access.md) · F-010–F-015 | Before admin build (wk 4) |
-| Seller accounts and onboarding implementation choices (hand-written auth, session revocation via password hash, payment-method sync, mail log) | Accept | [ADR-0023](../decisions/0023-onboarding-and-accounts-implementation-choices.md) · F-001 | Before merging F-001 |
 
 ### Week 1 — choices outside the specs
 
@@ -66,7 +65,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Onboarding time budget (±9/8/4/2 min) | Keep for build; retime in wk-1 user tests | [F-001 Q12](../features/F-001-seller-onboarding.md#open-questions) |
 | Ask "Nama Anda" at sign-up | Yes | [F-001 Q13](../features/F-001-seller-onboarding.md#open-questions) |
 | Password confirmation field | No; show/hide toggle | [F-001 Q14](../features/F-001-seller-onboarding.md#open-questions) |
-| Email change: at once (F-001 A11) or after verifying the new address (F-009 B12) | At once for P0; reword F-009 B12 | [F-001 Q15](../features/F-001-seller-onboarding.md#open-questions) |
 | Auth events of a seller without an organization yet | Not audited in P0 | [F-001 Q17](../features/F-001-seller-onboarding.md#open-questions) |
 
 ### Draft specs — to resolve when the spec is made `ready`

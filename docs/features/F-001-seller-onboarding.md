@@ -21,7 +21,7 @@ roadmap gate "Continue / pivot" measures exactly this).
 ## Readiness
 
 **`in-progress`** (built 2026-10-18 on `feat/F-001-seller-onboarding`, 58 of 63 criteria covered by tests; C3, D7, F1,
-T3 and P1 are partly covered — see each). Implementation choices: ADR-0023 (proposed).
+T3 and P1 are partly covered — see each). Implementation choices: ADR-0023 (accepted 2026-10-19).
 
 The blocking product decisions are made: sign-in is email + password (ADR-0012, replaces the rejected
 ADR-0009); the database is PostgreSQL (ADR-0013); a trip description is optional to publish (F-003 checklist).
@@ -243,7 +243,7 @@ None block building. The spec uses the recommended default for each; override an
 - [ ] **Q12 — Recheck the time budget.** The ±9/±8/±4/±2 values assumed a 1-minute code sign-in. *Recommend:* keep them for build (config, C1), time 3–5 target users in week 1 prototype tests, and retune before pilot.
 - [ ] **Q13 — Ask "Nama Anda" at sign-up?** *Recommend: yes* — the dashboard greets by name ("Selamat pagi, Agus.") and support needs a person's name; it is one short field. Alternative: drop it and greet with the business name.
 - [ ] **Q14 — Sign-up form: password confirmation field?** *Recommend: no*, use a show/hide toggle (A1) — faster on a phone, same error protection. Reset is always available.
-- [ ] **Q15 — Email change: now, or after verifying the new address?** A11 (built) changes the email at once and resets verification; F-009 B12 says the change takes effect only after the new address is verified. *Recommend:* keep A11 for P0 (the current password is required, the old address is told, other devices are signed out) and reword F-009 B12; switch to verify-first if pilots show takeover attempts. Raised by the builder 2026-10-18.
+- [x] **Q15 — Email change: now, or after verifying the new address?** *Decided 2026-10-19 (Rengga): at once, as built (A11); F-009 B12 reworded.* A11 (built) changes the email at once and resets verification; F-009 B12 says the change takes effect only after the new address is verified. *Recommend:* keep A11 for P0 (the current password is required, the old address is told, other devices are signed out) and reword F-009 B12; switch to verify-first if pilots show takeover attempts. Raised by the builder 2026-10-18.
 - [ ] **Q16 — ADR-0018's 24-hour block and change notice for payment instructions.** Not built in F-001: after a reset or email change, step 4 / later edits are not blocked, and the sign-in email is not notified of an account change (every change *is* audited as `payment_instructions.changed`). *Recommend:* build both with F-006's Pengaturan → Pembayaran. Recorded as a pre-pilot gate in the roadmap (blocks "Pilot go"). Raised by the builder 2026-10-18.
 - [ ] **Q17 — Auth events before step 1.** A seller with no organization yet (e.g. resetting the password before step 1) is not audited, because `audit_events` needs an organization. *Recommend:* accept for P0; nothing seller-owned exists to protect yet. Raised by the builder 2026-10-18.
 
@@ -260,3 +260,4 @@ None block building. The spec uses the recommended default for each; override an
 - 2026-10-18 — Built (builder) on `feat/F-001-seller-onboarding`: sections A–F, `payment_methods` + the real `PaymentReadiness`, F-009 A14b/A15a/R4/R7. 58/63 ACs ticked; C3, D7, F1, T3, P1 partly covered. ADR-0023 proposed; Q15–Q17 raised. Status → `in-progress`
 - 2026-10-18 — Review fix (blocker): `first_published_at` is now set in `TripService::publish`, so a publish from the F-003 editor after "Simpan sebagai draf" also locks the slug (F2) and records the first publish (D2); tested
 - 2026-10-18 — Review fix (C12): "Simpan sebagai draf" leaves a saved account whose edit is not valid unchanged instead of removing it; tested
+- 2026-10-19 — Rengga: ADR-0023 accepted; Q15 decided (email change takes effect at once; F-009 B12 reworded)

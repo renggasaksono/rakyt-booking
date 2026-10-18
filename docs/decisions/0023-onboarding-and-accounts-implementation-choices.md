@@ -1,7 +1,7 @@
 ---
 id: 0023
 title: Implementation choices for seller accounts and onboarding (F-001)
-status: proposed
+status: accepted
 date: 2026-10-18
 deciders: [Rengga]
 related: [F-001, F-003, F-006, F-009, ADR-0003, ADR-0004, ADR-0012, ADR-0018, ADR-0021, ADR-0022]
@@ -9,7 +9,7 @@ related: [F-001, F-003, F-006, F-009, ADR-0003, ADR-0004, ADR-0012, ADR-0018, AD
 
 # 0023. Implementation choices for seller accounts and onboarding (F-001)
 
-*Proposed by the builder agent on 2026-10-18 while building F-001.*
+*Proposed by the builder agent on 2026-10-18 while building F-001. Accepted by Rengga on 2026-10-19.*
 
 ## Context
 
