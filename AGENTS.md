@@ -66,8 +66,9 @@ Never drop or reset the dev database to "start clean"; tests reset their own tes
 - Never bypass the scope — `acrossOrganizations()`, `withoutGlobalScope(s)`, `newModelQuery()`, `toBase()`,
   `getConnection()`, or any `DB::` call other than transaction control — outside
   `config/rakyt.php → cross_organization_allowlist` or `app/Admin/Queries`. The guard test lists the exact patterns.
-- Bulk `insert`/`upsert` on tenant models get the current organization automatically; `organization_id` can never be
-  updated. Never add an unscoped relation to `Organization` (e.g. `users()`); authorise organizations via `OrganizationPolicy`.
+- Bulk `insert` on tenant models gets the current organization automatically; `upsert` must include `organization_id`
+  in its conflict target; `updateOrInsert`, `updateFrom`, `insertUsing` and `truncate` throw — use `updateOrCreate`.
+  `organization_id` can never be updated. Log models, not their attributes (they are logged as class + key). Never add an unscoped relation to `Organization` (e.g. `users()`); authorise organizations via `OrganizationPolicy`.
 - Never-flashed fields (passwords, tokens) live in `App\Security\SensitiveInput::FIELDS`.
 - All UI copy lives in `lang/id/*.php` (Vue pages get it as props); never hard-code Bahasa strings in views.
 - Audited actions go through `App\Audit\AuditLog`, inside the same `DB::transaction` as the change.

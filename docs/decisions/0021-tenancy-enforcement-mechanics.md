@@ -30,14 +30,18 @@ seller.
   models are already scoped and another seller's id is a 404.
 - **Policies extend `OrganizationOwnedPolicy`** and deny with 404 (`denyAsNotFound`), a second layer behind the scope.
 - **Payload ids** are validated with `ExistsInCurrentOrganization`, never a bare `exists:` rule.
-- **Bulk writes** go through `TenantBuilder` (the trait's Eloquent builder): `insert`, `insertGetId`, `insertOrIgnore`,
-  `upsert` and `fillAndInsert*` get the same organization rule as the `creating` hook; `insertUsing` is refused;
-  updates, upserts and increments may never touch `organization_id`.
+- **Bulk writes** go through `TenantBuilder` (the trait's Eloquent builder): `insert`, `insertGetId`, `insertOrIgnore`
+  and `fillAndInsert*` get the same organization rule as the `creating` hook. `upsert` must name `organization_id` in its
+  conflict target (`ON CONFLICT` ignores the scope) and never updates it. Writes the scope cannot reach —
+  `insertUsing`, `updateOrInsert`, `updateFrom`, `truncate` — are refused; use `create`, `save` or `updateOrCreate`.
+  Updates and increments may never touch `organization_id`.
 - **Bypassing the scope** — `acrossOrganizations()`, `withoutGlobalScope(s)`, `newModelQuery()`,
-  `newQueryWithoutScope(s)`, `toBase()`, `getQuery()`, `getConnection()`, and any database access outside Eloquent
-  (`DB::` except transaction control, `app('db')`, `DatabaseManager`) — is allowed only in files listed in
+  `newQueryWithoutScope(s)`, `toBase()`, `getQuery()`, `getConnection()`, `resolveConnection()`, and any database access
+  outside Eloquent (`DB::` except transaction control, an aliased `DB` import, the container's `db` binding,
+  `DatabaseManager`, injected connections) — is allowed only in files listed in
   `config/rakyt.php → cross_organization_allowlist` (system jobs), under `app/Admin/Queries` (ADR-0011), or in the
-  four tenancy mechanism files. A test scans `app/` and `routes/` and fails on any other use.
+  four tenancy mechanism files. A test scans `app/` and `routes/` and fails on any other use. The scan is a safety net,
+  not a proof — determined code can still reach the database — so review and the F-009 C1 audit still check scoping.
 - **The `Organization` model** is not scoped (it is the tenant); `OrganizationPolicy` allows only the current
   organization and answers others with 404. Non-numeric ids in URLs are a 404, in payloads a 422.
 - **Guards in CI:** a schema test (every table has a NOT NULL, indexed, FK'd `organization_id` unless allowlisted) and
