@@ -23,13 +23,14 @@ final class PaymentMethodService
     /**
      * Make the organization's accounts exactly the given blocks: blocks with
      * an id update that account, the others are added, accounts not listed
-     * are removed.
+     * are removed — except those in $unchanged, which stay as they are.
      *
      * @param  list<array{id?: ?string, provider: string, provider_name?: ?string, account_number: string, account_holder: string}>  $blocks  validated
+     * @param  list<string>  $unchanged  public ids of accounts to keep untouched
      */
-    public function sync(array $blocks): void
+    public function sync(array $blocks, array $unchanged = []): void
     {
-        DB::transaction(function () use ($blocks) {
+        DB::transaction(function () use ($blocks, $unchanged) {
             // One writer per organization at a time.
             Organization::query()->whereKey($this->current->id())->lockForUpdate()->firstOrFail();
 
@@ -55,7 +56,7 @@ final class PaymentMethodService
                 $kept[] = $method->getKey();
             }
 
-            $existing->reject(fn (PaymentMethod $method) => in_array($method->getKey(), $kept, true))
+            $existing->reject(fn (PaymentMethod $method) => in_array($method->getKey(), $kept, true) || in_array($method->public_id, $unchanged, true))
                 ->each(fn (PaymentMethod $method) => $method->delete());
 
             $after = PaymentMethod::query()->orderBy('position')->orderBy('id')->get()

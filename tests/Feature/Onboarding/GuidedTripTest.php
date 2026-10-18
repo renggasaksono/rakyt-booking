@@ -319,6 +319,29 @@ class GuidedTripTest extends TestCase
         $this->actingAsTenant($other)->post(route('onboarding.payment'), ['intent' => 'draft', 'methods' => []])->assertRedirect(route('dashboard'));
     }
 
+    public function test_ac_c12_a_draft_never_removes_a_saved_account_whose_edit_is_invalid(): void
+    {
+        $this->saveTrip();
+        $this->actingAsTenant($this->seller)->post(route('onboarding.schedule'), $this->scheduleInput());
+
+        // "Terbitkan trip" saves the accounts, then bounces to step 2 for the missing cover (D1).
+        $this->actingAsTenant($this->seller)->post(route('onboarding.payment'), ['intent' => 'publish', 'methods' => [
+            $this->bankBlock(['account_number' => '1111111111']),
+            $this->bankBlock(['provider' => 'bri', 'account_number' => '2222222222']),
+        ]])->assertRedirect(route('onboarding.trip'));
+        [$bca, $bri] = PaymentMethod::acrossOrganizations()->orderBy('position')->get()->all();
+
+        // Back on step 4 the seller mistypes BCA's number (too short), fixes BRI, and saves a draft.
+        $this->actingAsTenant($this->seller)->post(route('onboarding.payment'), ['intent' => 'draft', 'methods' => [
+            ['id' => $bca->public_id, ...$this->bankBlock(['account_number' => '12'])],
+            ['id' => $bri->public_id, ...$this->bankBlock(['provider' => 'bri', 'account_number' => '3333333333'])],
+        ]])->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseHas('payment_methods', ['id' => $bca->id, 'account_number' => '1111111111']);
+        $this->assertDatabaseHas('payment_methods', ['id' => $bri->id, 'account_number' => '3333333333']);
+        $this->assertSame(2, PaymentMethod::acrossOrganizations()->count());
+    }
+
     public function test_ac_c13_every_step_has_a_back_control_with_saved_values(): void
     {
         $this->saveTrip();

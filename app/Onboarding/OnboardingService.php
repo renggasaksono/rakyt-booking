@@ -156,11 +156,12 @@ final class OnboardingService
      * ends the guided flow; the trip stays a draft.
      *
      * @param  list<array<string, mixed>>  $methods  validated blocks
+     * @param  list<string>  $unchanged  ids of saved accounts to leave as they are
      */
-    public function saveDraft(Organization $organization, array $methods): void
+    public function saveDraft(Organization $organization, array $methods, array $unchanged = []): void
     {
-        DB::transaction(function () use ($organization, $methods) {
-            $this->paymentMethods->sync($methods);
+        DB::transaction(function () use ($organization, $methods, $unchanged) {
+            $this->paymentMethods->sync($methods, $unchanged);
 
             $locked = Organization::query()->whereKey($organization->getKey())->lockForUpdate()->firstOrFail();
             $locked->onboarding_skipped_at ??= now();

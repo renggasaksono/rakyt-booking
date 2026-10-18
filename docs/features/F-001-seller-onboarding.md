@@ -259,3 +259,4 @@ None block building. The spec uses the recommended default for each; override an
 - 2026-10-18 — Trip name 3–80 chars (F-003 Q11); F4 added: time-zone change recomputes preset deadlines (F-003 Q15)
 - 2026-10-18 — Built (builder) on `feat/F-001-seller-onboarding`: sections A–F, `payment_methods` + the real `PaymentReadiness`, F-009 A14b/A15a/R4/R7. 58/63 ACs ticked; C3, D7, F1, T3, P1 partly covered. ADR-0023 proposed; Q15–Q17 raised. Status → `in-progress`
 - 2026-10-18 — Review fix (blocker): `first_published_at` is now set in `TripService::publish`, so a publish from the F-003 editor after "Simpan sebagai draf" also locks the slug (F2) and records the first publish (D2); tested
+- 2026-10-18 — Review fix (C12): "Simpan sebagai draf" leaves a saved account whose edit is not valid unchanged instead of removing it; tested

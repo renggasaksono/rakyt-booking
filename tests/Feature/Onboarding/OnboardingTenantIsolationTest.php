@@ -85,9 +85,12 @@ class OnboardingTenantIsolationTest extends TestCase
             'methods' => [['id' => $this->method->public_id, ...$this->bankBlock(['account_number' => '1111111'])]],
         ], 'methods.0.id', fn () => $this->assertDatabaseHas('payment_methods', ['id' => $this->method->id, 'account_number' => '99887766']));
 
-        // B's draft save never deletes A's account either.
-        $this->actingAsTenant($this->b)->post(route('onboarding.payment'), ['intent' => 'draft', 'methods' => []]);
-        $this->assertDatabaseHas('payment_methods', ['id' => $this->method->id]);
+        // B's draft save never deletes or changes A's account either, even when it names it.
+        $this->actingAsTenant($this->b)->post(route('onboarding.payment'), ['intent' => 'draft', 'methods' => [
+            ['id' => $this->method->public_id, ...$this->bankBlock(['account_number' => '12'])],
+            ['id' => $this->method->public_id, ...$this->bankBlock(['account_number' => '5555555'])],
+        ]])->assertRedirect(route('dashboard'));
+        $this->assertDatabaseHas('payment_methods', ['id' => $this->method->id, 'account_number' => '99887766', 'organization_id' => $this->a->id()]);
     }
 
     public function test_ac_t3_a_s_draft_and_payment_details_never_reach_b(): void

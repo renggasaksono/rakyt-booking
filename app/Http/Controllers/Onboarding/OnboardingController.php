@@ -326,7 +326,8 @@ class OnboardingController extends Controller
         $methods = PaymentMethodRules::normalize($request->input('methods', []));
 
         if ($request->input('intent') === 'draft') {
-            $this->onboarding->saveDraft($organization, $this->validBlocks($methods));
+            [$valid, $unchanged] = $this->draftBlocks($methods);
+            $this->onboarding->saveDraft($organization, $valid, $unchanged);
 
             return redirect()->route('dashboard')->with('toast', __('onboarding.payment.draft_saved'));
         }
@@ -408,27 +409,37 @@ class OnboardingController extends Controller
     }
 
     /**
-     * C12: a draft keeps the blocks that are complete and valid.
+     * C12: a draft saves the blocks that are complete and valid. A saved
+     * account whose edit is not valid yet is left as it was, never removed.
      *
-     * @return list<array<string, mixed>>
+     * @return array{0: list<array<string, mixed>>, 1: list<string>} valid blocks; ids of saved accounts to leave unchanged
      */
-    private function validBlocks(mixed $methods): array
+    private function draftBlocks(mixed $methods): array
     {
         if (! is_array($methods)) {
-            return [];
+            return [[], []];
         }
 
         $valid = [];
+        $unchanged = [];
 
-        foreach (array_slice($methods, 0, (int) config('rakyt.onboarding.max_payment_methods')) as $block) {
+        foreach (array_values($methods) as $index => $block) {
+            if (! is_array($block)) {
+                continue;
+            }
+
             $check = Validator::make(['methods' => [$block]], PaymentMethodRules::rules(requireOne: true));
+            $ok = ! $check->fails() && PaymentMethodRules::missingProviderNames([$block]) === [];
 
-            if (is_array($block) && ! $check->fails() && PaymentMethodRules::missingProviderNames([$block]) === []) {
+            if ($ok && $index < (int) config('rakyt.onboarding.max_payment_methods')) {
                 $valid[] = $check->validated()['methods'][0];
+            } elseif (isset($block['id']) && is_string($block['id'])) {
+                // Ids of other organizations match nothing in the scoped sync.
+                $unchanged[] = $block['id'];
             }
         }
 
-        return $valid;
+        return [$valid, $unchanged];
     }
 
     /**
