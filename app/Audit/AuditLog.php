@@ -4,7 +4,9 @@ namespace App\Audit;
 
 use App\Models\AuditEvent;
 use App\Models\Organization;
+use App\Models\User;
 use App\Tenancy\CurrentOrganization;
+use App\Tenancy\Middleware\ResolveCurrentOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use LogicException;
@@ -72,15 +74,31 @@ class AuditLog
         return $this->record($action, $subject, $before, $after, $actor);
     }
 
+    /**
+     * The subject's organization. A user (auth events) is found through their
+     * membership, so a guest's password reset can be audited (F-009 R4). It
+     * must match the current organization when one is set.
+     */
     private function organizationIdFor(Model $subject): int
     {
+        $current = $this->current->id();
+
         $id = match (true) {
             $subject instanceof Organization => $subject->getKey(),
+            $subject instanceof User => ResolveCurrentOrganization::membershipOf($subject)?->organization_id,
             array_key_exists('organization_id', $subject->getAttributes()) => $subject->getAttribute('organization_id'),
-            default => $this->current->id(),
+            default => $current,
         };
 
-        return $id ?? throw new LogicException('Cannot audit a change without an organization.');
+        if ($id === null) {
+            throw new LogicException('Cannot audit a change without an organization.');
+        }
+
+        if ($current !== null && (int) $id !== $current) {
+            throw new LogicException('The audited subject belongs to another organization than the current one.');
+        }
+
+        return (int) $id;
     }
 
     /**

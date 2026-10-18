@@ -354,6 +354,58 @@ final class DepartureService
     }
 
     /**
+     * After the organization's time zone changed (F-001 F4, F-003 Q15, ADR-0014):
+     * future departures with a relative preset get their deadline recomputed in
+     * the new zone; custom deadlines keep their instant. An open departure whose
+     * new deadline has already passed is closed straight away (reason deadline).
+     * Call inside the transaction that changes the time zone.
+     *
+     * @return int departures whose deadline changed
+     */
+    public function rezoneDeadlines(Organization $organization): int
+    {
+        $changed = 0;
+        $now = CarbonImmutable::now();
+
+        $departures = TripDeparture::query()
+            ->with('trip')
+            ->whereDate('start_date', '>=', TripDeparture::today($organization))
+            ->where('booking_deadline_preset', '!=', DeadlinePreset::Custom->value)
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($departures as $departure) {
+            $departure->trip->setRelation('organization', $organization);
+            $before = DepartureAudit::snapshot($departure);
+
+            $deadline = DeadlineCalculator::compute(
+                $departure->booking_deadline_preset,
+                $departure->start_date->toDateString(),
+                $departure->trip->meeting_time,
+                $organization->timezone,
+            );
+
+            if ($deadline === null || $deadline->equalTo($departure->booking_deadline_at)) {
+                continue;
+            }
+
+            $departure->booking_deadline_at = $deadline;
+
+            if ($departure->isOpen() && ! $now->lessThan($deadline)) {
+                $departure->status = DepartureStatus::Closed;
+                $departure->closed_reason = ClosedReason::Deadline;
+            }
+
+            $departure->save();
+            $this->audit->recordChanges($departure, $before);
+            $changed++;
+        }
+
+        return $changed;
+    }
+
+    /**
      * Whether any upcoming departure of the trip already has seats taken
      * (booking mode is locked then, Data & rules).
      */

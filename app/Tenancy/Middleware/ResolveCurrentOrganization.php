@@ -3,6 +3,7 @@
 namespace App\Tenancy\Middleware;
 
 use App\Models\OrganizationMember;
+use App\Models\User;
 use App\Tenancy\CurrentOrganization;
 use App\Tenancy\Exceptions\AmbiguousOrganizationMembership;
 use Closure;
@@ -28,22 +29,33 @@ class ResolveCurrentOrganization
         if ($user !== null) {
             Context::add('user_id', $user->getKey());
 
-            $memberships = OrganizationMember::acrossOrganizations()
-                ->with('organization')
-                ->where('user_id', $user->getKey())
-                ->limit(2)
-                ->get();
-
-            if ($memberships->count() > 1) {
-                throw new AmbiguousOrganizationMembership;
-            }
-
-            if ($membership = $memberships->first()) {
+            if ($membership = self::membershipOf($user)) {
                 $this->current->set($membership->organization);
                 Context::add('organization_id', $membership->organization_id);
             }
         }
 
         return $next($request);
+    }
+
+    /**
+     * The user's one membership (P0: one organization per user), read without
+     * the organization scope because it is what decides the organization.
+     * Also used after a write that may have created it (F-001 B9) and to find
+     * a guest's organization for an audit event (F-009 R4).
+     */
+    public static function membershipOf(User $user): ?OrganizationMember
+    {
+        $memberships = OrganizationMember::acrossOrganizations()
+            ->with('organization')
+            ->where('user_id', $user->getKey())
+            ->limit(2)
+            ->get();
+
+        if ($memberships->count() > 1) {
+            throw new AmbiguousOrganizationMembership;
+        }
+
+        return $memberships->first();
     }
 }

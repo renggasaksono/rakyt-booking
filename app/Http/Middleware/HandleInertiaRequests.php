@@ -42,14 +42,32 @@ class HandleInertiaRequests extends Middleware
                 'toast' => $request->session()->get('toast'),
                 'notice' => $request->session()->get('notice'),
             ],
-            // Seller layout copy and links (F-003 minimal layout); F-001/F-007 add more items.
+            // Seller layout copy and links (F-003 minimal layout, F-001 Pengaturan); F-007 adds more items.
             'seller' => fn () => $request->user() === null || ! app(CurrentOrganization::class)->check() ? null : [
                 'nav' => [
                     ['key' => 'trips', 'label' => __('trips.nav.trips'), 'url' => route('trips.index'), 'active' => $request->routeIs('trips.*', 'departures.*')],
+                    ['key' => 'settings', 'label' => __('profile.settings.title'), 'url' => route('settings.index'), 'active' => $request->routeIs('settings.*')],
                 ],
                 'brand' => __('trips.nav.brand'),
                 'menu_label' => __('trips.nav.menu'),
                 'close_label' => __('trips.nav.close'),
+            ],
+            // F-001 A6, A10: account menu and the non-blocking verification banner.
+            'account' => fn () => $request->user() === null ? null : [
+                'name' => $request->user()->name,
+                'verified' => $request->user()->hasVerifiedEmail(),
+                'copy' => [
+                    'banner' => __('account.verify.banner'),
+                    'resend' => __('account.verify.resend'),
+                    'dismiss' => __('account.verify.dismiss'),
+                    'logout' => __('account.menu.logout'),
+                    'account' => __('account.menu.account'),
+                ],
+                'urls' => [
+                    'resend' => route('verification.send'),
+                    'logout' => route('logout'),
+                    'account' => route('settings.account'),
+                ],
             ],
         ];
     }

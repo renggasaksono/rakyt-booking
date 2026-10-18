@@ -1,5 +1,6 @@
 <?php
 
+use App\Logging\LogMailAsText;
 use App\Logging\RedactLogs;
 use App\Logging\UseJsonFormat;
 use Monolog\Handler\NullHandler;
@@ -53,6 +54,17 @@ return [
     */
 
     'channels' => [
+
+        // The `log` mailer writes here, not to the application log (F-001 A13).
+        // Redacted like every channel: reset tokens and signed-link signatures
+        // are replaced, so use an SMTP catcher (e.g. Mailpit) to click them locally.
+        'mail' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/mail.log'),
+            'tap' => [RedactLogs::class, LogMailAsText::class],
+            'level' => 'debug',
+            'replace_placeholders' => true,
+        ],
 
         'stack' => [
             'driver' => 'stack',

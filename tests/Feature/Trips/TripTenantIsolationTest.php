@@ -208,11 +208,15 @@ class TripTenantIsolationTest extends TestCase
         }
     }
 
-    public function test_guests_are_sent_home_and_users_without_an_organization_see_404(): void
+    public function test_guests_sign_in_and_users_without_an_organization_start_onboarding(): void
     {
-        $this->get(route('trips.index'))->assertRedirect(route('home'));
+        $this->get(route('trips.index'))->assertRedirect(route('login'));
         $this->getJson(route('trips.edit', $this->trip))->assertUnauthorized();
 
-        $this->actingAs(User::factory()->create())->get(route('trips.index'))->assertNotFound();
+        // F-001 E1: pages send them to step 1; JSON and writes stay a 404.
+        $user = User::factory()->create();
+        $this->actingAs($user)->get(route('trips.index'))->assertRedirect(route('onboarding.organization'));
+        $this->actingAs($user)->getJson(route('trips.index'))->assertNotFound();
+        $this->actingAs($user)->post(route('trips.store'), ['name' => 'Trip'])->assertNotFound();
     }
 }

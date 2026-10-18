@@ -19,7 +19,7 @@ class SellerPagesTest extends TestCase
 {
     use BuildsTrips, InteractsWithTenants, RefreshDatabase;
 
-    public function test_the_seller_layout_shows_only_trip_and_departures(): void
+    public function test_the_seller_layout_shows_trips_and_settings(): void
     {
         [$a] = $this->createTenants();
 
@@ -27,10 +27,13 @@ class SellerPagesTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Trips/Index')
-                ->has('seller.nav', 1)
+                ->has('seller.nav', 2)
                 ->where('seller.nav.0.label', 'Trip & keberangkatan')
                 ->where('seller.nav.0.url', route('trips.index'))
                 ->where('seller.nav.0.active', true)
+                // F-001 F3: Pengaturan hosts Profil usaha and Akun.
+                ->where('seller.nav.1.url', route('settings.index'))
+                ->where('seller.nav.1.active', false)
                 ->where('seller.close_label', 'Tutup'));
     }
 
@@ -141,7 +144,7 @@ class SellerPagesTest extends TestCase
 
     public function test_guests_cannot_reach_the_settings(): void
     {
-        $this->get(route('settings.booking.edit'))->assertRedirect(route('home'));
+        $this->get(route('settings.booking.edit'))->assertRedirect(route('login'));
         $this->putJson(route('settings.booking.update'), ['default_booking_deadline_preset' => 'h1'])->assertUnauthorized();
     }
 

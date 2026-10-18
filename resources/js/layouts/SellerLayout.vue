@@ -2,6 +2,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import FlashMessages from '../components/FlashMessages.vue';
+import VerificationBanner from '../components/VerificationBanner.vue';
 
 defineProps({
     // The trip editor uses the bottom of the phone screen for its own action bar.
@@ -39,6 +40,7 @@ const seller = computed(() => page.props.seller);
             class="min-w-0 flex-1"
             :class="hideBottomNav ? '' : 'pb-20 lg:pb-0'"
         >
+            <VerificationBanner />
             <slot />
         </div>
 

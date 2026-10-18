@@ -72,7 +72,9 @@ return [
 
         'log' => [
             'transport' => 'log',
-            'channel' => env('MAIL_LOG_CHANNEL'),
+            // F-001 A13: local mail (with reset and verification links) goes to
+            // storage/logs/mail.log, never to the application log.
+            'channel' => env('MAIL_LOG_CHANNEL', 'mail'),
         ],
 
         'array' => [
