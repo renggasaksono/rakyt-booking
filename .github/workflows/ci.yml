@@ -76,6 +76,11 @@ jobs:
     name: Dependency & secret scan
     runs-on: ubuntu-latest
 
+    # gitleaks-action lists the PR's commits through the API.
+    permissions:
+      contents: read
+      pull-requests: read
+
     # F-009 A18: a high-severity advisory or a detected secret fails the build.
     steps:
       - uses: actions/checkout@v4
