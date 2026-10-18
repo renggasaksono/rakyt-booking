@@ -68,6 +68,19 @@ export function presetOptions(presets, startDate, meetingTime, nowLocal) {
     });
 }
 
+/**
+ * What the picker lists: presets that can still be chosen. Past or late ones
+ * are hidden, not struck through; "Pilih tanggal & jam…" always stays (AC-23).
+ */
+export function visiblePresetOptions(presets, startDate, meetingTime, nowLocal) {
+    return presetOptions(presets, startDate, meetingTime, nowLocal).filter((option) => option.value === 'custom' || !option.disabled);
+}
+
+/** "Hanya boleh sebelum jam kumpul…" applies only with a meeting time or a custom deadline. */
+export function showsRuleHint(preset, meetingTime) {
+    return Boolean(meetingTime) || preset === 'custom';
+}
+
 export function isDeadlineValid(deadline, startDate, meetingTime, nowLocal) {
     return deadline !== null && deadline > nowLocal && deadline <= latestAllowed(startDate, meetingTime);
 }

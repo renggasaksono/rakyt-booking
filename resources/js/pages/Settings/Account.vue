@@ -15,6 +15,7 @@ const props = defineProps({
     account: { type: Object, required: true },
     urls: { type: Object, required: true },
     limits: { type: Object, required: true },
+    backLabel: { type: String, required: true },
 });
 
 const emailForm = useForm({ email: '', current_password: '' });
@@ -46,7 +47,7 @@ function logout() {
                 :href="urls.back"
                 class="inline-flex min-h-11 items-center text-sm text-sogan underline"
             >
-                {{ t(copy, 'settings.back') }}
+                {{ backLabel }}
             </Link>
             <p class="text-[11px] font-semibold uppercase tracking-wide text-secondary">
                 {{ t(copy, 'settings.kicker') }}

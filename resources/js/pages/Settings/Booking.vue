@@ -11,6 +11,7 @@ const props = defineProps({
     options: { type: Array, required: true },
     urls: { type: Object, required: true },
     copy: { type: Object, required: true },
+    backLabel: { type: String, required: true },
 });
 
 const form = useForm({ default_booking_deadline_preset: props.settings.default_booking_deadline_preset });
@@ -25,10 +26,10 @@ function submit() {
     <SellerLayout>
         <div class="mx-auto max-w-md px-4 py-6">
             <Link
-                :href="urls.trips"
+                :href="urls.back"
                 class="inline-flex min-h-11 items-center text-sm text-sogan underline"
             >
-                {{ t(copy, 'settings.back') }}
+                {{ backLabel }}
             </Link>
             <p class="text-xs font-semibold uppercase tracking-wide text-secondary">
                 {{ t(copy, 'settings.title') }}

@@ -70,7 +70,7 @@ class PublishTest extends TestCase
         $this->assertSame(4, $checklist['total']);
     }
 
-    public function test_ac_9_payment_item_follows_the_payment_readiness_seam_and_hides_the_link_until_it_exists(): void
+    public function test_ac_9_payment_item_follows_the_payment_readiness_seam_and_links_to_rekening(): void
     {
         [$a] = $this->createTenants();
         $trip = $this->tripFor($a);
@@ -81,7 +81,7 @@ class PublishTest extends TestCase
 
         $this->actingAsTenant($a)->get(route('trips.edit', $trip))
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('urls.payment_setup', null)
+                ->where('urls.payment_setup', route('payment-methods.index'))
                 ->where('copy.checklist.payment_link', 'atur rekening'));
     }
 

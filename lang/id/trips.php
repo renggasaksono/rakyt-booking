@@ -296,7 +296,6 @@ return [
         'default_deadline_hint' => 'Dipakai untuk keberangkatan baru. Keberangkatan yang sudah ada tidak berubah.',
         'save' => 'Simpan',
         'saved' => 'Tersimpan',
-        'back' => 'Kembali ke trip',
     ],
 
     /*

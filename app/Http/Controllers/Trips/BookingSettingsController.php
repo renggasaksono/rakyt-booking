@@ -28,7 +28,8 @@ class BookingSettingsController extends Controller
         return Inertia::render('Settings/Booking', [
             'settings' => ['default_booking_deadline_preset' => $organization->default_booking_deadline_preset],
             'options' => array_map(fn (DeadlinePreset $preset) => $preset->value, DeadlinePreset::organizationDefaults()),
-            'urls' => ['update' => route('settings.booking.update'), 'trips' => route('trips.index')],
+            'urls' => ['update' => route('settings.booking.update'), 'back' => route('settings.index')],
+            'backLabel' => __('profile.settings.back'),
             'copy' => __('trips'),
         ]);
     }

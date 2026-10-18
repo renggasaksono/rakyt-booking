@@ -237,6 +237,27 @@ class PublishTest extends TestCase
         $this->assertSame('kencana', $this->seller->organization->refresh()->slug);
     }
 
+    public function test_ac_c12_f5_a_draft_without_an_account_can_add_one_in_settings_and_publish_from_the_editor(): void
+    {
+        $this->completeSteps2And3();
+        $this->actingAsTenant($this->seller)->post(route('onboarding.payment'), ['intent' => 'draft', 'methods' => []])
+            ->assertRedirect(route('dashboard'));
+
+        // Step 4 is closed now (E3); the editor's checklist points to Pengaturan → Rekening.
+        $this->actingAsTenant($this->seller)->get(route('onboarding.payment'))->assertRedirect(route('dashboard'));
+        $this->actingAsTenant($this->seller)->post(route('trips.publish', $this->trip()))->assertSessionHasErrors('publish');
+        $this->actingAsTenant($this->seller)->get(route('trips.edit', $this->trip()))
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('urls.payment_setup', route('payment-methods.index')));
+
+        $this->actingAsTenant($this->seller)->put(route('payment-methods.update'), ['methods' => [$this->bankBlock()]])
+            ->assertSessionHasNoErrors();
+        $this->actingAsTenant($this->seller)->post(route('trips.publish', $this->trip()))->assertSessionHasNoErrors();
+
+        $this->assertSame('published', $this->trip()->status->value);
+        $this->assertNotNull($this->seller->organization->refresh()->first_published_at);
+        $this->assertSame(1, AuditEvent::acrossOrganizations()->where('action', 'payment_instructions.changed')->count());
+    }
+
     public function test_ac_d2_a_failed_publish_does_not_set_first_published_at(): void
     {
         $this->completeSteps2And3(photo: false);

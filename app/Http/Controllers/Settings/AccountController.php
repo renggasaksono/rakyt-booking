@@ -42,6 +42,7 @@ class AccountController extends Controller
                 'logout' => route('logout'),
                 'back' => $current->check() ? route('settings.index') : route('onboarding'),
             ],
+            'backLabel' => $current->check() ? __('profile.settings.back') : __('account.settings.back'),
             'limits' => ['password_min' => RegisterRequest::PASSWORD_MIN],
         ]);
     }

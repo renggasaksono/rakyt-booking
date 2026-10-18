@@ -2,12 +2,13 @@
 import { Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { formatLongParts, formatShort } from '../lib/calendar.js';
-import { computeDeadline, isDeadlineValid, latestAllowed, presetOptions } from '../lib/deadline.js';
+import { computeDeadline, isDeadlineValid, latestAllowed, showsRuleHint, visiblePresetOptions } from '../lib/deadline.js';
 import { t } from '../lib/text.js';
 
 /**
  * Tutup pemesanan (mockup 3a, AC-21–AC-23): presets with their real dates,
- * "Pilih tanggal & jam…", and the chosen deadline read back in words.
+ * "Pilih tanggal & jam…", and the chosen deadline read back in words. Presets
+ * that can no longer be chosen are hidden.
  */
 const props = defineProps({
     preset: { type: String, required: true },
@@ -26,7 +27,8 @@ const emit = defineEmits(['update:preset', 'update:custom']);
 
 const open = ref(false);
 const calendar = computed(() => props.copy.calendar);
-const options = computed(() => (props.startDate ? presetOptions(props.presets, props.startDate, props.meetingTime, props.nowLocal) : []));
+const options = computed(() => (props.startDate ? visiblePresetOptions(props.presets, props.startDate, props.meetingTime, props.nowLocal) : []));
+const ruleHint = computed(() => showsRuleHint(props.preset, props.meetingTime));
 const deadline = computed(() => computeDeadline(props.preset, props.startDate, props.meetingTime, props.custom));
 const valid = computed(() => props.startDate && isDeadlineValid(deadline.value, props.startDate, props.meetingTime, props.nowLocal));
 const confirmation = computed(() => {
@@ -40,10 +42,6 @@ const customMin = computed(() => props.nowLocal.replace(' ', 'T'));
 const customMax = computed(() => (props.startDate ? latestAllowed(props.startDate, props.meetingTime).replace(' ', 'T') : undefined));
 
 function choose(option) {
-    if (option.disabled) {
-        return;
-    }
-
     emit('update:preset', option.value);
     open.value = option.value === 'custom';
 }
@@ -76,10 +74,8 @@ function choose(option) {
                 :key="option.value"
                 type="button"
                 role="radio"
-                class="flex min-h-11 w-full items-center justify-between gap-2 rounded-md px-3 text-left text-sm hover:bg-gading disabled:text-secondary disabled:line-through"
-                :class="option.disabled ? '' : 'text-ink'"
+                class="flex min-h-11 w-full items-center justify-between gap-2 rounded-md px-3 text-left text-sm text-ink hover:bg-gading"
                 :aria-checked="preset === option.value ? 'true' : 'false'"
-                :disabled="option.disabled"
                 @click="choose(option)"
             >
                 <span>{{ t(copy, `deadline.presets.${option.value}`) }}</span>
@@ -127,7 +123,9 @@ function choose(option) {
             {{ error }}
         </p>
         <p class="mt-1 text-xs text-secondary">
-            {{ t(copy, 'deadline.rule_hint') }}
+            <template v-if="ruleHint">
+                {{ t(copy, 'deadline.rule_hint') }}
+            </template>
             {{ t(copy, 'deadline.default_hint') }}
             <Link
                 v-if="settingsUrl"

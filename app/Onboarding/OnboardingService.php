@@ -6,7 +6,6 @@ use App\Audit\AuditAction;
 use App\Audit\AuditLog;
 use App\Models\Organization;
 use App\Models\OrganizationMember;
-use App\Models\PaymentMethod;
 use App\Models\Trip;
 use App\Models\TripDeparture;
 use App\Models\User;
@@ -262,13 +261,6 @@ final class OnboardingService
      */
     public function paymentMethods(): array
     {
-        return PaymentMethod::query()->orderBy('position')->orderBy('id')->get()
-            ->map(fn (PaymentMethod $method) => [
-                'id' => $method->public_id,
-                'provider' => $method->provider,
-                'provider_name' => $method->provider_name,
-                'account_number' => $method->account_number,
-                'account_holder' => $method->account_holder,
-            ])->all();
+        return $this->paymentMethods->forForm();
     }
 }

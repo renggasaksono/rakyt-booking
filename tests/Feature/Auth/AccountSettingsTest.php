@@ -32,7 +32,8 @@ class AccountSettingsTest extends TestCase
                 ->component('Settings/Account')
                 ->where('account.email', $tenant->owner->email)
                 ->where('urls.logout', route('logout'))
-                ->where('urls.back', route('settings.index')));
+                ->where('urls.back', route('settings.index'))
+                ->where('backLabel', '← Pengaturan'));
 
         $this->actingAsTenant($tenant)->get(route('settings.index'))
             ->assertInertia(fn (AssertableInertia $page) => $page

@@ -61,7 +61,9 @@ class ProfileTest extends TestCase
                 ->where('limits.bio', 160)
                 ->where('limits.logo_kb', 2048)
                 ->where('timezones', ['Asia/Jakarta', 'Asia/Makassar', 'Asia/Jayapura'])
-                ->where('copy.logo_hint', 'JPG, PNG atau WebP, maks. 2 MB. Ditampilkan persegi.'));
+                ->where('copy.logo_hint', 'JPG, PNG atau WebP, maks. 2 MB. Ditampilkan persegi.')
+                ->where('urls.back', route('settings.index'))
+                ->where('backLabel', '← Pengaturan'));
     }
 
     public function test_ac_f1_name_city_whatsapp_and_bio_are_saved_with_the_onboarding_rules(): void

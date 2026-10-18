@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\Onboarding\OnboardingController;
 use App\Http\Controllers\Settings\AccountController;
+use App\Http\Controllers\Settings\PaymentMethodController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Trips\BookingSettingsController;
@@ -90,6 +91,9 @@ Route::middleware(['auth', 'organization', 'onboarded'])->group(function () {
     Route::put('/pengaturan/profil', [ProfileController::class, 'update']);
     Route::post('/pengaturan/profil/logo', [ProfileController::class, 'storeLogo'])->name('settings.profile.logo');
     Route::delete('/pengaturan/profil/logo', [ProfileController::class, 'destroyLogo']);
+    // Bank / e-wallet accounts (F-001 F5, the F-006 subset). The trip editor's checklist links here.
+    Route::get('/pengaturan/rekening', [PaymentMethodController::class, 'index'])->name('payment-methods.index');
+    Route::put('/pengaturan/rekening', [PaymentMethodController::class, 'update'])->middleware('throttle:account-change')->name('payment-methods.update');
 
     Route::get('/trip', [TripController::class, 'index'])->name('trips.index');
     Route::get('/trip/baru', [TripController::class, 'create'])->name('trips.create');

@@ -13,11 +13,23 @@ return [
         'account_hint' => 'Email, password, keluar',
         'booking' => 'Pemesanan',
         'booking_hint' => 'Batas pemesanan bawaan',
+        'payment_methods' => 'Rekening',
+        'payment_methods_hint' => 'Bank & e-wallet tujuan transfer pelanggan',
+        // Every Pengaturan sub-page links back with this label.
+        'back' => '← Pengaturan',
+    ],
+
+    // Pengaturan → Rekening (F-001 F5). Field labels come from onboarding.payment.
+    'payment_methods' => [
+        'title' => 'Rekening',
+        'kicker' => 'Pengaturan',
+        'note' => 'Uang langsung masuk ke rekening Anda. Rakyt tidak memegang dana dan tidak memotong biaya.',
+        'save' => 'Simpan rekening',
+        'saved' => 'Rekening disimpan.',
     ],
 
     'title' => 'Profil usaha',
     'kicker' => 'Pengaturan',
-    'back' => '← Pengaturan',
     'name' => 'Nama usaha',
     'city' => 'Kota basis',
     'whatsapp' => 'Nomor WhatsApp usaha',

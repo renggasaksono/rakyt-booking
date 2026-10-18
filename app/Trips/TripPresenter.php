@@ -9,7 +9,6 @@ use App\Models\TripPhoto;
 use App\Trips\Contracts\DepartureBookings;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Route;
 
 /**
  * Props for the seller's trip pages. Values are ISO in code; the Vue pages
@@ -252,8 +251,8 @@ final class TripPresenter
             'index' => route('trips.index'),
             'store' => route('trips.store'),
             'settings' => route('settings.booking.edit'),
-            // Hidden until F-001 adds the payment-method screen (Q9).
-            'payment_setup' => Route::has('payment-methods.index') ? route('payment-methods.index') : null,
+            // Pengaturan → Rekening (F-001 F5, F-003 Q9).
+            'payment_setup' => route('payment-methods.index'),
             'edit' => $trip ? route('trips.edit', $trip) : null,
             'autosave' => $trip ? route('trips.autosave', $trip) : null,
             'update' => $trip ? route('trips.update', $trip) : null,

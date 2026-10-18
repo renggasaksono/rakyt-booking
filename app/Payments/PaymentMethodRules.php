@@ -3,7 +3,9 @@
 namespace App\Payments;
 
 use App\Tenancy\Rules\ExistsInCurrentOrganization;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Bank / e-wallet blocks (F-001 C10–C11). Call normalize() first.
@@ -87,6 +89,25 @@ final class PaymentMethodRules
             'methods.*.account_number' => __('onboarding.payment.account_number'),
             'methods.*.account_holder' => __('onboarding.payment.account_holder'),
         ];
+    }
+
+    /**
+     * Validate normalized blocks with at least one account (D1, F5).
+     *
+     * @return list<array<string, mixed>> the validated blocks
+     *
+     * @throws ValidationException
+     */
+    public static function validate(mixed $methods): array
+    {
+        $validator = Validator::make(['methods' => $methods], self::rules(requireOne: true), self::messages(), self::attributes());
+        $validator->after(function ($validator) use ($methods) {
+            foreach (is_array($methods) ? self::missingProviderNames($methods) : [] as $key => $message) {
+                $validator->errors()->add($key, $message);
+            }
+        });
+
+        return $validator->validate()['methods'];
     }
 
     /**

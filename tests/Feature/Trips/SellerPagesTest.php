@@ -113,7 +113,9 @@ class SellerPagesTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Settings/Booking')
                 ->where('settings.default_booking_deadline_preset', 'h3')
-                ->where('options', ['h1', 'h3', 'h7']));
+                ->where('options', ['h1', 'h3', 'h7'])
+                ->where('urls.back', route('settings.index'))
+                ->where('backLabel', '← Pengaturan'));
 
         $this->actingAsTenant($a)->put(route('settings.booking.update'), ['default_booking_deadline_preset' => 'h7'])
             ->assertSessionHas('toast', 'Tersimpan');

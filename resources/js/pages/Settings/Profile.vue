@@ -21,6 +21,7 @@ const props = defineProps({
     urls: { type: Object, required: true },
     copy: { type: Object, required: true },
     onboardingCopy: { type: Object, required: true },
+    backLabel: { type: String, required: true },
 });
 
 const form = useForm({
@@ -99,7 +100,7 @@ function removeLogo() {
                 :href="urls.back"
                 class="inline-flex min-h-11 items-center text-sm text-sogan underline"
             >
-                {{ t(copy, 'back') }}
+                {{ backLabel }}
             </Link>
             <p class="text-[11px] font-semibold uppercase tracking-wide text-secondary">
                 {{ t(copy, 'kicker') }}
