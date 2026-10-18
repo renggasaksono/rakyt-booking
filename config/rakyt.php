@@ -59,9 +59,15 @@ return [
         'trip_photo' => [
             'mimetypes' => ['image/jpeg', 'image/png', 'image/webp'],
             'max_kb' => 10 * 1024,
-            // F-009 R3: checked from the file header before GD decodes it (ADR-0022).
+            // F-009 R3 / ADR-0022 §5: checked from the file header before GD decodes it.
+            // The megapixel cap is derived from this budget (App\Media\PhotoBudget);
+            // the upload and the variants job raise memory_limit to it.
+            'memory_limit_mb' => 320,
+            'memory_headroom_mb' => 96,
+            'bytes_per_pixel' => 8,
             'max_side_px' => 8000,
-            'max_megapixels' => 40,
+            // The stored original is downscaled to this longest side (EXIF stripped).
+            'stored_max_side_px' => 2560,
             // ADR-0015: at most this many photos per trip.
             'max_per_trip' => 10,
             // ADR-0015: resized variants for F-002, generated on the queue.

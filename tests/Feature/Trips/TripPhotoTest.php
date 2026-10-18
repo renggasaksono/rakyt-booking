@@ -170,18 +170,54 @@ class TripPhotoTest extends TestCase
     {
         [$a] = $this->createTenants();
         $trip = $this->tripFor($a);
-        config(['rakyt.media.trip_photo.max_side_px' => 100, 'rakyt.media.trip_photo.max_megapixels' => 1]);
+        config(['rakyt.media.trip_photo.max_side_px' => 100]);
 
         $this->actingAsTenant($a)->postJson(route('trips.photos.store', $trip), ['photo' => $this->upload($this->png(101, 10), 'lebar.png')])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['photo' => __('trips.errors.photo_dimensions', ['px' => 100])]);
 
-        config(['rakyt.media.trip_photo.max_side_px' => 8000, 'rakyt.media.trip_photo.max_megapixels' => 0.001]);
+        // Shrink the memory budget so a 40×30 image is over the derived cap.
+        config([
+            'rakyt.media.trip_photo.max_side_px' => 8000,
+            'rakyt.media.trip_photo.memory_limit_mb' => 1,
+            'rakyt.media.trip_photo.memory_headroom_mb' => 0.999,
+        ]);
         $this->actingAsTenant($a)->postJson(route('trips.photos.store', $trip), ['photo' => $this->upload($this->png(40, 30), 'banyak.png')])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors('photo');
+            ->assertJsonValidationErrors(['photo' => __('trips.errors.photo_megapixels', ['mp' => 0])]);
 
         $this->assertDatabaseCount('trip_photos', 0);
+    }
+
+    public function test_ac_7_the_stored_original_is_at_most_2560_px_on_the_longest_side(): void
+    {
+        [$a] = $this->createTenants();
+        $trip = $this->tripFor($a);
+
+        $this->actingAsTenant($a)->postJson(route('trips.photos.store', $trip), [
+            'photo' => $this->upload($this->jpegWithExif('LEAKYCAM', 3000, 2000), 'besar.jpg'),
+        ])->assertCreated();
+
+        $photo = TripPhoto::acrossOrganizations()->sole();
+        $stored = $this->disk()->get($photo->path);
+        $this->assertSame([2560, 1707], array_slice(getimagesizefromstring($stored), 0, 2));
+        $this->assertStringNotContainsString('LEAKYCAM', $stored);
+        $this->assertSame([400, 800, 1600], array_keys($photo->variants));
+    }
+
+    public function test_ac_7_a_file_gd_cannot_decode_is_rejected_with_the_bahasa_message(): void
+    {
+        [$a] = $this->createTenants();
+        $trip = $this->tripFor($a);
+        // A valid PNG header (so the MIME and size checks pass) with a broken body.
+        $broken = substr($this->png(20, 20), 0, 40).str_repeat("\0", 200);
+
+        $this->actingAsTenant($a)->postJson(route('trips.photos.store', $trip), ['photo' => $this->upload($broken, 'rusak.png')])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['photo' => __('trips.errors.photo_type')]);
+
+        $this->assertDatabaseCount('trip_photos', 0);
+        $this->assertSame([], $this->disk()->allFiles());
     }
 
     private function photoFor($tenant, $trip, int $position): TripPhoto

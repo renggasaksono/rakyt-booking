@@ -3,6 +3,7 @@
 namespace App\Trips;
 
 use App\Media\MediaPath;
+use App\Media\PhotoBudget;
 use App\Media\PublicImage;
 use App\Models\Trip;
 use App\Models\TripPhoto;
@@ -12,6 +13,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Intervention\Image\Exceptions\ImageException;
 
 /**
  * Trip photos (F-003 AC-7, ADR-0015): EXIF stripped before storage, at most
@@ -36,7 +38,17 @@ final class TripPhotoService
         $extension = self::EXTENSIONS[$file->getMimeType()] ?? 'jpg';
         $path = MediaPath::for($trip->organization, 'trips/'.$trip->public_id, $extension);
         $disk = Storage::disk(config('rakyt.media.public_disk'));
-        $disk->put($path, PublicImage::sanitize($file));
+
+        // The size was checked against the budget in UploadRules::tripPhoto();
+        // sanitize() raises the memory limit to that budget.
+        try {
+            $contents = PublicImage::sanitize($file, maxSide: PhotoBudget::storedMaxSide());
+        } catch (ImageException) {
+            // A file whose header looks fine but that GD cannot decode.
+            throw ValidationException::withMessages(['photo' => __('trips.errors.photo_type')]);
+        }
+
+        $disk->put($path, $contents);
 
         try {
             $photo = DB::transaction(function () use ($trip, $path, $max) {

@@ -2,6 +2,7 @@
 
 namespace App\Trips\Jobs;
 
+use App\Media\PhotoBudget;
 use App\Models\TripPhoto;
 use App\Tenancy\ScopedToOrganization;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -49,7 +50,9 @@ class GenerateTripPhotoVariants implements ShouldQueue
             return;
         }
 
-        $manager = new ImageManager(Driver::class, autoOrientation: true, strip: true);
+        // The stored original is already upright and at most 2560 px (ADR-0022 §5).
+        PhotoBudget::ensureMemoryLimit();
+        $manager = new ImageManager(Driver::class, autoOrientation: false, strip: true);
         $image = $manager->decodeBinary($disk->get($photo->path));
         $mediaType = $image->origin()->mediaType();
         $variants = [];

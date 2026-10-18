@@ -94,6 +94,17 @@ class MediaTest extends TestCase
         $this->assertStringNotContainsString('Exif', $clean);
     }
 
+    public function test_ac_a22_public_images_are_downscaled_and_turned_upright_without_exif(): void
+    {
+        // 3000×1500 taken sideways (EXIF Orientation 6 = rotate 90° clockwise).
+        $path = $this->tempFile($this->jpegWithExifOrientation(6, 3000, 1500), 'jpg');
+
+        $clean = PublicImage::sanitize($path, maxSide: 2560);
+
+        $this->assertSame([1280, 2560], array_slice(getimagesizefromstring($clean), 0, 2));
+        $this->assertStringNotContainsString('Exif', $clean);
+    }
+
     public function test_ac_a20_private_media_is_only_reachable_through_a_short_lived_signed_url(): void
     {
         $disk = Storage::disk(PrivateMedia::disk());
@@ -132,6 +143,22 @@ class MediaTest extends TestCase
         imagepng($image);
 
         return $this->tempFile((string) ob_get_clean(), 'png');
+    }
+
+    /**
+     * A JPEG whose EXIF IFD0 holds only an Orientation tag.
+     */
+    private function jpegWithExifOrientation(int $orientation, int $width, int $height): string
+    {
+        $image = imagecreatetruecolor($width, $height);
+        ob_start();
+        imagejpeg($image);
+        $jpeg = (string) ob_get_clean();
+
+        $tiff = 'MM'."\x00\x2A".pack('N', 8).pack('n', 1).pack('nnNnn', 0x0112, 3, 1, $orientation, 0).pack('N', 0);
+        $payload = "Exif\0\0".$tiff;
+
+        return "\xFF\xD8\xFF\xE1".pack('n', strlen($payload) + 2).$payload.substr($jpeg, 2);
     }
 
     /**

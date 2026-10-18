@@ -16,7 +16,7 @@ final class UploadRules
      */
     public static function tripPhoto(): array
     {
-        return ['bail', ...self::rules('trip_photo'), self::pixelCap('trip_photo')];
+        return ['bail', ...self::rules('trip_photo'), self::pixelCap()];
     }
 
     /**
@@ -28,15 +28,13 @@ final class UploadRules
     }
 
     /**
-     * Public photos are decoded by GD (EXIF stripping, variants), which needs
-     * about 4 bytes per pixel. Read the dimensions from the header first and
-     * refuse images that would exhaust memory (F-009 R3).
+     * Public photos are decoded by GD (EXIF stripping, downscaling, variants).
+     * Read the dimensions from the header first and refuse images over the
+     * cap derived from the memory budget (F-009 R3, PhotoBudget).
      */
-    private static function pixelCap(string $kind): Closure
+    private static function pixelCap(): Closure
     {
-        $config = config("rakyt.media.{$kind}");
-
-        return function (string $attribute, mixed $value, Closure $fail) use ($config) {
+        return function (string $attribute, mixed $value, Closure $fail) {
             if (! $value instanceof UploadedFile || ! $value->isValid()) {
                 return;
             }
@@ -51,8 +49,10 @@ final class UploadRules
 
             [$width, $height] = $size;
 
-            if ($width > $config['max_side_px'] || $height > $config['max_side_px'] || $width * $height > $config['max_megapixels'] * 1_000_000) {
-                $fail(__('trips.errors.photo_dimensions', ['px' => $config['max_side_px']]));
+            if ($width > PhotoBudget::maxSide() || $height > PhotoBudget::maxSide()) {
+                $fail(__('trips.errors.photo_dimensions', ['px' => PhotoBudget::maxSide()]));
+            } elseif ($width * $height > PhotoBudget::maxPixels()) {
+                $fail(__('trips.errors.photo_megapixels', ['mp' => PhotoBudget::maxMegapixels()]));
             }
         };
     }

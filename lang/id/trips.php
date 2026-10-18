@@ -277,6 +277,7 @@ return [
         'photo_type' => 'Foto harus berupa JPG, PNG, atau WebP.',
         'photo_size' => 'Ukuran foto maksimal 10 MB.',
         'photo_dimensions' => 'Foto terlalu besar. Maksimal :px piksel per sisi.',
+        'photo_megapixels' => 'Resolusi foto terlalu besar (maksimal :mp megapiksel). Kecilkan resolusi atau kirim ulang dari galeri.',
         'photo_last_published' => 'Trip yang sudah tampil perlu minimal 1 foto.',
         'photos_mismatch' => 'Urutan foto tidak cocok. Muat ulang halaman.',
         'offline' => 'Koneksi terputus. Kami coba lagi saat tersambung.',
