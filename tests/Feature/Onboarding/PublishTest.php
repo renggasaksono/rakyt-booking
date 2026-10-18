@@ -206,6 +206,46 @@ class PublishTest extends TestCase
         $this->assertSame(1, substr_count($vue, 'bg-prada'), 'One gold CTA on 4f.');
     }
 
+    public function test_ac_d2_f2_a_publish_from_the_trip_editor_also_sets_first_published_at_and_locks_the_slug(): void
+    {
+        // E3: the seller saved a draft, then finished the trip in the F-003 editor.
+        $this->completeSteps2And3();
+        $this->actingAsTenant($this->seller)->post(route('onboarding.payment'), ['intent' => 'draft', 'methods' => [$this->bankBlock()]])
+            ->assertRedirect(route('dashboard'));
+        $this->assertNull($this->seller->organization->refresh()->first_published_at);
+
+        $this->actingAsTenant($this->seller)->post(route('trips.publish', $this->trip()))->assertSessionHasNoErrors();
+
+        $organization = $this->seller->organization->refresh();
+        $this->assertSame('published', $this->trip()->status->value);
+        $this->assertNotNull($organization->first_published_at);
+        $this->assertTrue($organization->slugLocked());
+
+        // Unpublishing and publishing again keeps the first time.
+        $first = $organization->first_published_at;
+        $this->travel(10)->minutes();
+        $this->actingAsTenant($this->seller)->post(route('trips.unpublish', $this->trip()));
+        $this->actingAsTenant($this->seller)->post(route('trips.publish', $this->trip()));
+        $this->assertTrue($first->equalTo($this->seller->organization->refresh()->first_published_at));
+
+        // F2: the live page's link can no longer be changed from Profil usaha.
+        $this->actingAsTenant($this->seller)->get(route('settings.profile'))
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('slugLocked', true));
+        $this->actingAsTenant($this->seller)->put(route('settings.profile'), [
+            'name' => 'Kencana', 'city' => 'Jepara', 'whatsapp' => '0812 7788 1020', 'slug' => 'kencana-baru', 'bio' => '', 'timezone' => 'Asia/Jakarta',
+        ])->assertSessionHasNoErrors();
+        $this->assertSame('kencana', $this->seller->organization->refresh()->slug);
+    }
+
+    public function test_ac_d2_a_failed_publish_does_not_set_first_published_at(): void
+    {
+        $this->completeSteps2And3(photo: false);
+
+        $this->actingAsTenant($this->seller)->post(route('trips.publish', $this->trip()))->assertSessionHasErrors('publish');
+
+        $this->assertNull($this->seller->organization->refresh()->first_published_at);
+    }
+
     public function test_the_published_screen_needs_a_publish(): void
     {
         $this->actingAsTenant($this->seller)->get(route('onboarding.done'))->assertRedirect(route('onboarding.trip'));

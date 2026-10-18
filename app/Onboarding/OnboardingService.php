@@ -172,7 +172,7 @@ final class OnboardingService
     /**
      * Step 4 "Terbitkan trip" (D1–D3). Saves the accounts first; the publish
      * itself, the first-publish time and the audit event share one
-     * transaction, and a second tap publishes nothing new.
+     * transaction (TripService::publish), and a second tap publishes nothing new.
      *
      * @param  list<array<string, mixed>>  $methods  validated blocks
      * @return list<string> missing checklist items; empty when published
@@ -188,14 +188,9 @@ final class OnboardingService
             return $missing;
         }
 
-        DB::transaction(function () use ($organization, $trip) {
-            $this->trips->publish($trip);
-
-            $locked = Organization::query()->whereKey($organization->getKey())->lockForUpdate()->firstOrFail();
-            $locked->first_published_at ??= now();
-            $locked->save();
-            $organization->setRawAttributes($locked->getAttributes(), true);
-        });
+        // Sets first_published_at in the same transaction (TripService, D2).
+        $this->trips->publish($trip);
+        $organization->refresh();
 
         return [];
     }

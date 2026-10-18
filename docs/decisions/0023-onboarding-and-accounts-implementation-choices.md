@@ -42,7 +42,8 @@ ask "why?" about.
    route's first segment.
 8. **The onboarding trip is the organization's first trip (lowest id)**; step 3 edits that trip's first departure
    that has not started, and a stale draft gets a new departure (the past one stays read-only, F-003).
-   The resume step is derived from data (E2). `EnsureOnboardingFinished` redirects only page visits (GET, not JSON),
+   The resume step is derived from data (E2). `organizations.first_published_at` is set by `TripService::publish`,
+   so a first publish from the onboarding flow or the F-003 editor both lock the slug. `EnsureOnboardingFinished` redirects only page visits (GET, not JSON),
    so step 2's photo uploads through the F-003 trip routes pass.
 9. **Payment methods (pulled forward from F-006):** a `payment_methods` table (bank / e-wallet; provider from a config
    list; ULID `public_id`), owned by the organization. Step 4 sends the whole list: listed ids are updated, new blocks
