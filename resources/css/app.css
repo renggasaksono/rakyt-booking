@@ -21,4 +21,11 @@
     --color-status-paid: #2f6b3a;
     --color-status-rejected: #a1281e;
     --color-status-cancelled: #4f4741;
+
+    /* Status tints: light grounds behind the deep status text (glyph + word, never colour alone). */
+    --color-status-waiting-tint: #f8eadc;
+    --color-status-check-tint: #e4e9f2;
+    --color-status-paid-tint: #e6f0e7;
+    --color-status-rejected-tint: #f6e3e1;
+    --color-status-cancelled-tint: #eceae8;
 }

@@ -30,7 +30,8 @@ class SellerPagesTest extends TestCase
                 ->has('seller.nav', 1)
                 ->where('seller.nav.0.label', 'Trip & keberangkatan')
                 ->where('seller.nav.0.url', route('trips.index'))
-                ->where('seller.nav.0.active', true));
+                ->where('seller.nav.0.active', true)
+                ->where('seller.close_label', 'Tutup'));
     }
 
     public function test_listing_and_creating_trips_is_authorised_through_the_policy(): void

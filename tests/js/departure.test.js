@@ -20,6 +20,21 @@ describe('AC-18 same date', () => {
 });
 
 describe('AC-27 status display', () => {
+    it('gives every departure status its own glyph, not one from the booking status set', () => {
+        const bookingGlyphs = ['◷', '◐', '✓', '✕', '–'];
+        const glyphs = Object.values(STATUS_STYLES).map((style) => style.glyph);
+
+        expect(new Set(glyphs).size).toBe(glyphs.length);
+        glyphs.forEach((glyph) => expect(bookingGlyphs).not.toContain(glyph));
+    });
+
+    it('uses the status tint tokens, never hard-coded colours', () => {
+        for (const style of Object.values(STATUS_STYLES)) {
+            expect(style.className).not.toMatch(/#[0-9a-f]{3,6}/i);
+            expect(style.className).toMatch(/bg-status-[a-z]+-tint/);
+        }
+    });
+
     it('has a glyph for every status and never uses brown or gold', () => {
         for (const key of ['open', 'closed', 'full', 'past']) {
             expect(STATUS_STYLES[key].glyph).not.toBe('');

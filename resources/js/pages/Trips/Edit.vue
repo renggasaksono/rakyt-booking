@@ -352,14 +352,14 @@ const inputClass = (field) => [
                 </div>
                 <p
                     v-if="isPublished"
-                    class="mt-2 rounded-lg bg-[#E4E9F2] px-3 py-2 text-xs text-status-check"
+                    class="mt-2 rounded-lg bg-status-check-tint px-3 py-2 text-xs text-status-check"
                 >
                     <span aria-hidden="true">◐</span> {{ t(copy, 'editor.published_banner') }}
                 </p>
                 <p
                     v-for="notice in notices"
                     :key="notice"
-                    class="mt-2 rounded-lg bg-[#E4E9F2] px-3 py-2 text-xs text-status-check"
+                    class="mt-2 rounded-lg bg-status-check-tint px-3 py-2 text-xs text-status-check"
                     role="status"
                 >
                     <span aria-hidden="true">◐</span> {{ notice }}

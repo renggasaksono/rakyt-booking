@@ -10,6 +10,7 @@ return [
         'brand' => 'Rakyt',
         'trips' => 'Trip & keberangkatan',
         'menu' => 'Menu utama',
+        'close' => 'Tutup',
     ],
 
     'index' => [

@@ -38,7 +38,7 @@ onBeforeUnmount(() => clearTimeout(timer));
         </p>
         <div
             v-if="notice"
-            class="pointer-events-auto flex max-w-md items-start gap-3 rounded-xl border border-status-check/30 bg-[#E4E9F2] px-4 py-3 text-sm text-status-check shadow"
+            class="pointer-events-auto flex max-w-md items-start gap-3 rounded-xl border border-status-check/30 bg-status-check-tint px-4 py-3 text-sm text-status-check shadow"
             role="status"
         >
             <span aria-hidden="true">◐</span>
@@ -46,7 +46,7 @@ onBeforeUnmount(() => clearTimeout(timer));
             <button
                 type="button"
                 class="-m-2 min-h-11 min-w-11 p-2 text-status-check"
-                aria-label="×"
+                :aria-label="page.props.seller?.close_label"
                 @click="notice = null"
             >
                 ×

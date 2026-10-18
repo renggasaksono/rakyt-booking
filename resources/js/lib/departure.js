@@ -2,12 +2,16 @@
  * Departure display rules shared by the editor and the quick-edit sheet.
  */
 
-/** AC-27: glyph + word, never colour alone; never brown or gold. */
+/**
+ * AC-27: glyph + word, never colour alone; never brown or gold. Each status has
+ * its own glyph, distinct from the booking status set (◷ ◐ ✓ ✕ –). Tints are the
+ * --color-status-*-tint tokens (resources/css/app.css).
+ */
 export const STATUS_STYLES = {
-    open: { glyph: '●', className: 'bg-[#E6F0E7] text-status-paid' },
-    closed: { glyph: '○', className: 'bg-[#ECEAE8] text-status-cancelled' },
-    full: { glyph: '◼', className: 'bg-[#E4E9F2] text-status-check' },
-    past: { glyph: '–', className: 'bg-[#ECEAE8] text-status-cancelled' },
+    open: { glyph: '●', className: 'bg-status-paid-tint text-status-paid' },
+    closed: { glyph: '○', className: 'bg-status-cancelled-tint text-status-cancelled' },
+    full: { glyph: '◼', className: 'bg-status-check-tint text-status-check' },
+    past: { glyph: '◁', className: 'bg-status-cancelled-tint text-status-cancelled' },
 };
 
 /** AC-18: another departure of the trip starts on the same date. */

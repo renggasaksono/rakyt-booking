@@ -49,6 +49,7 @@ class HandleInertiaRequests extends Middleware
                 ],
                 'brand' => __('trips.nav.brand'),
                 'menu_label' => __('trips.nav.menu'),
+                'close_label' => __('trips.nav.close'),
             ],
         ];
     }
