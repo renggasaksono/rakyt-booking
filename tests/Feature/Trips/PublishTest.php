@@ -5,6 +5,7 @@ namespace Tests\Feature\Trips;
 use App\Models\AuditEvent;
 use App\Models\Trip;
 use App\Models\TripPhoto;
+use App\Trips\PublishChecklist;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
@@ -96,6 +97,23 @@ class PublishTest extends TestCase
 
         $this->departureFor($a, $trip, '2024-10-31');
         $this->assertTrue($departureItem());
+    }
+
+    public function test_ac_10_the_departure_item_compares_deadlines_in_utc_whatever_the_php_zone(): void
+    {
+        [$a] = $this->createTenants();
+        $trip = $this->tripFor($a);
+        // Deadline 3 hours from now: still ahead.
+        $this->departureFor($a, $trip, '2024-10-11', ['booking_deadline_at' => now()->utc()->addHours(3)]);
+        $previous = date_default_timezone_get();
+
+        try {
+            // A non-UTC PHP zone used to shift the bound "now" by 7 hours.
+            date_default_timezone_set('Asia/Jakarta');
+            $this->asTenant($a, fn () => $this->assertTrue(app(PublishChecklist::class)->hasUpcomingOpenDeparture($trip->fresh())));
+        } finally {
+            date_default_timezone_set($previous);
+        }
     }
 
     public function test_ac_11_publish_is_refused_server_side_with_the_missing_items(): void

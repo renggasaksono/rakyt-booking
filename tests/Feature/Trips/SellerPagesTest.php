@@ -2,7 +2,10 @@
 
 namespace Tests\Feature\Trips;
 
+use App\Policies\TripPolicy;
+use App\Tenancy\CurrentOrganization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\BuildsTrips;
 use Tests\Support\InteractsWithTenants;
@@ -28,6 +31,31 @@ class SellerPagesTest extends TestCase
                 ->where('seller.nav.0.label', 'Trip & keberangkatan')
                 ->where('seller.nav.0.url', route('trips.index'))
                 ->where('seller.nav.0.active', true));
+    }
+
+    public function test_listing_and_creating_trips_is_authorised_through_the_policy(): void
+    {
+        [$a] = $this->createTenants();
+        Gate::before(fn ($user, string $ability) => in_array($ability, ['viewAny', 'create'], true) ? false : null);
+
+        $this->actingAsTenant($a)->get(route('trips.index'))->assertForbidden();
+        $this->actingAsTenant($a)->postJson(route('trips.store'), ['name' => 'Bromo'])->assertForbidden();
+        $this->assertDatabaseCount('trips', 0);
+    }
+
+    public function test_the_trip_policy_allows_list_and_create_only_with_a_current_organization(): void
+    {
+        [$a] = $this->createTenants();
+        $policy = new TripPolicy;
+
+        $this->asTenant($a, function () use ($policy, $a) {
+            $this->assertTrue($policy->viewAny($a->owner)->allowed());
+            $this->assertTrue($policy->create($a->owner)->allowed());
+        });
+
+        app(CurrentOrganization::class)->set(null);
+        $this->assertSame(404, $policy->viewAny($a->owner)->status());
+        $this->assertSame(404, $policy->create($a->owner)->status());
     }
 
     public function test_ac_42_no_trips_shows_the_empty_state_with_new_trip(): void

@@ -62,7 +62,8 @@ final class PublishChecklist
         return $trip->departures()
             ->where('status', DepartureStatus::Open)
             ->whereDate('start_date', '>=', TripDeparture::today($trip->organization))
-            ->where('booking_deadline_at', '>', CarbonImmutable::now())
+            // Bindings carry no offset: compare in UTC (ADR-0014, ADR-0022 §1).
+            ->where('booking_deadline_at', '>', CarbonImmutable::now()->utc())
             ->exists();
     }
 

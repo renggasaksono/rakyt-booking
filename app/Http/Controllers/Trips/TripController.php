@@ -32,6 +32,8 @@ class TripController extends Controller
 
     public function index(): Response
     {
+        Gate::authorize('viewAny', Trip::class);
+
         $trips = Trip::query()->orderByDesc('updated_at')->orderByDesc('id')->get();
 
         return Inertia::render('Trips/Index', [
@@ -46,6 +48,8 @@ class TripController extends Controller
 
     public function create(): Response
     {
+        Gate::authorize('create', Trip::class);
+
         return Inertia::render('Trips/Edit', [
             ...$this->presenter->editor(null, $this->current->get()),
             'copy' => __('trips'),
@@ -57,6 +61,8 @@ class TripController extends Controller
      */
     public function store(StoreTripRequest $request): JsonResponse|RedirectResponse
     {
+        Gate::authorize('create', Trip::class);
+
         $trip = $this->trips->create($request->fields());
 
         if ($request->expectsJson()) {
