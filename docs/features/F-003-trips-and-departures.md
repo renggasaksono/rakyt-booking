@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-weeks-2-3
 mockups: [1f, 1g, 3a, 3b, 4c, 4d, 1e]
 decisions: ["0002", "0004", "0005", "0006", "0007", "0008", "0010", "0013", "0014", "0015", "0019", "0021", "0022"]
-updated: 2026-10-18
+updated: 2026-10-19
 ---
 
 # F-003 · Trips & departures management
@@ -95,8 +95,8 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 - [x] **AC-19 Seats.** Seats are a whole number 1–999.
 - [x] **AC-20 Effective price.** Given a departure with an empty price, then its effective price is the trip's base price, and it follows later base-price changes. Given a departure with a price, then that price is used. Clearing the price reverts to the base price.
 - [x] **AC-21 Deadline presets.** Given the Tutup pemesanan picker for a departure starting Kam 24 Okt with meeting time 06.00, then options show real dates: *Sampai hari keberangkatan* — 24 Okt 05.00; *1 hari sebelum* — 23 Okt 23.59; *3 hari sebelum* — 21 Okt 23.59; *7 hari sebelum* — 17 Okt 23.59; *Pilih tanggal & jam…*. The chosen value is confirmed as "Ditutup Senin, 21 Okt pukul 23.59." with "Setelah itu pelanggan hanya bisa chat WhatsApp."
-- [x] **AC-22 No meeting time.** Given a trip without a meeting time — including every trip created through F-001 onboarding (4d asks only for a date) — then *Sampai hari keberangkatan* is not offered, the other presets (H-1/H-3/H-7) work unchanged, and a custom deadline may be at most the start date 23.59. When the seller later adds a meeting time, *Sampai hari keberangkatan* becomes available; existing deadlines are not changed by that alone.
-- [x] **AC-23 Deadline validation.** Given a deadline (preset or custom) that is already in the past, or later than the meeting time (start date + meeting time), when saving, then the departure is rejected with an inline message (e.g. "Tutup pesan H-3 sudah lewat untuk tanggal ini. Pilih yang lain."); past dates are not selectable in the custom picker.
+- [x] **AC-22 No meeting time.** Given a trip without a meeting time — including every trip created through F-001 onboarding (4d asks only for a date) — then *Sampai hari keberangkatan* is not offered, the other presets (H-1/H-3/H-7) work unchanged, and a custom deadline may be at most the start date 23.59. When the seller later adds a meeting time, *Sampai hari keberangkatan* becomes available; existing deadlines are not changed by that alone. The hint "Hanya boleh sebelum jam kumpul…" is shown only when the departure has a meeting time or *Pilih tanggal & jam…* is chosen.
+- [x] **AC-23 Deadline validation.** Given a deadline (preset or custom) that is already in the past, or later than the meeting time (start date + meeting time), when saving, then the departure is rejected with an inline message (e.g. "Tutup pesan H-3 sudah lewat untuk tanggal ini. Pilih yang lain."); past dates are not selectable in the custom picker. Presets that are already past (or after the meeting time) are hidden from the picker, not shown struck through; *Pilih tanggal & jam…* is always listed.
 - [x] **AC-24 Preset follows the date.** Given a departure with a relative preset (H-1/H-3/H-7/same day), when its start date or the trip's meeting time changes, then the deadline is recomputed; a custom deadline is not moved and is re-validated.
 - [x] **AC-25 Copy previous.** Given a trip with at least one departure, when the seller taps "Salin dari tanggal sebelumnya", then a new row is added with the latest-starting departure's seats, price override and deadline preset (a custom deadline is replaced by the organization default), date empty and focused. Given no departures, the action is hidden.
 - [x] **AC-26 Departure list.** Given a trip's departures, then upcoming ones are sorted by start date ascending showing dates, "terisi/total" seats, effective price, deadline (H-n or date) and status; departures whose start date has passed are grouped under "Sudah lewat", collapsed, read-only.
@@ -203,7 +203,7 @@ has F-009 slice A only: `organizations` holds just `public_id`, there is no sell
 | Default-deadline setting | The one field in Pengaturan → Pemesanan, authorised via `OrganizationPolicy` | The rest of Pengaturan |
 | Seller layout | Minimal authenticated layout (phone bottom nav / desktop side nav) showing only "Trip & keberangkatan" | Dashboard (F-007); onboarding redirect (F-001 E2) |
 | Sign-in | None — seller routes sit behind `auth` + the F-009 organization resolver and are covered by feature tests (Q10) | Sign-up / sign-in (section A) |
-| Checklist item 5 "Instruksi pembayaran" | Asked through one interface (e.g. `PaymentReadiness::hasActivePaymentMethod(Organization)`); the default binding returns `false`, tests bind a fake (Q9); the "atur rekening" link is hidden until its route exists | `payment_methods` table and form, and the real binding |
+| Checklist item 5 "Instruksi pembayaran" | Asked through one interface (e.g. `PaymentReadiness::hasActivePaymentMethod(Organization)`); the default binding returns `false`, tests bind a fake (Q9); the "atur rekening" link points to Pengaturan → Rekening (F-001 F5, 2026-10-19) | `payment_methods` table and form, and the real binding |
 | Photo pixel cap (F-009 R3) | Added here first | Reused by onboarding photos |
 
 ## Open questions
@@ -242,3 +242,4 @@ None of these block building; each has a default that the builder implements unl
 - 2026-10-18 — Q13 decided: published-trip photo/departure changes stay immediate; cover changes ask for confirmation (AC-7a)
 - 2026-10-18 — Rengga: ADR-0022 accepted; Q11 (name 3–80), Q12 (AC-40 reworded: URL 404, payload 422; ticked), Q14 (keep) and Q15 (with F-001) decided
 - 2026-10-18 — F-001 build: real `PaymentReadiness` bound (Q9), sign-in available (Q10); `DepartureService::rezoneDeadlines()` added for F-001 F4. Seller pages now redirect sellers still in onboarding (F-001 E2) and guests to `/masuk`
+- 2026-10-19 — F-001 manual-test fixes: past deadline presets are hidden instead of struck through and the meeting-time hint shows only when it applies (AC-22, AC-23); the checklist's "atur rekening" link now opens Pengaturan → Rekening (F-001 F5); Pengaturan → Pemesanan links back to Pengaturan
