@@ -134,7 +134,13 @@ async function saveDraft(fields) {
             // AC-2: the first save creates the draft (name only is enough).
             payload = await sendJson('POST', urlState.value.store, { ...form, ...fields });
             urlState.value = { ...urlState.value, ...payload.editor.urls };
-            window.history.replaceState(window.history.state, '', payload.editor.urls.edit);
+            // Client-side only: the page now lives at the trip's URL (refresh and back work).
+            router.replace({
+                url: payload.editor.urls.edit,
+                props: (current) => ({ ...current, ...payload.editor }),
+                preserveScroll: true,
+                preserveState: true,
+            });
         } else {
             payload = await sendJson('PATCH', urlState.value.autosave, fields);
         }
