@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\Onboarding\OnboardingController;
+use App\Http\Controllers\PublicPages\PublicPageController;
 use App\Http\Controllers\Settings\AccountController;
 use App\Http\Controllers\Settings\PaymentMethodController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -122,4 +123,23 @@ Route::middleware(['auth', 'organization', 'onboarded'])->group(function () {
 
     Route::get('/pengaturan/pemesanan', [BookingSettingsController::class, 'edit'])->name('settings.booking.edit');
     Route::put('/pengaturan/pemesanan', [BookingSettingsController::class, 'update'])->name('settings.booking.update');
+});
+
+/*
+| Public booking pages rakyt.id/<slug>[/<trip>] (F-002). Fallback routes:
+| matched only after every other route, so they never shadow an app route
+| (every app route's first segment is also a reserved slug). The patterns
+| accept any segment so unknown, reserved and malformed slugs end in the same
+| 404 from ResolvePublicOrganization (AC-3). Not `auth`, `organization` or
+| `onboarded`: the organization comes from the slug (AC-7).
+*/
+Route::middleware(['throttle:public-page', 'public-organization'])->group(function () {
+    Route::get('/{organization}', [PublicPageController::class, 'seller'])
+        ->where('organization', '[^/]+')
+        ->fallback()
+        ->name('public.seller');
+    Route::get('/{organization}/{trip}', [PublicPageController::class, 'trip'])
+        ->where(['organization' => '[^/]+', 'trip' => '[^/]+'])
+        ->fallback()
+        ->name('public.trip');
 });
