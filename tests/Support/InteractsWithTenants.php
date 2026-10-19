@@ -28,9 +28,12 @@ use Closure;
  */
 trait InteractsWithTenants
 {
-    protected function createTenant(): Tenant
+    /**
+     * @param  array<string, mixed>  $attributes  organization attributes, e.g. a slug the booking code derives from
+     */
+    protected function createTenant(array $attributes = []): Tenant
     {
-        $organization = Organization::factory()->create();
+        $organization = Organization::factory()->create($attributes);
         $owner = User::factory()->create();
 
         $this->asTenantOrganization($organization, fn () => OrganizationMember::factory()->create([

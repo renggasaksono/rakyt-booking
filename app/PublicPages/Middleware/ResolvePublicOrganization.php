@@ -39,12 +39,21 @@ class ResolvePublicOrganization
 
         abort_unless(self::acceptable($slug) && ($tripSlug === null || self::acceptable($tripSlug)), 404);
 
-        // AC-2: one canonical lower-case URL.
+        // AC-2: one canonical lower-case URL. Only the slug segments are
+        // lower-cased (a booking token keeps its case); a form submit is not redirected.
         if (strtolower($slug) !== $slug || ($tripSlug !== null && strtolower($tripSlug) !== $tripSlug)) {
-            $path = '/'.strtolower($slug).($tripSlug === null ? '' : '/'.strtolower($tripSlug));
+            abort_unless($request->isMethod('GET'), 404);
+
+            $segments = explode('/', $request->path());
+            $segments[0] = strtolower($slug);
+
+            if ($tripSlug !== null) {
+                $segments[1] = strtolower($tripSlug);
+            }
+
             $query = $request->getQueryString();
 
-            return self::noCache(redirect($path.($query ? '?'.$query : ''), 301));
+            return self::noCache(redirect('/'.implode('/', $segments).($query ? '?'.$query : ''), 301));
         }
 
         abort_unless(BookingSlug::isValidFormat($slug) && ! BookingSlug::isReserved($slug), 404);
@@ -58,7 +67,7 @@ class ResolvePublicOrganization
         $this->current->set($organization);
         Context::add('organization_id', $organization->getKey());
 
-        return self::noCache($next($request));
+        return self::noCache($next($request), self::isBookingPage($request));
     }
 
     /**
@@ -67,15 +76,24 @@ class ResolvePublicOrganization
      */
     public static function isPublicPage(Request $request): bool
     {
-        return $request->routeIs('public.seller', 'public.trip');
+        return $request->routeIs('public.seller', 'public.trip') || self::isBookingPage($request);
     }
 
     /**
-     * AC-34: seat counts are never served from a cache.
+     * The customer booking routes (F-005, ADR-0027).
      */
-    public static function noCache(Response $response): Response
+    public static function isBookingPage(Request $request): bool
     {
-        $response->headers->set('Cache-Control', 'no-cache, private');
+        return $request->routeIs('public.booking.*');
+    }
+
+    /**
+     * AC-34: seat counts are never served from a cache. Booking pages carry
+     * customer data and are never stored at all (F-005 AC-36).
+     */
+    public static function noCache(Response $response, bool $noStore = false): Response
+    {
+        $response->headers->set('Cache-Control', $noStore ? 'no-store, private' : 'no-cache, private');
 
         return $response;
     }

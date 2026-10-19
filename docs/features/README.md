@@ -13,7 +13,7 @@ Status flow: `draft` → `ready` → `in-progress` → `done` (or `parked`). Kee
 | [F-002](F-002-public-booking-page.md) | Public booking page | P0 | in-progress | MVP wk 2–3 |
 | [F-003](F-003-trips-and-departures.md) | Trips & departures management (incl. quick edit) | P0 | ready | MVP wk 2–3 |
 | [F-004](F-004-request-a-date.md) | Request-a-date mode | P0 | draft | MVP wk 2–3 |
-| [F-005](F-005-customer-booking-and-seat-hold.md) | Customer booking & seat hold | P0 | draft | MVP wk 2–3 |
+| [F-005](F-005-customer-booking-and-seat-hold.md) | Customer booking & seat hold | P0 | done | MVP wk 2–3 |
 | [F-006](F-006-payment-instructions-and-records.md) | Payment instructions & records | P0 | draft | MVP wk 4 |
 | [F-007](F-007-seller-dashboard-and-bookings.md) | Seller dashboard ("Hari ini") & booking list | P0 | draft | MVP wk 2–4 |
 | [F-008](F-008-whatsapp-handoff.md) | WhatsApp contact & prefilled messages | P0 | draft | MVP wk 4 |

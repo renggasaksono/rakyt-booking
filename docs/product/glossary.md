@@ -35,9 +35,17 @@ Source of UI wording: [design mockup](../design/README.md).
 | booking deadline preset | tutup pesan | `same_day`, `h1`, `h3`, `h7`, `custom`. |
 | date request | permintaan tanggal / ajukan tanggal | Customer proposes a date for a request-date trip; seller replies. |
 | booking | pesanan | A customer's reservation on a departure. |
-| booking reference | kode pesanan | Human-readable ID, e.g. `RKB-1024-0142`. Display only — never grants access. |
+| booking form | data pemesan | The customer's form (Nama lengkap, Nomor WhatsApp, Jumlah peserta, Catatan) at `/<slug>/<trip>/pesan` (F-005). |
+| participants | peserta, jumlah peserta | Number of people on one booking; each takes one seat. |
+| unit price | harga / orang (pada pesanan) | The departure's effective price copied onto a booking when it is created; later price changes never alter it (ADR-0005, ADR-0026). |
+| booking total | total | `participants × unit price`, integer rupiah. |
+| booking code | kode usaha | 3–4 upper-case characters identifying a seller inside booking references (`BRM`), derived from the slug at sign-up, unique, fixed in P0 (ADR-0026). |
+| booking reference | kode pesanan | Human-readable ID, e.g. `RKB-BRM-1024-0142`: seller's booking code, `MMDD` = departure start date, `NNNN` = the seller's own booking counter; unique across the platform (ADR-0026). Display only — never grants access. |
 | booking access token | — (in link) | Unguessable token in the customer's booking/payment link ([ADR-0017](../decisions/0017-customer-booking-access-token.md)). |
+| customer booking page | halaman pesanan | `rakyt.id/<slug>/pesanan/<token>` — the customer's page for one booking: reference, status, hold countdown, payment (F-005, F-006; ADR-0027). |
 | seat hold | kursi ditahan | Seats reserved for an unpaid booking for 2 hours; uploading payment evidence stops the clock until the seller reviews it (ADR-0006). |
+| hold expiry | waktu pembayaran habis, kursi dilepas | An `awaiting_payment` booking reaching `hold_expires_at`: it becomes `cancelled` with reason `hold_expired` and its seats return (F-005). |
+| holding statuses | — | Booking statuses that take seats: `awaiting_payment`, `needs_review`, `paid`. `seats_taken` = their participants summed (ADR-0026). |
 | payment record | pembayaran | Amount due/paid, evidence, verification for a booking. |
 | payment evidence | bukti transfer | Photo/screenshot uploaded by the customer. |
 | payment instructions | instruksi pembayaran, rekening | Seller's bank / e-wallet / QRIS details shown to customers. |
@@ -63,8 +71,10 @@ Source of UI wording: [design mockup](../design/README.md).
 | `needs_review` | Perlu dicek | ◐ | Proof uploaded, seller to verify |
 | `paid` | Lunas | ✓ | Paid and confirmed |
 | `rejected` | Ditolak | ✕ | Proof rejected |
-| `cancelled` | Dibatalkan | – | Cancelled or hold expired |
-| `completed` | Selesai | | Trip has happened |
+| `cancelled` | Dibatalkan | – | Cancelled or hold expired (`cancel_reason`: `hold_expired`, later `seller`) |
+| `completed` | Selesai | ☑ | Trip has happened |
 
 > The blueprint names booking statuses *pending, confirmed, cancelled, completed*; the mockup refines payment states.
-> How the two map onto each other is an open question in [F-006](../features/F-006-payment-instructions-and-records.md).
+> Decided 2026-10-19 ([F-005 Q3](../features/F-005-customer-booking-and-seat-hold.md#open-questions),
+> [ADR-0026](../decisions/0026-booking-record-and-lifecycle.md) §1–2): this one set lives on `bookings.status`;
+> *pending* (`awaiting_payment`, `needs_review`) and *confirmed* (`paid`) are UI groupings.

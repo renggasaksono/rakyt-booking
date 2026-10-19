@@ -16,7 +16,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | [F-003](../features/F-003-trips-and-departures.md) Trips & departures | in-progress — built on `feat/F-003-trips-and-departures`; 38/43 ACs covered by tests; AC-3/7/7a/41 partly covered, AC-35 is a pilot check; device review after F-001 section A |
 | [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | in-progress — merged (PR #5); manual-test fixes on `fix/F-001-manual-test` add Pengaturan → Rekening (F5, the bank / e-wallet subset of F-006) and F6; 63/65 ACs covered by tests (D7, F1, T3 completed by F-002); C3 partly covered, P1 device review; ADR-0023 accepted |
 | [F-002](../features/F-002-public-booking-page.md) Public booking page | in-progress — built on `feat/F-002-public-booking-page`; 39/40 ACs covered by tests (AC-35 Lighthouse is a pre-pilot manual check; AC-36 device review pending); closes F-001 D7/F1/T3 and F-009 A5; ADR-0025 accepted; Q13 decided |
-| [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | planned |
+| [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | done — built on `claude/f-005-customer-booking-9edbd4` (not merged); AC-1…AC-42 + AC-17b covered by tests (AC-42 real-device review with F-002/F-003's); closes F-009 R1, R20; ADR-0028 accepted; Q6–Q8, Q10–Q13 defaults in use |
 | [F-004](../features/F-004-request-a-date.md) Request-a-date | planned |
 | [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | planned |
 | [F-006](../features/F-006-payment-instructions-and-records.md) Payment instructions & records | planned |
@@ -67,14 +67,20 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Ask "Nama Anda" at sign-up | Yes | [F-001 Q13](../features/F-001-seller-onboarding.md#open-questions) |
 | Password confirmation field | No; show/hide toggle | [F-001 Q14](../features/F-001-seller-onboarding.md#open-questions) |
 | Auth events of a seller without an organization yet | Not audited in P0 | [F-001 Q17](../features/F-001-seller-onboarding.md#open-questions) |
+| International (non-+62) customer WhatsApp numbers | Indonesian mobiles only in P0 | [F-005 Q6](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
+| Maximum participants per booking | No cap beyond seats left | [F-005 Q7](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
+| Telling the seller about a new booking | No email/push in F-005; customer "Kabari operator via WhatsApp"; F-007 dashboard | [F-005 Q8](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
+| Booking page before F-006 | No payment instructions until F-006 (wk 4, before pilot) | [F-005 Q10](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
+| Seat-hold wording on the booking form | Keep the mockup text | [F-005 Q11](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
+| Hold that outlasts the departure's meeting time | Keep exactly 2 h (ADR-0006); seller handles it | [F-005 Q12](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
+| Privacy line on the booking form | One-line notice linking `/privasi` now | [F-005 Q13](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
 
 ### Draft specs — to resolve when the spec is made `ready`
 
 | Decision | Source |
 |---|---|
 | Accepted date request → public or private departure; price on accept | [F-004](../features/F-004-request-a-date.md#open-questions) |
-| Booking reference format (`RKB-MMDD-NNNN`: departure or booking date) | [F-005](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
-| Booking vs payment status model; re-upload and hold clock after rejection; DP 50% in P0 or P1 | [F-006](../features/F-006-payment-instructions-and-records.md#open-questions) |
+| Re-upload and hold clock after rejection; does `rejected` hold seats; DP 50% in P0 or P1 | [F-006](../features/F-006-payment-instructions-and-records.md#open-questions) |
 | Mobile dashboard mockup; manual booking entry | [F-007](../features/F-007-seller-dashboard-and-bookings.md#open-questions) |
 | Admin auth mechanism; admin UI language (Bahasa or English) | [F-010](../features/F-010-admin-access-control.md#open-questions) |
 | Admin status mapping (depends on F-006) | [F-011](../features/F-011-admin-overview-dashboard.md#open-questions) |

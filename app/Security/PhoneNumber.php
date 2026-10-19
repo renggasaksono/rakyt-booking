@@ -8,6 +8,17 @@ namespace App\Security;
  */
 final class PhoneNumber
 {
+    /** +62 8 followed by 8–11 digits (F-001 B3, F-005 AC-10). */
+    public const MOBILE_PATTERN = '/^\+628\d{8,11}$/';
+
+    /**
+     * An E.164 Indonesian mobile number, as normalize() returns it.
+     */
+    public static function isMobile(?string $e164): bool
+    {
+        return $e164 !== null && preg_match(self::MOBILE_PATTERN, $e164) === 1;
+    }
+
     public static function normalize(?string $input): ?string
     {
         $digits = preg_replace('/\D+/', '', (string) $input);

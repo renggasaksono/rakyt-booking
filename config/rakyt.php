@@ -18,6 +18,8 @@ return [
     'cross_organization_allowlist' => [
         // F-003 AC-37: lists due departure ids, then closes each as its organization.
         'app/Trips/Jobs/CloseDeparturesPastDeadline.php',
+        // F-005 AC-24: lists expired hold ids, then releases each as its organization.
+        'app/Bookings/Jobs/ReleaseExpiredHolds.php',
     ],
 
     'admin_query_path' => 'app/Admin/Queries',
@@ -98,6 +100,19 @@ return [
         'departures_shown' => 10,
         // AC-29: og:description length.
         'description_max' => 200,
+    ],
+
+    /*
+    | Customer bookings (F-005 Data & rules).
+    */
+    'booking' => [
+        // ADR-0006: the seat hold for an unpaid booking. A constant, not a seller setting.
+        'hold_minutes' => 120,
+        'name_min' => 2,
+        'name_max' => 80,
+        'notes_max' => 500,
+        // AC-4: the notes counter appears once this many characters are typed.
+        'notes_counter_from' => 400,
     ],
 
     /*

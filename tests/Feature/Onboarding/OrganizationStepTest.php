@@ -227,7 +227,7 @@ class OrganizationStepTest extends TestCase
         $calls = 0;
         Organization::creating(function (Organization $organization) use (&$calls) {
             if ($calls++ === 0) {
-                DB::table('organizations')->insert(['public_id' => (string) str()->uuid(), 'name' => 'Lain', 'slug' => 'kencana', 'city' => 'Bali', 'whatsapp' => '+6281200000000']);
+                DB::table('organizations')->insert(['public_id' => (string) str()->uuid(), 'name' => 'Lain', 'slug' => 'kencana', 'city' => 'Bali', 'whatsapp' => '+6281200000000', 'booking_code' => 'LAIN']);
             }
         });
 

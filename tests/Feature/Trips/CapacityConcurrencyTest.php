@@ -2,18 +2,25 @@
 
 namespace Tests\Feature\Trips;
 
+use App\Bookings\BookingStatus;
+use App\Models\Trip;
 use App\Models\TripDeparture;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Process\Process;
+use Tests\Support\BuildsBookings;
 use Tests\Support\BuildsTrips;
+use Tests\Support\Concurrency\RunsSecondProcess;
 use Tests\Support\InteractsWithTenants;
+use Tests\Support\Tenant;
 use Tests\TestCase;
 
 /**
  * F-003 AC-39 (ADR-0006): a seller reducing seats and a customer booking the
  * last seats at the same moment — exactly one succeeds, never overbooked.
+ * Since F-005 the customer books through the real BookingService (F-005 AC-21).
  *
  * The customer books from a second process (its own connection), so rows must
  * be committed: this class does not wrap tests in a transaction, and the next
@@ -22,7 +29,7 @@ use Tests\TestCase;
  */
 class CapacityConcurrencyTest extends TestCase
 {
-    use BuildsTrips, InteractsWithTenants, RefreshDatabase;
+    use BuildsBookings, BuildsTrips, InteractsWithTenants, RefreshDatabase, RunsSecondProcess;
 
     /**
      * @return list<string>
@@ -39,11 +46,22 @@ class CapacityConcurrencyTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_ac_39_customer_books_first_and_the_capacity_cut_is_rejected(): void
+    /**
+     * @return array{0: Tenant, 1: Trip, 2: TripDeparture}
+     */
+    private function departureWith14Of16SeatsTaken(): array
     {
         [$a] = $this->createTenants();
-        $trip = $this->tripFor($a);
-        $departure = $this->asTenant($a, fn () => TripDeparture::factory()->withSeatsTaken(14)->create(['trip_id' => $trip->id, 'capacity' => 16]));
+        $trip = $this->tripFor($a, published: true);
+        $departure = $this->departureFor($a, $trip, CarbonImmutable::now('Asia/Jakarta')->addDays(14)->toDateString(), ['capacity' => 16]);
+        $this->bookingFor($a, $departure, 14, BookingStatus::Paid);
+
+        return [$a, $trip, $departure];
+    }
+
+    public function test_ac_39_customer_books_first_and_the_capacity_cut_is_rejected(): void
+    {
+        [$a, $trip, $departure] = $this->departureWith14Of16SeatsTaken();
 
         // The customer's transaction holds the row lock for a moment…
         $customer = $this->bookInAnotherConnection($departure, seats: 2, holdMs: 1500);
@@ -64,9 +82,7 @@ class CapacityConcurrencyTest extends TestCase
 
     public function test_ac_39_seller_cuts_capacity_first_and_the_booking_is_rejected(): void
     {
-        [$a] = $this->createTenants();
-        $trip = $this->tripFor($a);
-        $departure = $this->asTenant($a, fn () => TripDeparture::factory()->withSeatsTaken(14)->create(['trip_id' => $trip->id, 'capacity' => 16]));
+        [$a, $trip, $departure] = $this->departureWith14Of16SeatsTaken();
 
         // The seller's change runs and keeps its lock until we commit…
         DB::beginTransaction();
@@ -82,51 +98,14 @@ class CapacityConcurrencyTest extends TestCase
         DB::commit();
         $customer->wait();
 
-        $this->assertStringContainsString('booked:0', $customer->getOutput());
+        $this->assertStringContainsString('booked:0 departure: Tanggal ini sudah tidak bisa dipesan.', $customer->getOutput());
         $this->assertSeats($departure, capacity: 14, taken: 14);
         $this->assertDatabaseHas('audit_events', ['action' => 'departure.capacity_changed']);
     }
 
     private function bookInAnotherConnection(TripDeparture $departure, int $seats, int $holdMs): Process
     {
-        $connection = config('database.connections.pgsql');
-
-        $process = new Process(
-            [PHP_BINARY, base_path('tests/Support/Concurrency/take_seats.php'), (string) $departure->id, (string) $departure->organization_id, (string) $seats, (string) $holdMs],
-            base_path(),
-            [
-                'APP_ENV' => 'testing',
-                'DB_CONNECTION' => 'pgsql',
-                'DB_URL' => '',
-                'DB_HOST' => (string) $connection['host'],
-                'DB_PORT' => (string) $connection['port'],
-                'DB_DATABASE' => (string) $connection['database'],
-                'DB_USERNAME' => (string) $connection['username'],
-                'DB_PASSWORD' => (string) $connection['password'],
-                'CACHE_STORE' => 'array',
-                'SESSION_DRIVER' => 'array',
-                'QUEUE_CONNECTION' => 'sync',
-                'LOG_CHANNEL' => 'null',
-            ],
-            timeout: 30,
-        );
-        $process->start();
-
-        return $process;
-    }
-
-    private function waitForOutput(Process $process, string $line): void
-    {
-        $deadline = microtime(true) + 15;
-
-        while (! str_contains($process->getOutput(), $line)) {
-            if (! $process->isRunning() || microtime(true) > $deadline) {
-                $process->stop();
-                $this->fail("Customer process did not print [{$line}]. Output: {$process->getOutput()} Errors: {$process->getErrorOutput()}");
-            }
-
-            usleep(20_000);
-        }
+        return $this->startProcess('book.php', [$departure->id, $departure->organization_id, $seats, 1_250_000, $holdMs]);
     }
 
     private function assertSeats(TripDeparture $departure, int $capacity, int $taken): void

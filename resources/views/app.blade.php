@@ -23,6 +23,13 @@
             @endif
             <meta property="og:url" content="{{ $publicHead['url'] }}">
         @endisset
+        @isset($plainHead)
+            {{-- Customer booking pages: a title only, no Open Graph and no customer data (F-005 AC-36). --}}
+            <title>{{ $plainHead['title'] }}</title>
+            @if ($plainHead['noindex'])
+                <meta name="robots" content="noindex">
+            @endif
+        @endisset
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <x-inertia::head />
     </head>

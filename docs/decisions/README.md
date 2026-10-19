@@ -35,3 +35,6 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0023](0023-onboarding-and-accounts-implementation-choices.md) | Implementation choices for seller accounts and onboarding (F-001) | accepted | 2026-10-19 |
 | [0024](0024-public-page-rendering-and-caching.md) | Public pages — Inertia without SSR, server-rendered head tags, split JavaScript, no page cache | accepted | 2026-10-19 |
 | [0025](0025-public-pages-implementation-choices.md) | Implementation choices for the public booking pages (F-002) | accepted | 2026-10-19 |
+| [0026](0026-booking-record-and-lifecycle.md) | Booking record, status lifecycle, reference and seat accounting | accepted | 2026-10-19 |
+| [0027](0027-customer-booking-routes-and-access-token.md) | Customer booking routes — URL shape, token storage, session | accepted | 2026-10-19 |
+| [0028](0028-customer-booking-implementation-choices.md) | Implementation choices for customer booking and seat hold (F-005) | accepted | 2026-10-19 |

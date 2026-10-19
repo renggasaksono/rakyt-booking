@@ -53,6 +53,7 @@ Every status = tint + deep text + its own glyph + a word. Never colour alone; ne
 | Lunas | ✓ | `#2F6B3A` |
 | Ditolak | ✕ | `#A1281E` |
 | Dibatalkan | – | `#4F4741` |
+| Selesai | ☑ | `#2F6B3A` (ADR-0028 §10) |
 
 Departure statuses (F-003 AC-27) follow the same rule with their own glyphs: Buka ● (Lunas green), Tutup ○
 (`#4F4741`), Penuh ◼ (nila), Sudah lewat ◁ (`#4F4741`). Tints are tokens in `resources/css/app.css`
