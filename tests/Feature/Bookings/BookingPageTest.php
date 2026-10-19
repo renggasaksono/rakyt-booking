@@ -6,9 +6,13 @@ use App\Bookings\BookingStatus;
 use App\Models\Booking;
 use App\Models\Trip;
 use App\Models\TripDeparture;
+use App\Tenancy\Middleware\ResolveCurrentOrganization;
 use App\Trips\TripStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Session\Middleware\AuthenticateSession;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\BuildsBookings;
 use Tests\Support\BuildsPublicPages;
@@ -178,6 +182,48 @@ class BookingPageTest extends TestCase
         $this->assertStringNotContainsString('og:', $head);
         $this->assertStringNotContainsString('Rina', $head);
         $this->assertStringNotContainsString('RKB-', $head);
+    }
+
+    public function test_the_page_runs_the_session_with_a_csrf_cookie_for_the_upload_form(): void
+    {
+        $booking = $this->book();
+
+        // F-006's upload POSTs from this page: it needs the XSRF cookie and flashed messages (ADR-0028 §1).
+        $this->get('/kencana/pesanan/'.$booking->access_token)
+            ->assertOk()
+            ->assertCookie(config('session.cookie'))
+            ->assertCookie('XSRF-TOKEN');
+
+        $middleware = app('router')->gatherRouteMiddleware(app('router')->getRoutes()->getByName('public.booking.show'));
+        $this->assertContains(StartSession::class, $middleware);
+        $this->assertNotContains(ResolveCurrentOrganization::class, $middleware);
+        $this->assertNotContains(AuthenticateSession::class, $middleware);
+    }
+
+    public function test_the_stored_session_never_holds_the_token_in_plain_text(): void
+    {
+        $booking = $this->book();
+        $token = $booking->access_token;
+        $stored = function (bool $encrypt) use ($token) {
+            config(['session.driver' => 'database', 'session.encrypt' => $encrypt]);
+            app('session')->forgetDrivers();
+            DB::table('sessions')->delete();
+            $this->flushSession();
+
+            $this->get('/kencana/pesanan/'.$token)->assertOk();
+
+            return base64_decode((string) DB::table('sessions')->value('payload'));
+        };
+
+        // The session stores the visited URL; encryption keeps the token out of the row.
+        $this->assertStringContainsString($token, $stored(false));
+        $this->assertStringNotContainsString($token, $stored(true));
+    }
+
+    public function test_session_payloads_are_encrypted_by_default(): void
+    {
+        $this->assertStringContainsString("env('SESSION_ENCRYPT', true)", file_get_contents(config_path('session.php')));
+        $this->assertMatchesRegularExpression('/^SESSION_ENCRYPT=true$/m', file_get_contents(base_path('.env.example')));
     }
 
     public function test_ac_37_the_page_props_are_exactly_the_public_fields(): void

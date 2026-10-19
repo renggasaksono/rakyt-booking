@@ -74,6 +74,7 @@ class Organization extends Model
             return parent::performInsert($query);
         }
 
+        // Each attempt fires `creating`/`created` again: keep those listeners free of side effects.
         foreach (BookingCode::candidates((string) $this->slug) as $code) {
             $this->booking_code = $code;
 
@@ -87,6 +88,8 @@ class Organization extends Model
                 }
             }
         }
+
+        $this->booking_code = null;
 
         throw new LogicException('No free booking code for this organization.');
     }

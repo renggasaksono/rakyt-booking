@@ -4,7 +4,7 @@
 | A customer booking seats from a second database connection, through the real
 | BookingService (F-005 AC-19–AC-22; F-003 AC-39). Not part of the application.
 |
-| php book.php <departure id> <organization id> <participants> <unit price> <hold ms>
+| php book.php <departure id> <organization id> <participants> <unit price> <hold ms> [submission key]
 |
 | Prints "started", then "locked:1" once the booking transaction holds its
 | locks (organization, departure), keeps the transaction open for <hold ms>,
@@ -27,6 +27,7 @@ $app = require __DIR__.'/../../../bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
 
 [, $departureId, $organizationId, $participants, $price, $holdMs] = $argv;
+$submissionKey = $argv[6] ?? (string) Str::uuid();
 
 $say = function (string $line) {
     fwrite(STDOUT, $line."\n");
@@ -36,7 +37,7 @@ $say = function (string $line) {
 $organization = Organization::query()->findOrFail((int) $organizationId);
 
 try {
-    $booking = app(CurrentOrganization::class)->runAs($organization, fn () => DB::transaction(function () use ($departureId, $participants, $price, $holdMs, $say) {
+    $booking = app(CurrentOrganization::class)->runAs($organization, fn () => DB::transaction(function () use ($departureId, $participants, $price, $holdMs, $submissionKey, $say) {
         $say('started');
 
         $booking = app(BookingService::class)->create(TripDeparture::query()->findOrFail((int) $departureId), [
@@ -44,7 +45,7 @@ try {
             'phone' => '+6281200000002',
             'participants' => (int) $participants,
             'notes' => null,
-            'submission_key' => (string) Str::uuid(),
+            'submission_key' => $submissionKey,
             'price' => (int) $price,
         ]);
 

@@ -34,7 +34,8 @@ return new class extends Migration
             $table->smallInteger('participants');
             $table->text('notes')->nullable();
             $table->integer('unit_price');
-            $table->integer('total_amount');
+            // Up to 999 seats × Rp100.000.000 does not fit in integer (F-005 review).
+            $table->bigInteger('total_amount');
             $table->string('status', 20);
             $table->string('cancel_reason', 20)->nullable();
             $table->timestampTz('hold_expires_at');
@@ -52,7 +53,7 @@ return new class extends Migration
 
         DB::statement('ALTER TABLE bookings ADD CONSTRAINT bookings_participants_check CHECK (participants >= 1)');
         DB::statement('ALTER TABLE bookings ADD CONSTRAINT bookings_unit_price_check CHECK (unit_price BETWEEN 1000 AND 100000000)');
-        DB::statement('ALTER TABLE bookings ADD CONSTRAINT bookings_total_amount_check CHECK (total_amount = participants * unit_price)');
+        DB::statement('ALTER TABLE bookings ADD CONSTRAINT bookings_total_amount_check CHECK (total_amount = participants::bigint * unit_price)');
         DB::statement("ALTER TABLE bookings ADD CONSTRAINT bookings_status_check CHECK (status IN ('awaiting_payment', 'needs_review', 'paid', 'rejected', 'cancelled', 'completed'))");
         DB::statement("ALTER TABLE bookings ADD CONSTRAINT bookings_cancel_reason_check CHECK ((status = 'cancelled') = (cancel_reason IS NOT NULL) AND (cancel_reason IS NULL OR cancel_reason IN ('hold_expired', 'seller')))");
     }

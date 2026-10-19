@@ -20,6 +20,8 @@ return new class extends Migration
             $table->unsignedInteger('last_booking_number')->default(0);
         });
 
+        // Uses the live candidate rule (ADR-0028 §2): re-running this on an old database after that rule
+        // changes gives other codes. Fine while no reference has been issued from a backfilled code.
         $taken = [];
 
         foreach (DB::table('organizations')->orderBy('id')->get(['id', 'slug']) as $organization) {

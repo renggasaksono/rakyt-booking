@@ -35,6 +35,7 @@ class Booking extends Model
     protected function casts(): array
     {
         return [
+            'trip_departure_id' => 'integer',
             'participants' => 'integer',
             'unit_price' => 'integer',
             'total_amount' => 'integer',

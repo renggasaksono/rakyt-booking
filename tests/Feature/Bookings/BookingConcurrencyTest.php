@@ -11,6 +11,7 @@ use App\Models\TripDeparture;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Symfony\Component\Process\Process;
 use Tests\Support\BuildsBookings;
@@ -131,6 +132,26 @@ class BookingConcurrencyTest extends TestCase
 
         $numbers = Booking::acrossOrganizations()->pluck('reference')->map(fn (string $reference) => substr($reference, -4))->sort()->values()->all();
         $this->assertSame(['0001', '0002'], $numbers);
+    }
+
+    public function test_ac_16_the_same_submission_key_from_two_connections_creates_one_booking(): void
+    {
+        $departure = $this->departure(capacity: 16);
+        $key = (string) Str::uuid();
+
+        $other = $this->startProcess('book.php', [$departure->id, $departure->organization_id, 2, 1_250_000, 1500, $key]);
+        $this->waitForOutput($other, 'locked:1');
+
+        // Waits for the organization lock, then finds the first submit's booking.
+        $response = $this->from($this->formUrl('kencana', 'karimunjawa-3h2m', $departure->public_id))
+            ->submitBooking('kencana', 'karimunjawa-3h2m', $this->bookingInput($departure, ['submission_key' => $key]));
+        $other->wait();
+
+        $this->assertStringContainsString('booked:1', $other->getOutput());
+        $booking = Booking::acrossOrganizations()->sole();
+        $response->assertStatus(303)->assertRedirect(route('public.booking.show', ['organization' => 'kencana', 'token' => $booking->access_token]));
+        $this->assertSame(2, $this->freshDeparture($departure)->seats_taken);
+        $this->assertSame(1, AuditEvent::acrossOrganizations()->where('action', 'booking.created')->count());
     }
 
     public function test_ac_22_a_booking_and_the_expiry_job_on_the_same_seats_lose_no_update(): void

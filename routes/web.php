@@ -136,20 +136,21 @@ Route::middleware(['auth', 'organization', 'onboarded'])->group(function () {
 | booking page. Fallback routes like the public pages below, so they never
 | shadow an app route; the organization comes from the slug.
 |
-| Unlike the public pages the form and its submit run the session, its errors
-| and CSRF (an Inertia POST, ADR-0027 §3), but never resolve the signed-in
-| seller: nothing of a seller's session is read here (AC-38 d).
+| Unlike the public pages they run the session, its errors and CSRF (the form
+| is an Inertia POST, ADR-0027 §3), but never resolve the signed-in seller:
+| nothing of a seller's session is read here (AC-38 d). Session payloads are
+| encrypted (SESSION_ENCRYPT), since the booking page's URL carries its token.
 */
 Route::middleware('public-organization')->withoutMiddleware([
     AuthenticateSession::class,
     ResolveCurrentOrganization::class,
 ])->group(function () {
     // The token pattern keeps `/<slug>/pesanan/pesan` (a trip called "pesanan") reaching the form.
-    // Read-only and session-less (ADR-0028): a session would store this URL, token included.
+    // Runs the session like the form (CSRF cookie and flashed messages for F-006's upload);
+    // the session payload is encrypted, so the stored URL does not expose the token (ADR-0028 §1).
     Route::get('/{organization}/pesanan/{token}', [BookingController::class, 'show'])
         ->where(['organization' => '[^/]+', 'token' => '[A-Za-z0-9]{32}'])
         ->middleware(['throttle:public-page', 'no-referrer'])
-        ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class])
         ->fallback()
         ->name('public.booking.show');
     Route::get('/{organization}/{trip}/pesan', [BookingController::class, 'create'])

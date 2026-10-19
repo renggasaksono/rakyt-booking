@@ -50,10 +50,10 @@ final class BookingService
     public function create(TripDeparture $departure, array $data): Booking
     {
         try {
-            return DB::transaction(fn () => $this->createLocked($departure, $data, CarbonImmutable::now()));
+            return DB::transaction(fn () => $this->createLocked($departure, $data));
         } catch (UniqueConstraintViolationException $e) {
             // Backstop: the organization lock already serialises same-key submits.
-            return Booking::query()->where('submission_key', $data['submission_key'])->first() ?? throw $e;
+            return $this->replay($departure, $data['submission_key']) ?? throw $e;
         }
     }
 
@@ -109,12 +109,12 @@ final class BookingService
     /**
      * @param  array{name: string, phone: string, participants: int, notes: ?string, submission_key: string, price: int}  $data
      */
-    private function createLocked(TripDeparture $departure, array $data, CarbonImmutable $now): Booking
+    private function createLocked(TripDeparture $departure, array $data): Booking
     {
         // 1–2. Organization row: serialises this seller's bookings and its counter.
         $organization = Organization::query()->whereKey($this->current->id())->lockForUpdate()->firstOrFail();
 
-        $existing = Booking::query()->where('submission_key', $data['submission_key'])->first();
+        $existing = $this->replay($departure, $data['submission_key']);
 
         if ($existing !== null) {
             return $existing;
@@ -125,6 +125,8 @@ final class BookingService
 
         // 3. Departure row, read again under the lock; expired holds of this departure go first.
         $locked = TripDeparture::query()->whereKey($departure->getKey())->lockForUpdate()->firstOrFail();
+        // The clock is read under the locks: the deadline is exact for the submit that holds them (AC-15).
+        $now = CarbonImmutable::now();
         $trip = Trip::query()->whereKey($locked->trip_id)->firstOrFail();
         $trip->setRelation('organization', $organization);
         $locked->setRelation('trip', $trip);
@@ -182,6 +184,22 @@ final class BookingService
         ], actor: Actor::customer($booking->getKey()));
 
         return $booking;
+    }
+
+    /**
+     * The booking an earlier submit with this key created (AC-16). A key is
+     * only replayed for the departure it was used on; anything else is refused
+     * rather than handing out another booking's link (ADR-0028 §3).
+     */
+    private function replay(TripDeparture $departure, string $key): ?Booking
+    {
+        $existing = Booking::query()->where('submission_key', $key)->first();
+
+        if ($existing !== null && $existing->trip_departure_id !== $departure->getKey()) {
+            throw BookingRefused::unavailable();
+        }
+
+        return $existing;
     }
 
     /**

@@ -249,6 +249,30 @@ class CreateBookingTest extends TestCase
         $this->assertSame(1, Organization::query()->find($this->a->organization->id)->last_booking_number);
     }
 
+    public function test_ac_12_totals_above_two_billion_rupiah_are_stored(): void
+    {
+        // 22 × Rp100.000.000 does not fit in a 32-bit integer (F-005 review).
+        $big = $this->departureFor($this->a, $this->trip, '2024-10-25', ['capacity' => 30, 'price_override' => 100_000_000]);
+
+        $this->submitBooking('bromo-adventure', 'karimunjawa-3h2m', $this->bookingInput($big, ['participants' => 22, 'price' => 100_000_000]))->assertStatus(303);
+
+        $this->assertSame(2_200_000_000, $this->latestBooking()->total_amount);
+        $this->assertSame(22, $this->freshDeparture($big)->seats_taken);
+    }
+
+    public function test_ac_16_a_submission_key_is_never_replayed_for_another_departure(): void
+    {
+        $key = (string) Str::uuid();
+        $other = $this->departureFor($this->a, $this->trip, '2024-10-25');
+
+        $this->submit(['submission_key' => $key])->assertStatus(303);
+        $this->submitBooking('bromo-adventure', 'karimunjawa-3h2m', $this->bookingInput($other, ['submission_key' => $key]))
+            ->assertSessionHasErrors(['departure' => 'Tanggal ini sudah tidak bisa dipesan.']);
+
+        $this->assertSame(1, $this->bookingCount());
+        $this->assertSame(0, $this->freshDeparture($other)->seats_taken);
+    }
+
     public function test_ac_17_the_reference_carries_the_seller_code_the_departure_date_and_the_counter(): void
     {
         $this->assertSame('BRM', $this->a->organization->fresh()->booking_code);

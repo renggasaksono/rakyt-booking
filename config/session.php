@@ -48,7 +48,8 @@ return [
     |
     */
 
-    'encrypt' => env('SESSION_ENCRYPT', false),
+    // On by default: customer booking pages store their URL, access token included, in the session (ADR-0028 §1).
+    'encrypt' => env('SESSION_ENCRYPT', true),
 
     /*
     |--------------------------------------------------------------------------
