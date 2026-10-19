@@ -6,6 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title>@yield('title') · Rakyt</title>
+    {{-- Poppins for the headings when the build is there; a missing font manifest must never break an error page. --}}
+    @php
+        try {
+            $fonts = app(\Illuminate\Foundation\Vite::class)->fonts();
+        } catch (\Throwable) {
+            $fonts = '';
+        }
+    @endphp
+    {{ $fonts }}
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body { margin: 0; background: #F4EFE6; color: #211710; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }

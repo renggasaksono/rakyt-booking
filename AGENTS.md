@@ -105,6 +105,8 @@ checkout made before the rename may still show `Pages/`: fix it once with `mv re
   use `->onboarding()` (or `BuildsOnboarding::onboardingTenant()`) for a seller still in the guided flow — their page
   visits redirect to the resume step (F-001 E2). Find a user's organization with
   `ResolveCurrentOrganization::membershipOf()`, never a new unscoped query.
+- Poppins (headings) reaches a page only through `@fonts` in its layout — `@vite` does not emit the Vite fonts helper's
+  `@font-face` and preloads. Tests blank it with `Tests\Support\NullVite`, so test output never depends on a local build.
 - Reset and verification links in `storage/logs/mail.log` are redacted on purpose; use an SMTP catcher (e.g. Mailpit)
   to click them locally. Inertia requests in tests need `X-Inertia-Version` once a build manifest exists, or they get 409.
 
