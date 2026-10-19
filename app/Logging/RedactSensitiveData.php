@@ -34,7 +34,8 @@ class RedactSensitiveData implements ProcessorInterface
 
     private const PHONE_PATTERN = '/(?<![\d+])(?:\+?62|0)[\s-]?8(?:[\s-]?\d){7,11}(?!\d)/';
 
-    private const URL_SECRET_PARAM_PATTERN = '/([?&](?:signature|token|access_token)=)[^&\s"\']+/i';
+    /** `cari` is the seller's booking search — a customer name or phone (F-007 AC-37). */
+    private const URL_SECRET_PARAM_PATTERN = '/([?&](?:signature|token|access_token|cari)=)[^&\s"\']+/i';
 
     /** The customer booking token is a path segment: /<slug>/pesanan/<token> (F-005 AC-40, F-009 R20, ADR-0027 §5). Also JSON-escaped. */
     private const BOOKING_TOKEN_PATH_PATTERN = '~(\\\\?/pesanan\\\\?/)[^/?#\s"\'\\\\]+~';
