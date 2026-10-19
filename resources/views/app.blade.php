@@ -30,6 +30,8 @@
                 <meta name="robots" content="noindex">
             @endif
         @endisset
+        {{-- Poppins @font-face + preloads from the Vite fonts helper; @vite does not emit them. --}}
+        @fonts
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <x-inertia::head />
     </head>
