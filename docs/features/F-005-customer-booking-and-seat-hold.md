@@ -393,8 +393,8 @@ queues it, pass ids and load inside `handle()` under `ScopedToOrganization`).
 - **F-008**: moves `whatsapp.customer` into its template set.
 - **F-014**: suspension hooks into `PublicVisibility` and so covers these routes; what a suspended seller's pending
   holds do is F-014's call.
-- **ADR-0026, ADR-0027** (proposed): the builder implements their recommended defaults (this spec says so); if Rengga
-  changes either before the pilot, the change is a migration on test data only.
+- **ADR-0026** (accepted 2026-10-19). **ADR-0027** (proposed): the builder implements its recommended defaults (this
+  spec says so); if Rengga changes it before the pilot, the change is a migration on test data only.
 
 ## Test plan
 
@@ -439,9 +439,8 @@ change before the pilot at the cost of test data only.
 - [ ] **Q8 Telling the seller about a new booking.** *Recommended:* no email or push in F-005; the booking page asks the
   customer to "Kabari operator via WhatsApp" with the reference, and F-007's dashboard lists new bookings. F-006 decides
   how the seller is told about uploaded evidence. — Rengga · *not blocking*
-- [ ] **Q9 Price changed between form and submit.** *Recommended:* refuse and show the new price (AC-13). Alternatives:
-  honour the shown price (the seller's change would be ignored) or book silently at the new price (the customer owes a
-  total they never saw). — Rengga · *not blocking*
+- [x] **Q9 Price changed between form and submit.** Decided 2026-10-19: refuse and show the new price (AC-13;
+  ADR-0026 §4 accepted). — Rengga
 - [ ] **Q10 Booking page before F-006.** *Recommended:* F-005 ships the page without payment instructions or upload;
   F-006 (week 4) adds them before any pilot customer books. Alternative: show the seller's accounts read-only now.
   — Rengga · *not blocking*
@@ -470,3 +469,4 @@ booking route; **R20** is AC-40; **R17** applies only if a queued job is added. 
   ADR-0026 and ADR-0027 proposed. Status → `ready`
 - 2026-10-19 — Q2 decided: reference `RKB-<seller code>-MMDD-NNNN`, unique platform-wide; AC-17 updated, AC-17b and `organizations.booking_code` added
 - 2026-10-19 — Q3 decided: one status column (ADR-0026 §1–2)
+- 2026-10-19 — ADR-0026 accepted as a whole; Q9 decided

@@ -1,7 +1,7 @@
 ---
 id: 0026
 title: Booking record, status lifecycle, reference and seat accounting
-status: proposed
+status: accepted
 date: 2026-10-19
 deciders: [Rengga]
 related: [F-005, F-006, F-007, F-013, ADR-0005, ADR-0006, ADR-0017, ADR-0021]
@@ -9,7 +9,7 @@ related: [F-005, F-006, F-007, F-013, ADR-0005, ADR-0006, ADR-0017, ADR-0021]
 
 # 0026. Booking record, status lifecycle, reference and seat accounting
 
-*Proposed by the planner agent on 2026-10-19 while making F-005 `ready`.*
+*Proposed by the planner agent on 2026-10-19 while making F-005 `ready`; accepted by Rengga on 2026-10-19 as a whole (F-005 Q2, Q3, Q9).*
 
 ## Context
 
