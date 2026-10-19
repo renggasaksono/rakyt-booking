@@ -9,7 +9,8 @@ related: [F-002, F-003, F-009, ADR-0015, ADR-0021, ADR-0022, ADR-0024]
 
 # 0025. Implementation choices for the public booking pages (F-002)
 
-*Proposed by the builder agent on 2026-10-19 while building F-002. Accepted by Rengga on 2026-10-19.*
+*Proposed by the builder agent on 2026-10-19 while building F-002. Accepted by Rengga on 2026-10-19; amendment
+(public pages run without a session) accepted the same day.*
 
 ## Context
 
@@ -73,6 +74,8 @@ choices that the spec leaves open or words differently, each of which someone co
   helpers (ADR-0022 §10); keeping it together keeps one formatter.
 
 ## Amendment 2026-10-19 (review finding 2)
+
+*Accepted by Rengga on 2026-10-19.*
 
 With the full `web` group, every request to a public page — and, because the routes are fallbacks, every unknown one-
 or two-segment path such as `/wp-login.php` — started a session. Customers arriving from WhatsApp, link-preview bots

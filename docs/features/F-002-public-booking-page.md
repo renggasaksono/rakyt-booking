@@ -379,3 +379,4 @@ All decided by Rengga on 2026-10-19: Q3 rejected (page live immediately), Q5 ref
 - 2026-10-19 — Review follow-up: public routes run without a session or cookies (no `sessions` row per crawler or
   link-preview hit; ADR-0025 amendment); Data & rules → Routes, Tenancy and Public fields brought in line with the
   code (fallback routes, no implicit trip binding, the exact prop keys)
+- 2026-10-19 — Rengga: ADR-0025 amendment accepted (public pages run without a session)
