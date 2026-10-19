@@ -179,7 +179,7 @@ Slice A creates the minimal `organizations` (id, timestamps, plus whatever F-001
 
 | Area | Actions |
 |---|---|
-| Bookings | `booking.created`, `booking.status_changed`, `booking.hold_expired` (system) |
+| Bookings | `booking.created`, `booking.status_changed`, `booking.hold_expired` (system), `booking.cancelled` (seller, F-007) |
 | Payments | `payment.evidence_uploaded`, `payment.verified`, `payment.rejected`, `payment_record.amount_changed` |
 | Departures | `departure.created`, `departure.price_changed`, `departure.capacity_changed`, `departure.status_changed` (incl. auto-close by deadline, system), `departure.deleted` |
 | Trips | `trip.base_price_changed`, `trip.published`, `trip.unpublished` |

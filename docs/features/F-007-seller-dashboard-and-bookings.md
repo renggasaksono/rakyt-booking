@@ -1,11 +1,11 @@
 ---
 id: F-007
 title: Seller dashboard ("Hari ini") & booking list
-status: ready
+status: done
 priority: P0
 roadmap: mvp-weeks-2-4
 mockups: [1e, 2f, 1g]
-decisions: ["0003", "0004", "0006", "0007", "0008", "0014", "0017", "0021", "0026", "0027"]
+decisions: ["0003", "0004", "0006", "0007", "0008", "0014", "0017", "0021", "0026", "0027", "0029"]
 updated: 2026-10-19
 ---
 
@@ -82,54 +82,54 @@ F-005 AC-23 invariant still holds.
 
 ### A. Navigation & landing
 
-- [ ] **AC-1 Landing.** Given a signed-in seller past onboarding, when they sign in, finish or skip onboarding (F-001
+- [x] **AC-1 Landing.** Given a signed-in seller past onboarding, when they sign in, finish or skip onboarding (F-001
   E3), or open `/dashboard`, then they land on Hari ini at `/hari-ini` (route name `dashboard`; `/dashboard` redirects
   there with 302). A seller still in onboarding is redirected to their resume step (F-001 E2); a guest goes to `/masuk`.
-- [ ] **AC-2 Desktop nav.** Given a screen ≥ 1024 px, then the side nav lists, in order: **Hari ini** (`/hari-ini`),
+- [x] **AC-2 Desktop nav.** Given a screen ≥ 1024 px, then the side nav lists, in order: **Hari ini** (`/hari-ini`),
   **Pesanan** (`/pesanan`), **Trip & keberangkatan** (`/trip`), **Pembayaran** (`/pesanan?status=perlu_tindakan`),
   **Halaman publik** (the seller page `/<slug>`, new tab, `rel="noopener"`, marked "↗"), **Pengaturan**. The current
   section is marked (Sogan text, `aria-current="page"`); booking detail pages mark Pesanan.
-- [ ] **AC-3 Phone nav.** Given a screen < 1024 px, then the bottom nav has four items, each ≥ 44 px tall: **Hari ini**,
+- [x] **AC-3 Phone nav.** Given a screen < 1024 px, then the bottom nav has four items, each ≥ 44 px tall: **Hari ini**,
   **Pesanan**, **Trip**, **Pengaturan**. Halaman publik is reached from the link card (AC-14), Pembayaran from Perlu
   tindakan (AC-8).
-- [ ] **AC-4 Nav counts.** Given the seller's bookings, then **Pesanan** and **Pembayaran** show the **Perlu tindakan
+- [x] **AC-4 Nav counts.** Given the seller's bookings, then **Pesanan** and **Pembayaran** show the **Perlu tindakan
   count** (AC-8's rows: `needs_review` + `awaiting_payment` with an active hold) as a number badge with an accessible
   label ("3 pesanan perlu tindakan"); no badge when 0. The phone Pesanan item shows the same badge. Counts are computed
   for the current organization only, in one query, only on seller pages (never on public pages, F-002 AC-7).
 
 ### B. Hari ini (1e, 2f)
 
-- [ ] **AC-5 Header.** Given seller Agus of "Kencana Trip" opens Hari ini at 08.15 local on Friday 16 Oktober, then the
+- [x] **AC-5 Header.** Given seller Agus of "Kencana Trip" opens Hari ini at 08.15 local on Friday 16 Oktober, then the
   page shows the date "Jumat, 16 Oktober" (year added when not the current year — never needed for today), the greeting
   "Selamat pagi, Agus." using `users.name` (pagi 04.00–10.59, siang 11.00–14.59, sore 15.00–17.59, malam 18.00–03.59,
   local time), the business name and the plan badge "Paket Gratis" (Q3), and "+ Trip baru" linking to `/trip/baru`.
   "+ Trip baru" is the page's one gold button (mockup 1e/2f); every other action on the page is ink or ink outline.
-- [ ] **AC-6 Order on a phone.** At 360 px the sections stack in this order: header, Perlu tindakan, Keberangkatan
+- [x] **AC-6 Order on a phone.** At 360 px the sections stack in this order: header, Perlu tindakan, Keberangkatan
   terdekat, Pesanan terbaru, link card (Q1). On desktop they follow the mockup's two-column layout.
-- [ ] **AC-7 Perlu tindakan rows.** Each row shows: customer name · "n org", the status pill, reference · trip name ·
+- [x] **AC-7 Perlu tindakan rows.** Each row shows: customer name · "n org", the status pill, reference · trip name ·
   departure start date ("Karimunjawa 3H2M Open Trip · 24 Okt"), the total ("Rp2.500.000"), and — for
   `awaiting_payment` — "ditahan s.d. 16.40" ("s.d. besok 01.10" when the release falls on the next local day). The row
   links to the booking detail. An `awaiting_payment` row has an ink-outline **"Ingatkan via WA"** (AC-25); a
   `needs_review` row has no action until F-006 adds Konfirmasi / Tolak.
-- [ ] **AC-8 Perlu tindakan selection.** The section lists `needs_review` bookings (oldest status change first), then
+- [x] **AC-8 Perlu tindakan selection.** The section lists `needs_review` bookings (oldest status change first), then
   `awaiting_payment` bookings with an **active** hold (soonest `hold_expires_at` first), at most 5. The header reads
   "Perlu tindakan · n pembayaran" with the full count and a "Semua" link to `/pesanan?status=perlu_tindakan`. An
   `awaiting_payment` booking whose hold has expired but has not been released yet (scheduler late) is **not** listed and
   not counted.
-- [ ] **AC-9 Perlu tindakan empty.** Given nothing needs action, then the section shows "Semua beres. Tidak ada
+- [x] **AC-9 Perlu tindakan empty.** Given nothing needs action, then the section shows "Semua beres. Tidak ada
   pembayaran yang perlu ditindak." and no "Semua" link.
-- [ ] **AC-10 Pesanan terbaru.** The section lists the 5 most recently created bookings in any status: customer name ·
+- [x] **AC-10 Pesanan terbaru.** The section lists the 5 most recently created bookings in any status: customer name ·
   trip name · departure start date · "n org", the status pill (cancelled bookings show "– Dibatalkan", never a bare
   grey word), and the creation time: "09.12" today, "Kemarin", or the date ("14 Okt"). Each row links to the detail. A
   "Semua pesanan" link goes to `/pesanan`. Empty: "Belum ada pesanan. Bagikan link booking Anda supaya pelanggan bisa
   memesan." (the link card is on the same page).
-- [ ] **AC-11 Keberangkatan terdekat.** The section lists the next 3 departures of the seller's trips (any trip
+- [x] **AC-11 Keberangkatan terdekat.** The section lists the next 3 departures of the seller's trips (any trip
   status, any departure state) whose start date is today or later, nearest first (start date, then trip name). Each
   row: trip name · date ("Karimunjawa 3H2M Open Trip · 24 Okt"), the seat bar and its summary (AC-12), the departure
   state pill when it is not Buka (Tutup ○, Penuh ◼ — F-003 AC-27), and **"Edit cepat"**. A "Semua keberangkatan" link
   goes to `/keberangkatan` (F-003). Empty: "Belum ada keberangkatan terjadwal." with a link "+ Tambah keberangkatan"
   to `/trip`.
-- [ ] **AC-12 Seat bar.** Given a departure with capacity 16, `paid` bookings for 12 participants, `awaiting_payment`
+- [x] **AC-12 Seat bar.** Given a departure with capacity 16, `paid` bookings for 12 participants, `awaiting_payment`
   and `needs_review` bookings for 2, and an open deadline of 21 Okt 23.59, then the bar has three segments in
   proportion — **lunas** 12 (Lunas tint/deep), **ditahan** 2 (Menunggu pembayaran tint/deep), **kosong** 2 (Surface
   with a border) — with a legend "Lunas · Ditahan · Kosong" (each with its glyph) once per section, and the text
@@ -137,77 +137,77 @@ F-005 AC-23 invariant still holds.
   full one), "· tutup …" appears only while the departure is open and before its deadline, and lunas + ditahan always
   equals the departure's `seats_taken` (a test asserts it). The bar itself is `aria-hidden`; the text is what screen
   readers get. Colour is never the only signal (the text is always shown).
-- [ ] **AC-13 Edit cepat.** Given a row in Keberangkatan terdekat, when the seller taps "Edit cepat", then F-003's
+- [x] **AC-13 Edit cepat.** Given a row in Keberangkatan terdekat, when the seller taps "Edit cepat", then F-003's
   quick-edit sheet (AC-31–AC-35 there: Harga / orang, Total kursi, Buka / Tutup pemesanan, gold "Simpan") opens for
   that departure — the sheet's "Simpan" is the screen's gold button while the sheet is open — and after saving the
   seller stays on Hari ini with F-003's toast and the row updated. All F-003 rules apply unchanged (capacity never below
   seats taken, concurrency-safe).
-- [ ] **AC-14 Link card.** The card "Link booking Anda" shows `rakyt.id/<slug>` (the configured public host) with an
+- [x] **AC-14 Link card.** The card "Link booking Anda" shows `rakyt.id/<slug>` (the configured public host) with an
   ink-outline **"Salin link"** (copies the full URL, then "Link disalin") and an ink-outline **"↗ Bagikan ke WA / IG"**
   (native share sheet; without Web Share it copies and shows "Link disalin") — the same behaviour as F-001 D5, reusing
   its component, but not gold here (AC-5). A third link "Lihat halaman" opens the seller page in a new tab.
-- [ ] **AC-15 Bounded queries.** Hari ini runs a fixed number of queries whatever the number of bookings and
+- [x] **AC-15 Bounded queries.** Hari ini runs a fixed number of queries whatever the number of bookings and
   departures (no N+1): a test with 3 and with 30 bookings asserts the same query count.
 
 ### C. Booking list `/pesanan`
 
-- [ ] **AC-16 Rows.** The list shows the seller's bookings, newest first (`created_at` desc, then id), 20 per page with
+- [x] **AC-16 Rows.** The list shows the seller's bookings, newest first (`created_at` desc, then id), 20 per page with
   "Berikutnya" / "Sebelumnya". Each row: customer name, the status pill, reference, trip name · departure date range
   ("24–26 Okt"), "n org", total, and creation time (AC-10 wording). The whole row (≥ 44 px) links to the detail.
-- [ ] **AC-17 Search.** One field "Cari nama, nomor WA, atau kode pesanan" (`?cari=`) matches, case-insensitively:
+- [x] **AC-17 Search.** One field "Cari nama, nomor WA, atau kode pesanan" (`?cari=`) matches, case-insensitively:
   part of the customer name ("rina" finds "Rina Wulandari"); a phone number in any format F-005 accepts, or at least 4
   of its trailing digits ("0812 3456 7890", "+62 812-3456-7890" and "7890" find `+6281234567890`); or a reference,
   whole or in part ("rkb-brm-1024-0142", "0142"). Leading/trailing spaces are ignored; `%` and `_` are matched as text,
   not as wildcards. Fewer than 2 characters → the search is ignored.
-- [ ] **AC-18 Filters.** Filters: **Status** — Semua, Perlu tindakan (`perlu_tindakan`, AC-8's set), Menunggu
+- [x] **AC-18 Filters.** Filters: **Status** — Semua, Perlu tindakan (`perlu_tindakan`, AC-8's set), Menunggu
   pembayaran, Perlu dicek, Lunas, Ditolak, Dibatalkan (`completed` is not offered, Q5); **Trip** — the seller's trips
   by name; **Tanggal berangkat** — from / to (inclusive, local dates, compared with the departure start date); and
   **Keberangkatan** (`?keberangkatan=<departure public_id>`, set by links from F-003's departure cards; shown as a
   removable chip "Karimunjawa · 24 Okt"). Filters combine with AND and with the search.
-- [ ] **AC-19 Filters in the URL.** Every search and filter lives in the query string (`cari`, `status`, `trip`, `dari`,
+- [x] **AC-19 Filters in the URL.** Every search and filter lives in the query string (`cari`, `status`, `trip`, `dari`,
   `sampai`, `keberangkatan`, `halaman`), so a reload, the back button, a shared bookmark and the detail page's "←"
   restore the same list. Changing a filter resets to page 1. "Hapus filter" clears all of them.
-- [ ] **AC-20 Invalid filters.** An unknown status, a malformed date, `dari` after `sampai`, or a trip / departure id
+- [x] **AC-20 Invalid filters.** An unknown status, a malformed date, `dari` after `sampai`, or a trip / departure id
   that is unknown or belongs to another seller is ignored (that filter is dropped and the list renders, 200) — never a
   500, and never a different response for another seller's id than for an unknown one.
-- [ ] **AC-21 Empty states.** No bookings at all: "Belum ada pesanan." with the link card's Salin / Bagikan. Filters or
+- [x] **AC-21 Empty states.** No bookings at all: "Belum ada pesanan." with the link card's Salin / Bagikan. Filters or
   search with no result: "Tidak ada pesanan yang cocok." with "Hapus filter".
-- [ ] **AC-22 Phone layout.** At 360 px: the search field is on top, then a "Filter" button showing the number of
+- [x] **AC-22 Phone layout.** At 360 px: the search field is on top, then a "Filter" button showing the number of
   active filters ("Filter (2)") that opens a bottom sheet with the filters and an ink "Terapkan"; active filters show as
   removable chips under the search. On desktop the filters are inline above the list.
 
 ### D. Booking detail `/pesanan/{public_id}`
 
-- [ ] **AC-23 Content.** Given a booking, the detail shows: "←" back to the list (keeping its filters, AC-19); the
+- [x] **AC-23 Content.** Given a booking, the detail shows: "←" back to the list (keeping its filters, AC-19); the
   reference in large type and the status pill; "Dibuat Jum 16 Okt 09.12"; for `awaiting_payment` with an active hold
   "Kursi ditahan s.d. 16.40" (AC-7 wording); for `cancelled` the reason — "Waktu pembayaran habis, kursi dilepas
   otomatis." (`hold_expired`) or "Dibatalkan oleh Anda." (`seller`); **Pemesan**: Nama, Nomor WhatsApp
   (formatted "+62 812-3456-7890"), Catatan (as plain text, line breaks kept, or "—"); **Trip**: trip name (link to
   the trip editor), date line and meeting point/time as on the customer page; **Pembayaran**: "2 peserta ×
   Rp1.250.000" and "Total Rp2.500.000" from the booking's own `unit_price` snapshot (never the current price).
-- [ ] **AC-24 Customer link.** The detail has "Salin link pesanan pelanggan", which copies the customer's booking page
+- [x] **AC-24 Customer link.** The detail has "Salin link pesanan pelanggan", which copies the customer's booking page
   URL `https://rakyt.id/<slug>/pesanan/<token>` (from the encrypted token copy, ADR-0027 §2) and shows "Link disalin".
   The token is in this page's props only — never in the list, Hari ini, logs or audit events — and the page sends
   `Cache-Control: no-store, private`.
-- [ ] **AC-25 WhatsApp actions.** "Chat WhatsApp" (every status) opens `https://wa.me/<customer digits>` with no text.
+- [x] **AC-25 WhatsApp actions.** "Chat WhatsApp" (every status) opens `https://wa.me/<customer digits>` with no text.
   "Ingatkan via WA" (only `awaiting_payment` with an active hold; also on Perlu tindakan rows) opens
   `https://wa.me/<customer digits>?text=…` with `lang/id/bookings.php → whatsapp.reminder`, URL-encoded: "Halo :name,
   pesanan :reference untuk :trip tanggal :date (:n orang) menunggu pembayaran :total. Kursi ditahan sampai :time.
   Detail pesanan: :url" — `:url` is the customer link (AC-24). Both open in a new tab/app with
   `rel="noopener noreferrer"`. Nothing is sent by Rakyt and nothing is recorded (F-008 later moves the template).
-- [ ] **AC-26 Not found.** An unknown or malformed `public_id`, the numeric id, the reference, or the access token in
+- [x] **AC-26 Not found.** An unknown or malformed `public_id`, the numeric id, the reference, or the access token in
   the URL → 404 (the seller app's 404 page).
 
 ### E. Seller cancellation
 
-- [ ] **AC-27 Offer.** Given a booking in a holding status (`awaiting_payment` — active hold or not —,
+- [x] **AC-27 Offer.** Given a booking in a holding status (`awaiting_payment` — active hold or not —,
   `needs_review` or `paid`), the detail shows an ink-outline, destructive-styled (Ditolak deep text) **"Batalkan
   pesanan"**. For any other status it is not shown.
-- [ ] **AC-28 Confirm.** Tapping it opens a confirmation (bottom sheet on a phone, dialog on desktop) titled
+- [x] **AC-28 Confirm.** Tapping it opens a confirmation (bottom sheet on a phone, dialog on desktop) titled
   "Batalkan pesanan RKB-…?" with: "n kursi di keberangkatan 24 Okt akan dibuka lagi." and "Pelanggan tidak diberi tahu
   otomatis. Kabari lewat WhatsApp." — and for `paid` also "Pesanan ini sudah lunas. Pengembalian dana diurus langsung
   antara Anda dan pelanggan." (ADR-0003). Buttons: "Batalkan pesanan" (Ditolak-styled, not gold) and "Kembali".
-- [ ] **AC-29 Cancel.** Given the seller confirms, then in **one** transaction, locking the departure row then the
+- [x] **AC-29 Cancel.** Given the seller confirms, then in **one** transaction, locking the departure row then the
   booking row (ADR-0026 §3; no organization lock — no reference is taken), the booking is re-read; if it is still in a
   holding status it becomes `cancelled` with `cancel_reason = seller`, the departure's `seats_taken` drops by its
   participants, and one `booking.cancelled` audit event is written (actor: the seller user; `before`/`after`: `status`,
@@ -215,45 +215,48 @@ F-005 AC-23 invariant still holds.
   ink-outline "Kabari pelanggan via WA" (opens `whatsapp.cancelled`: "Halo :name, pesanan :reference untuk :trip
   tanggal :date dibatalkan. Hubungi kami jika ada pertanyaan."). The change goes through `BookingService`, never a
   direct `seats_taken` update. `hold_expires_at` is unchanged.
-- [ ] **AC-30 Already changed.** Given the booking was released by the expiry job, or cancelled in another tab, between
+- [x] **AC-30 Already changed.** Given the booking was released by the expiry job, or cancelled in another tab, between
   page load and confirm, then nothing changes, no event is written, seats are returned at most once, and the detail
   shows its current status with "Pesanan ini sudah tidak aktif." (200 after redirect, not an error page). Posting
   cancel twice gives the same end state.
-- [ ] **AC-31 Cancel vs expiry, concurrently.** Given an `awaiting_payment` booking whose hold has just expired, when
+- [x] **AC-31 Cancel vs expiry, concurrently.** Given an `awaiting_payment` booking whose hold has just expired, when
   the seller's cancel and `bookings:release-expired-holds` run at the same moment from two database connections, then
   exactly one of them changes the booking (either `seller` or `hold_expired`), one audit event is written, and
   `seats_taken` drops once (F-005 AC-23 invariant holds).
-- [ ] **AC-32 Seats back on sale.** Given a full departure, when the seller cancels a 2-participant booking on it, then
+- [x] **AC-32 Seats back on sale.** Given a full departure, when the seller cancels a 2-participant booking on it, then
   the departure shows 2 seats left on Hari ini and its public trip page, and the next customer can book them (F-005
   AC-12). A departure that was closed stays closed (cancelling never reopens it).
-- [ ] **AC-33 Departure in the past.** Cancelling is allowed whatever the departure date (a seller cleaning up a
+- [x] **AC-33 Departure in the past.** Cancelling is allowed whatever the departure date (a seller cleaning up a
   no-show); seats are returned the same way.
 
 ### F. Tenancy, security, design
 
-- [ ] **AC-34 Cross-tenant.** Given sellers A and B (`InteractsWithTenants`, F-009 A9): A's Hari ini, nav counts,
+- [x] **AC-34 Cross-tenant.** Given sellers A and B (`InteractsWithTenants`, F-009 A9): A's Hari ini, nav counts,
   Perlu tindakan, Pesanan terbaru, Keberangkatan terdekat and booking list never include B's bookings or departures;
   searching A's list for B's customer name, phone or reference finds nothing; `GET /pesanan/<B's public_id>` → 404;
   `POST` cancel on B's booking → 404 with B's booking and `seats_taken` unchanged and no event; A's list with
   `trip=<B's trip id>` or `keberangkatan=<B's departure public_id>` behaves as an unknown id (AC-20). Policy:
   `BookingPolicy` (`view`, `cancel`) extends `OrganizationOwnedPolicy`; route binding is scoped to the current
   organization.
-- [ ] **AC-35 Guests and other roles.** A guest on any F-007 route is redirected to `/masuk`; a signed-in user without
+- [x] **AC-35 Guests and other roles.** A guest on any F-007 route is redirected to `/masuk`; a signed-in user without
   an organization goes to onboarding (F-001 E1); the platform admin has no seller session (ADR-0011) — nothing here is
   reachable from `/admin`.
-- [ ] **AC-36 Only listed fields leave the server.** Hari ini, list and detail props are built by explicit presenters
+- [x] **AC-36 Only listed fields leave the server.** Hari ini, list and detail props are built by explicit presenters
   (no model `toArray()`); tests assert the exact keys in Data & rules → *Props*, and that no numeric id,
   `organization_id`, `access_token_hash`, `submission_key` or another seller's data is present (the access token only on
   the detail, AC-24).
-- [ ] **AC-37 Rendering and logs.** Customer name and notes render as text (no `v-html`); HTML in them shows
+- [x] **AC-37 Rendering and logs.** Customer name and notes render as text (no `v-html`); HTML in them shows
   literally. List and detail send `Cache-Control: no-store, private`. Phone numbers in logs and error reports stay
   masked (F-009 A24); the search term `cari` (a name or phone) is redacted from logged URLs — add it to the URL
   parameters `App\Logging\RedactSensitiveData` redacts.
-- [ ] **AC-38 Phone width and design rules.** Hari ini, the list, its filter sheet and the detail work at 360 px without
+- [x] **AC-38 Phone width and design rules.** Hari ini, the list, its filter sheet and the detail work at 360 px without
   horizontal scroll; tap targets ≥ 44 px; text ≥ 12 px (11 px only for uppercase kickers); exactly one gold button per
   screen (AC-5, AC-13); every status carries its glyph; tints come from `--color-status-*-tint` tokens; all copy from
   `lang/id/*.php`. Loading states on Salin / Bagikan / cancel; a failed cancel keeps the sheet open with "Belum
   tersimpan. Periksa koneksi lalu coba lagi." *Device review with F-002/F-003/F-005's.*
+  *Verified 2026-10-19:* source rules in `DashboardDesignTest`; a browser check at a true 360 px viewport found no
+  horizontal overflow (`scrollWidth` = 360) on Hari ini, the list with its filter sheet, and the detail with its
+  cancel sheet. Not in CI; the real-device review is still to do with the other P0 screens.
 
 ## Data & rules
 
@@ -266,6 +269,7 @@ F-005 AC-23 invariant still holds.
 | `GET /pesanan` | `bookings.index` | List; query `cari`, `status`, `trip`, `dari`, `sampai`, `keberangkatan`, `halaman` |
 | `GET /pesanan/{booking:public_id}` | `bookings.show` | Detail; `no-store` |
 | `POST /pesanan/{booking:public_id}/batalkan` | `bookings.cancel` | Seller cancellation |
+| `GET /pesanan/{booking:public_id}/ingatkan` | `bookings.remind` | Hari ini's "Ingatkan via WA": 302 to WhatsApp with the customer link, so the token stays out of Hari ini's props (ADR-0029 §1) |
 
 `pesanan` is a reserved slug, so `/pesanan/…` never collides with the public `/{slug}/{trip}` fallback routes, and the
 customer page `/{slug}/pesanan/{token}` has two segments before the token. The `seller` shared prop
@@ -321,6 +325,11 @@ the F-001 time-zone change.
 - **Detail:** `booking` (booking item + `customer_phone`, `notes`, `unit_price`, `cancel_reason`,
   `customer_url`, `can_cancel`), `trip` (`name`, `edit_url`), `meeting` (`point`, `time`), `whatsapp` (`chat_url`,
   `reminder_url`), `context` (`now` ISO UTC, `timezone`), `copy`, `urls` (`back`, `cancel`).
+- **Added while building (ADR-0029 §6):** Hari ini `context` (F-003's quick-edit context + `now`) and `urls.trips`
+  (the empty state's "+ Tambah keberangkatan"); booking items' `whatsapp_reminder_url` is the `bookings.remind` route;
+  list `has_any` (AC-21's two empty states) and `context` (`now`, `timezone`, `today`); the detail's `booking` is the
+  list item (no `whatsapp_reminder_url`, see `whatsapp.reminder_url`), `whatsapp.cancelled_url` (AC-29, set while the
+  seller's cancellation stands) and `context.today`. Trip and departure ids in props and filters are `public_id`s.
 
 ### Edge cases covered
 
@@ -396,6 +405,29 @@ All decided 2026-10-19 (Rengga: "all as recommended").
   seller's WhatsApp. — Rengga
 - [x] **Q8 Support/admin view for Rakyt staff** (blueprint week 4) — separate feature? Yes: F-010–F-015. — Rengga
 
+## Build notes (2026-10-19)
+
+Built test-first on `claude/f-007-seller-dashboard-654ef1`; every AC above has a passing test (AC-38's real-device
+review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spec left open are in
+[ADR-0029](../decisions/0029-seller-dashboard-implementation-choices.md) (proposed).
+
+- **Code:** `App\Dashboard\DashboardPresenter` (Hari ini), `App\Bookings\BookingFilters` (search/filters, AC-17–AC-20),
+  `App\Bookings\SellerBookingPresenter` (items, detail, WhatsApp URLs), `BookingService::cancelBySeller()` (departure →
+  booking lock, `booking.cancelled` audit), `Booking::scopeActionNeeded()`, `BookingPolicy::viewAny/cancel`,
+  `HandleInertiaRequests::sellerNav()`; controllers `Dashboard\DashboardController`, `Bookings\SellerBookingController`;
+  Vue `pages/Dashboard/Today`, `pages/Bookings/{Index,Show}`, components `BookingRow`, `BookingStatusPill`, `SeatBar`,
+  `LinkCard`; `resources/js/lib/dashboard.js`; copy in `lang/id/dashboard.php` and `lang/id/bookings.php`.
+- **Tests:** `tests/Feature/Dashboard/` — `NavigationTest` (AC-1–AC-4), `HariIniTest` (AC-5–AC-15),
+  `BookingListTest` (AC-16–AC-22), `BookingDetailTest` (AC-23–AC-26), `CancelBookingTest` (AC-27–AC-30, AC-32,
+  AC-33), `CancelConcurrencyTest` (AC-31, two connections, `tests/Support/Concurrency/cancel_booking.php`),
+  `DashboardTenancyTest` (AC-34–AC-37), `DashboardDesignTest` (AC-38); `tests/js/dashboard.test.js`.
+- `/dashboard` now redirects to `/hari-ini`; F-003's `SellerPagesTest` and F-001's `ResumeTest` were updated for the
+  six-item nav and the new landing.
+- A user signed in without an organization gets **404** on `/pesanan/{id}` (and its cancel/remind), because the
+  tenant-scoped route binding runs before the `organization` middleware's onboarding redirect; `/hari-ini` and
+  `/pesanan` redirect to onboarding as AC-35 says. Nothing is exposed either way (ADR-0029, Consequences).
+- The audit catalogue gains `booking.cancelled` (actor `user`); F-009's audited-actions table lists it.
+
 ## Changelog
 
 - 2026-10-17 — created
@@ -406,3 +438,5 @@ All decided 2026-10-19 (Rengga: "all as recommended").
   not built (Q5). Mobile layout, nav counts and plan badge given defaults (Q1–Q3); Q4–Q7 added with defaults.
   Status → `ready`
 - 2026-10-19 — Q1–Q7 decided as recommended (Rengga)
+- 2026-10-19 — Builder: AC-1…AC-38 built and covered by tests; ADR-0029 (proposed) for the reminder route, filter
+  round-trip, search and extra props. Status → `done` (AC-38 device review pending with the other P0 screens)
