@@ -267,7 +267,7 @@ models. `PublicTenancyTest::test_ac_8_…` asserts exactly these keys.
 - **Seller page props:** `title`, `organization`, `trips[]`, `context` (`today`), `copy` (`lang/id/public.php`),
   `calendar` (month names), `urls` (`home`), plus Inertia's `errors`.
 - **Organization (seller page):** `name`, `slug`, `city`, `bio`, `logo_url`, `whatsapp_url` (built server-side),
-  `share_url`. On the trip page only `name` and `slug`.
+  `share_url`. On the trip page only `name`, `slug` and `whatsapp_url` (F-008 AC-A1; null for an invalid number).
 - **Trip card:** `slug`, `name`, `url`, `cover` (`src`, `srcset`, or null), `from_price`, `state`
   (`bookable | request_date | no_date`), `next_start_date`, `seats_left` (both null unless `bookable`).
 - **Trip page props:** `title`, `organization`, `trip`, `departures[]`, `context` (`today`, `now_local` — the
@@ -278,8 +278,8 @@ models. `PublicTenancyTest::test_ac_8_…` asserts exactly these keys.
   `meeting_point`, `meeting_time`, `map_url` (http/https only, else null), `itinerary[]` (`day`, `text`; filled days
   only), `terms`.
 - **Departure:** `public_id`, `start_date`, `end_date`, `state` (`bookable | full | closed`); for bookable rows also
-  `seats_left`, `capacity`, `price` (effective), `deadline` (local `YYYY-MM-DD HH:mm`) and `deadline_preset` — all
-  five null on full and closed rows.
+  `seats_left`, `capacity`, `price` (effective), `deadline` (local `YYYY-MM-DD HH:mm`) and `deadline_preset`,
+  plus `whatsapp_url` (F-008 AC-A4) — all six null on full and closed rows.
 - **Head tags** (server-rendered, AC-29/AC-30): title, `og:title`, `og:description`, `og:image`, `og:url`/canonical,
   plus the fixed `og:type`, `og:site_name`, `og:locale`.
 
@@ -297,7 +297,7 @@ models. `PublicTenancyTest::test_ac_8_…` asserts exactly these keys.
   between viewing and booking — F-005 rejects that booking with a clear message.
 - **Share URL** `https://{rakyt.public_host}/{slug}`, the same builder F-001 D5 uses.
 - **WhatsApp link:** `https://wa.me/{E.164 digits}?text={rawurlencode(text)}`; F-008 later moves all templates to one
-  place — this one text lives in `lang/id/public.php` until then.
+  place — this one text lives in `lang/id/public.php` until then. Built by F-008's shared `WhatsAppLink` (AC-A9).
 - **Queries:** the seller page runs a bounded number of queries regardless of trip count (eager-load cover photos and
   bookable-departure aggregates); a test asserts no N+1 (e.g. query count with 1 vs 10 trips is equal).
 
@@ -380,3 +380,5 @@ All decided by Rengga on 2026-10-19: Q3 rejected (page live immediately), Q5 ref
   link-preview hit; ADR-0025 amendment); Data & rules → Routes, Tenancy and Public fields brought in line with the
   code (fallback routes, no implicit trip binding, the exact prop keys)
 - 2026-10-19 — Rengga: ADR-0025 amendment accepted (public pages run without a session)
+- 2026-10-19 — Planner: trip page gains `organization.whatsapp_url` and per-departure `whatsapp_url` for F-008
+  section A (Tanya via WhatsApp); Public fields and WhatsApp rule updated
