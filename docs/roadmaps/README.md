@@ -37,7 +37,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
 | Platform admin inside the same app, gated, no impersonation; admin login = email + password + TOTP | Accept | [ADR-0011](../decisions/0011-platform-admin-access.md) · F-010–F-015 | Before admin build (wk 4) |
-| Customer booking page without a session (amends ADR-0027 §3), booking-code insert retry, hold release on opening the form | Accept | [ADR-0028](../decisions/0028-customer-booking-implementation-choices.md) · F-005 | Before F-005 merges |
+| F-005 implementation choices: encrypted session payloads (booking page keeps its session, ADR-0027 §3), booking-code insert retry, hold release on opening the form, submission keys bound to their departure | Accept | [ADR-0028](../decisions/0028-customer-booking-implementation-choices.md) · F-005 | Before F-005 merges |
 
 ### Week 1 — choices outside the specs
 

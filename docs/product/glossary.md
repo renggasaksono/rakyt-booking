@@ -72,7 +72,7 @@ Source of UI wording: [design mockup](../design/README.md).
 | `paid` | Lunas | ✓ | Paid and confirmed |
 | `rejected` | Ditolak | ✕ | Proof rejected |
 | `cancelled` | Dibatalkan | – | Cancelled or hold expired (`cancel_reason`: `hold_expired`, later `seller`) |
-| `completed` | Selesai | | Trip has happened |
+| `completed` | Selesai | ☑ | Trip has happened |
 
 > The blueprint names booking statuses *pending, confirmed, cancelled, completed*; the mockup refines payment states.
 > Decided 2026-10-19 ([F-005 Q3](../features/F-005-customer-booking-and-seat-hold.md#open-questions),

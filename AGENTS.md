@@ -95,7 +95,9 @@ checkout made before the rename may still show `Pages/`: fix it once with `mv re
   using the trait check `seats_taken` = Σ participants of holding bookings after every test (F-005 AC-23).
 - Every organization gets a `booking_code` from its slug when it is inserted (ADR-0028 §2). Create test sellers with
   their slug (`createTenant(['slug' => …])`, `seller()`), not by updating it afterwards; raw `organizations` inserts
-  need a `booking_code`. JS UI logic lives in `resources/js/lib`
+  need a `booking_code`.
+- Session payloads are encrypted (`SESSION_ENCRYPT=true`): customer token pages run the session like the booking form,
+  and Laravel stores each visited URL in it. JS UI logic lives in `resources/js/lib`
   with Vitest tests in `tests/js` (`npm test`).
 - In tests the current organization stays on the last request's user: create seller rows inside `asTenant()`, and
   assert with `assertDatabase*` or `acrossOrganizations()`.

@@ -47,9 +47,10 @@ progress steps, "Unggah bukti transfer" (the page's gold CTA) under the same pre
 ADR-0006) and moves the booking to `needs_review`, which the F-005 expiry job never releases. Q1 is decided (one `bookings.status` column,
 ADR-0026 §1–2); this feature still decides whether `rejected` holds seats, re-upload and
 the clock (ADR-0006 "still open"), and how the seller is told about new evidence (F-005 Q8).
-*Built 2026-10-19:* the booking page `GET /{slug}/pesanan/{token}` runs **without a session** (ADR-0028 §1, so the
-token never lands in the `sessions` table); give the upload POST the session/CSRF group like F-005's form. Use
+*Built 2026-10-19:* the booking page `GET /{slug}/pesanan/{token}` runs the session (encrypted payloads, ADR-0028 §1),
+so it sets the `XSRF-TOKEN` cookie and shows flashed messages; register the upload POST in the same route group. Use
 `BookingService` for every status change that moves seats, and `Booking::holdIsActive()` for the upload check.
+`bookings.total_amount` is `bigint`; give `payment_records` amounts the same.
 
 ## Changelog
 
@@ -59,3 +60,4 @@ token never lands in the `sessions` table); give the upload POST the session/CSR
 - 2026-10-19 — F-005 hand-offs noted: evidence upload, `needs_review` transition and `holdIsActive` rule; ADR-0026 proposed for Q1
 - 2026-10-19 — Q1 decided: one booking status column (F-005 Q3, ADR-0026 §1–2)
 - 2026-10-19 — F-005 built: booking page without a session (ADR-0028 §1) noted for the upload route
+- 2026-10-19 — F-005 review: booking page keeps the session (encrypted), note updated

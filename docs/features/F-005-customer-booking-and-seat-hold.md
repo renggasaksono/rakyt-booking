@@ -128,7 +128,8 @@ Test names: `test_ac_<n>_…`.
   becomes n; when seats left = 0 it shows AC-3's state with "Penuh".
 - [x] **AC-15 Bookability re-checked under the lock.** Given the departure was closed, its deadline passed, its trip
   was unpublished or switched to `request_date`, or it started, after the form loaded, then the submit creates
-  nothing and shows AC-3's state. The deadline is exact: with a deadline of 23.59.59, a submit at 23.59.30 succeeds and
+  nothing and shows AC-3's state — except a trip unpublished or switched to `request_date` before the submit reaches
+  the lock, which is AC-2's 404 (the form URL is a 404 then too; ADR-0028 §5). The deadline is exact: with a deadline of 23.59.59, a submit at 23.59.30 succeeds and
   one at 00.00.00 is refused — also with the scheduler stopped and the departure still `open` (F-003 AC-36, F-009 B5).
 - [x] **AC-16 Idempotent submit.** Given the same submission key is posted twice (double tap, retry after a timeout),
   then exactly one booking exists, seats are taken once, one audit event is written, and both responses redirect to the
@@ -249,7 +250,7 @@ Test names: `test_ac_<n>_…`.
 |---|---|---|
 | `GET /{organization}/{trip}/pesan?keberangkatan=` | `public.booking.create` | `web` with session + CSRF, **without** `ResolveCurrentOrganization` and `AuthenticateSession`; `public-organization`; `throttle:public-page` |
 | `POST /{organization}/{trip}/pesan` | `public.booking.store` | same, `throttle:public-booking` instead of `public-page` |
-| `GET /{organization}/pesanan/{token}` | `public.booking.show` | same as the form, plus `no-referrer` |
+| `GET /{organization}/pesanan/{token}` | `public.booking.show` | same as the form, plus `no-referrer`; session payloads encrypted (`SESSION_ENCRYPT`, ADR-0028 §1) |
 
 - Registered so they never shadow an app route (fallback routes, ADR-0025 §1). The organization comes from the slug
   (`ResolvePublicOrganization`, which also enforces `PublicVisibility::organizationIsPublic` — F-014's hook); the trip
@@ -275,7 +276,7 @@ Test names: `test_ac_<n>_…`.
 | `participants` | smallint | `CHECK (participants >= 1)` |
 | `notes` | text, nullable | ≤ 500 chars (app) |
 | `unit_price` | integer | Snapshot; `CHECK BETWEEN 1000 AND 100000000` |
-| `total_amount` | integer | `CHECK (total_amount = participants * unit_price)` |
+| `total_amount` | bigint | `CHECK (total_amount = participants::bigint * unit_price)` (999 × Rp100.000.000 exceeds `integer`) |
 | `status` | string(20) | `CHECK IN ('awaiting_payment','needs_review','paid','rejected','cancelled','completed')` |
 | `cancel_reason` | string(20), nullable | `CHECK ((status = 'cancelled') = (cancel_reason IS NOT NULL))`; values `hold_expired` now, `seller` later (F-007) |
 | `hold_expires_at` | timestamptz | `created_at + 120 min`, set once (AC-28) |
@@ -415,12 +416,13 @@ Built test-first on `claude/f-005-customer-booking-9edbd4`; every AC above has a
 review is still to do together with F-002/F-003's, as the AC says). Choices the spec left open are in
 [ADR-0028](../decisions/0028-customer-booking-implementation-choices.md) (proposed). Differences from the text above:
 
-- **Booking page without a session** (ADR-0028 §1, amends ADR-0027 §3): `GET /{slug}/pesanan/{token}` runs without
-  `StartSession`/CSRF, because a session stores each visited URL — token included — in the `sessions` table. The form
-  and its submit keep the session. F-006 must give its upload POST the session group.
-- **AC-15, trip unpublished or switched to `request_date` meanwhile:** the submit is AC-2's 404 (the form URL would 404
-  too), not the AC-3 state; nothing is written. A change landing between that check and the lock is caught by
-  `isBookable()` under the lock and shows the AC-3 state.
+- **Session payloads are encrypted** (ADR-0028 §1): a session stores each visited URL — the booking page's token
+  included — so `SESSION_ENCRYPT` defaults to `true`. The booking page runs the session like the form (ADR-0027 §3),
+  which gives F-006's upload its CSRF cookie and flashed messages.
+- **`total_amount` is `bigint`** (review fix): 22 × Rp100.000.000 already exceeds `integer`.
+- **Submission keys** replay only for their own departure; the clock is read under the departure lock (ADR-0028 §3).
+- **AC-15, trip unpublished or switched to `request_date` meanwhile:** the submit is AC-2's 404 (AC-15 reworded); a
+  change landing between that check and the lock is caught by `isBookable()` under the lock and shows the AC-3 state.
 - **Opening the form also releases the departure's expired holds** (ADR-0028 §4), so a late scheduler does not show
   "Penuh" for free seats (AC-26).
 - **Lock order:** the organization row is locked *before* the submission-key check (ADR-0028 §3), so two same-key
@@ -496,3 +498,4 @@ booking route; **R20** is AC-40; **R17** applies only if a queued job is added. 
 - 2026-10-19 — ADR-0026 accepted as a whole; Q9 decided
 - 2026-10-19 — ADR-0027 accepted as a whole; Q4, Q5 decided
 - 2026-10-19 — Built (builder): AC-1…AC-42 and AC-17b covered by tests; F-009 R1 and R20 fixed; real `DepartureBookings` bound; F-003 AC-39 on the real booking path; ADR-0028 proposed (booking page without a session, booking-code insert, form-time hold release). Status → `done`
+- 2026-10-19 — Review fixes: `total_amount` bigint (overflow above Rp2,1 miliar), booking page keeps the session with encrypted session payloads (Rengga's decision; ADR-0028 §1 revised), submission keys bound to their departure, clock read under the lock, two-connection same-key test, AC-15 reworded

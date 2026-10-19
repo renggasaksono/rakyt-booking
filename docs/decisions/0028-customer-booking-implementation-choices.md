@@ -9,8 +9,9 @@ related: [F-005, F-003, F-006, F-009, ADR-0006, ADR-0021, ADR-0025, ADR-0026, AD
 
 # 0028. Implementation choices for customer booking and seat hold (F-005)
 
-*Proposed by the builder agent on 2026-10-19 while building F-005. §1 amends ADR-0027 §3 (accepted), so the whole
-record waits for Rengga; the other points are routine technical calls within ADR-0006, ADR-0026 and ADR-0027.*
+*Proposed by the builder agent on 2026-10-19 while building F-005; §1 revised the same day after review (Rengga: keep
+the session, encrypt it). Waits for Rengga's acceptance; the points are technical calls within ADR-0006, ADR-0026 and
+ADR-0027.*
 
 ## Context
 
@@ -20,11 +21,13 @@ model; building it meant several smaller choices that the spec leaves open or wo
 
 ## Decision
 
-1. **The customer booking page (`GET /{slug}/pesanan/{token}`) runs without a session**, like F-002's pages. With a
-   session, Laravel's `StartSession` stores every GET URL in the session payload (`_previous.url`), so each visit
-   would write the access token into the `sessions` table, readable without `APP_KEY`. The page is read-only and needs
-   nothing from a session (Inertia still sends an empty `errors` prop). The form and its submit keep the session, CSRF
-   and shared errors as ADR-0027 §3 says. F-006's evidence upload (a POST under the same prefix) runs the session.
+1. **Session payloads are encrypted, and the customer booking page runs the session** as ADR-0027 §3 says (confirmed,
+   not amended). Laravel's `StartSession` stores every GET URL in the session (`_previous.url`), so a booking-page
+   visit puts the access token in the `sessions` row; `SESSION_ENCRYPT` now defaults to `true` (config and
+   `.env.example`), so that row is ciphertext under `APP_KEY` — the same exposure as the `encrypted` `access_token`
+   column. Running the session matters for F-006: it gives the page the `XSRF-TOKEN` cookie the evidence-upload POST
+   needs when the link is opened fresh (e.g. in WhatsApp's in-app browser), and flashed upload errors and toasts reach
+   the page. *(Changed 2026-10-19 after review, Rengga's decision: the first draft ran this page without a session.)*
 2. **Booking codes are assigned in `Organization::performInsert()`.** Candidates come from the slug in a fixed order
    (stem `BRM`, other letter combinations, `BRM2`…`BRM9`, then random four-letter codes; letters padded with vowels
    then `X` for short slugs; never `RKB`). Each insert runs in a savepoint; a unique violation on
@@ -33,8 +36,10 @@ model; building it meant several smaller choices that the spec leaves open or wo
    `booking_code` and `last_booking_number` are guarded; a set code can never change.
 3. **The organization row is locked first and the submission key checked under that lock.** Same-key double submits
    from two connections therefore serialise and the second returns the first booking; the
-   `UNIQUE (organization_id, submission_key)` index stays as a backstop (AC-16). Lock order is unchanged
-   (organization → departure → bookings, ADR-0026 §3).
+   `UNIQUE (organization_id, submission_key)` index stays as a backstop (AC-16). A key is replayed only for the
+   departure it was used on (otherwise the submit is refused), since replaying it hands out that booking's link. The
+   clock is read after the departure lock, so the deadline check (AC-15) and `hold_expires_at` use the moment the
+   submit holds the locks. Lock order is unchanged (organization → departure → bookings, ADR-0026 §3).
 4. **Opening the booking form also releases the departure's expired holds** (same service, status change, seat return
    and `booking.hold_expired` event as the job), before it counts seats. ADR-0026 §7 releases inline on submit; without
    this a departure filled by expired holds would show "Penuh" and offer no form while the scheduler is late. F-002's
@@ -58,16 +63,20 @@ model; building it meant several smaller choices that the spec leaves open or wo
 
 ## Consequences
 
-- Good: no token in session storage or logs; one booking-code rule for every way an organization is created; a late
+- Good: no readable token in session storage or logs; F-006's upload works from a freshly opened link; one booking-code rule for every way an organization is created; a late
   scheduler never turns a customer away on the form or on submit.
-- Bad / costs: a GET of the form can write (only when expired holds exist) and so takes the departure lock briefly; a
-  failed booking-code insert burns an organization id (sequence gap); F-006 must remember that the booking page has no
-  session when it adds a POST under `/pesanan/{token}` (give that route the session group).
+- Bad / costs: switching on session encryption invalidates existing unencrypted sessions once (everyone signs in again
+  — fine before launch; set `SESSION_ENCRYPT=true` in each local `.env`); a session row per customer who opens a
+  booking page; a GET of the form can write (only when expired holds exist) and so takes the departure lock briefly; a
+  failed booking-code insert burns an organization id (sequence gap). `bookings.total_amount` is `bigint` (999 seats ×
+  Rp100.000.000 exceeds `integer`); F-006's payment amounts need the same.
 - Follow-ups: F-009 B3 adds the scheduler heartbeat that should also cover `bookings:release-expired-holds`; F-006 uses
   `Booking::holdIsActive()` for uploads.
 
 ## Alternatives considered
 
+- **No session on the booking page** (the first draft) — keeps the token out of `sessions`, but leaves F-006's upload
+  without a CSRF cookie (419 on a fresh link) and without flashed messages.
 - **Session on the booking page, URL not stored** — Laravel has no switch for `_previous.url`; a custom `StartSession`
   subclass would fork framework code for one route.
 - **Prior "is the code free?" query before insert** — still needs the retry for races; one path is simpler.
