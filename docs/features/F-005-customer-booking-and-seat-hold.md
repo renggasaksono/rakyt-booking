@@ -1,11 +1,11 @@
 ---
 id: F-005
 title: Customer booking & seat hold
-status: ready
+status: done
 priority: P0
 roadmap: mvp-weeks-2-3
 mockups: [1b, 1c, 1d, 2e, 3e]
-decisions: ["0003", "0004", "0005", "0006", "0007", "0008", "0013", "0014", "0017", "0021", "0025", "0026", "0027"]
+decisions: ["0003", "0004", "0005", "0006", "0007", "0008", "0013", "0014", "0017", "0021", "0025", "0026", "0027", "0028"]
 updated: 2026-10-19
 ---
 
@@ -72,171 +72,171 @@ Test names: `test_ac_<n>_…`.
 
 ### A. Booking form (1c)
 
-- [ ] **AC-1 Form for a bookable departure.** Given a published `scheduled` trip `karimunjawa-3h2m` of `kencana` and a
+- [x] **AC-1 Form for a bookable departure.** Given a published `scheduled` trip `karimunjawa-3h2m` of `kencana` and a
   bookable departure with public id `X`, when anyone opens `/kencana/karimunjawa-3h2m/pesan?keberangkatan=X`, then the
   form renders (200) with: a back link "←" to the trip page, the kicker "Langkah 2 dari 3", the title "Data pemesan",
   the trip name, and the date line "Kam 24 – Sab 26 Okt" (one date for 1-day trips; year added when not the current
   year) followed by "· Pelabuhan Jepara 06.00" when the trip has a meeting point (and time).
-- [ ] **AC-2 Not found.** Given any of: unknown, reserved or malformed slug; a draft or unpublished trip; a
+- [x] **AC-2 Not found.** Given any of: unknown, reserved or malformed slug; a draft or unpublished trip; a
   `request_date` trip; a missing, malformed or unknown `keberangkatan`; a departure of another trip of the same seller;
   a departure of another seller — then the response is the same Bahasa 404 page as F-002 AC-3, for GET and POST, and
   nothing is written.
-- [ ] **AC-3 Departure no longer bookable.** Given a departure of this trip that exists but is not bookable now (full,
+- [x] **AC-3 Departure no longer bookable.** Given a departure of this trip that exists but is not bookable now (full,
   closed, past its deadline, or started), when the form URL is opened, then the page (200) shows the trip and date line,
   "Tanggal ini sudah tidak bisa dipesan." with the reason word ("Penuh" or "Ditutup"), no form, and the gold
   "Pilih tanggal lain →" linking to the trip page.
-- [ ] **AC-4 Fields.** The form has, in this order: **Nama lengkap** (`autocomplete="name"`); **Nomor WhatsApp** with a
+- [x] **AC-4 Fields.** The form has, in this order: **Nama lengkap** (`autocomplete="name"`); **Nomor WhatsApp** with a
   fixed "+62" prefix, `inputmode="tel"`, `autocomplete="tel-national"` and the helper "Konfirmasi & info keberangkatan
   dikirim ke sini."; **Jumlah peserta** stepper with the helper "Sisa n kursi"; **Catatan (opsional)** (multi-line,
   counter "n/500" once 400 characters are typed). Labels are visible text, not placeholders.
-- [ ] **AC-5 Participant stepper.** Starts at 1; "−" is disabled at 1 and "+" at the seats left when the page loaded;
+- [x] **AC-5 Participant stepper.** Starts at 1; "−" is disabled at 1 and "+" at the seats left when the page loaded;
   a typed value is clamped to 1…seats left; both buttons are ≥ 44 × 44 px and have Bahasa `aria-label`s.
-- [ ] **AC-6 Live total.** Below the fields the form shows "2 × Rp1.250.000" and the total "Rp2.500.000"
+- [x] **AC-6 Live total.** Below the fields the form shows "2 × Rp1.250.000" and the total "Rp2.500.000"
   (participants × the departure's effective price, integer rupiah, the F-003 formatter), updated on every stepper
   change without a request.
-- [ ] **AC-7 Hold policy before submit.** Directly above "Kirim pesanan" the form says "Kursi ditahan 2 jam sambil
+- [x] **AC-7 Hold policy before submit.** Directly above "Kirim pesanan" the form says "Kursi ditahan 2 jam sambil
   menunggu pembayaran. Lewat dari itu, kursi dilepas otomatis." The number of hours comes from the same constant the
   server uses (`config('rakyt.booking.hold_minutes')` = 120, ADR-0006; not settable per seller).
-- [ ] **AC-8 Privacy line.** Under the button: "Data Anda hanya diteruskan ke :name untuk mengurus pesanan ini." with a
+- [x] **AC-8 Privacy line.** Under the button: "Data Anda hanya diteruskan ke :name untuk mengurus pesanan ini." with a
   "Privasi" link to `/privasi` (Q13).
-- [ ] **AC-9 Submit button.** "Kirim pesanan" is the one gold button on the page; while sending it shows "Mengirim…",
+- [x] **AC-9 Submit button.** "Kirim pesanan" is the one gold button on the page; while sending it shows "Mengirim…",
   is disabled, and a second tap sends nothing. On a network failure the form keeps every value and shows "Belum
   terkirim. Periksa koneksi lalu coba lagi."; retrying reuses the same submission key (AC-16).
 
 ### B. Validation & creation
 
-- [ ] **AC-10 Validation.** Given a submit, then: Nama lengkap is required, trimmed, inner whitespace collapsed,
+- [x] **AC-10 Validation.** Given a submit, then: Nama lengkap is required, trimmed, inner whitespace collapsed,
   2–80 characters, no control characters ("Isi nama lengkap (2–80 huruf)."); Nomor WhatsApp is required and must
   normalise to an Indonesian mobile number `+628…` with 8–11 digits after "+628" ("Nomor WhatsApp tidak valid. Contoh:
   0812 3456 7890."); Jumlah peserta is an integer ≥ 1 ("Minimal 1 peserta."); Catatan is at most 500 characters. Errors
   show inline under their field, the page scrolls to the first one, and all typed values are kept.
-- [ ] **AC-11 Phone normalisation.** Given "0812 3456 7890", "812-3456-7890", "+62 812 3456 7890", "62812345678 90"
+- [x] **AC-11 Phone normalisation.** Given "0812 3456 7890", "812-3456-7890", "+62 812 3456 7890", "62812345678 90"
   or "0062 812 3456 7890", then the stored `customer_phone` is `+6281234567890` (`App\Security\PhoneNumber`, the same
   rule as the seller's number, F-001). The rate-limit key uses the same value (F-009 A15).
-- [ ] **AC-12 Create.** Given a valid submit for a bookable departure with enough seats, then in **one** transaction:
+- [x] **AC-12 Create.** Given a valid submit for a bookable departure with enough seats, then in **one** transaction:
   a booking is created with status `awaiting_payment`, `unit_price` = the departure's effective price now,
   `total_amount` = participants × `unit_price`, `hold_expires_at` = `created_at` + 120 minutes, a reference and an
   access token; the departure's `seats_taken` grows by the participants; and one `booking.created` audit event is
   written (actor `customer`, the booking as actor id, IP). The response redirects (303) to the booking page
   `/{slug}/pesanan/{token}`.
-- [ ] **AC-13 Price changed since the form loaded.** Given the form showed Rp1.250.000 and the seller changed the
+- [x] **AC-13 Price changed since the form loaded.** Given the form showed Rp1.250.000 and the seller changed the
   effective price to Rp1.300.000 before the submit, then no booking is created and the form shows "Harga untuk tanggal
   ini berubah menjadi Rp1.300.000 per orang. Periksa total lalu kirim lagi." with the total recomputed; the next
   submit at the new price succeeds (ADR-0026 §4, Q9).
-- [ ] **AC-14 Seats changed since the form loaded.** Given participants > seats left at submit time, then no booking is
+- [x] **AC-14 Seats changed since the form loaded.** Given participants > seats left at submit time, then no booking is
   created; when seats left > 0 the form shows "Sisa kursi tinggal n. Kurangi jumlah peserta." and the stepper maximum
   becomes n; when seats left = 0 it shows AC-3's state with "Penuh".
-- [ ] **AC-15 Bookability re-checked under the lock.** Given the departure was closed, its deadline passed, its trip
+- [x] **AC-15 Bookability re-checked under the lock.** Given the departure was closed, its deadline passed, its trip
   was unpublished or switched to `request_date`, or it started, after the form loaded, then the submit creates
   nothing and shows AC-3's state. The deadline is exact: with a deadline of 23.59.59, a submit at 23.59.30 succeeds and
   one at 00.00.00 is refused — also with the scheduler stopped and the departure still `open` (F-003 AC-36, F-009 B5).
-- [ ] **AC-16 Idempotent submit.** Given the same submission key is posted twice (double tap, retry after a timeout),
+- [x] **AC-16 Idempotent submit.** Given the same submission key is posted twice (double tap, retry after a timeout),
   then exactly one booking exists, seats are taken once, one audit event is written, and both responses redirect to the
   same booking page. A new form load gets a new key.
-- [ ] **AC-17 Booking reference.** Given a seller with booking code `BRM` and a booking on a departure starting
+- [x] **AC-17 Booking reference.** Given a seller with booking code `BRM` and a booking on a departure starting
   24 Okt, then its reference is `RKB-BRM-1024-NNNN`, where NNNN is the organization's next booking number zero-padded to
   4 digits (more digits after 9 999). Two simultaneous bookings of one seller never get the same number, and two
   sellers whose counters are equal still get different references (`RKB-BRM-1024-0144` vs `RKB-KMD-1024-0144`): a
   reference is unique across the platform (ADR-0026 §5, Q2).
-- [ ] **AC-17b Seller booking code.** Given an organization is created (F-001 sign-up) or exists before this feature
+- [x] **AC-17b Seller booking code.** Given an organization is created (F-001 sign-up) or exists before this feature
   (migration backfill), then it has a `booking_code` of 3–4 upper-case characters derived from its slug
   (`bromo-adventure` → `BRM`, `komodo-trip` → `KMD`), unique across all organizations (two sellers racing for the same
   code: the unique index decides and the loser gets the next candidate), never `RKB`, and unchanged when the seller
   later changes their slug or name.
-- [ ] **AC-18 Access token.** Given a booking, then its link carries a token of 32 random URL-safe characters; the
+- [x] **AC-18 Access token.** Given a booking, then its link carries a token of 32 random URL-safe characters; the
   database stores its SHA-256 hash (unique, used for lookup) and an encrypted copy, never the plain token in a readable
   column (ADR-0027 §2). The token is not in any audit event, log line or flashed session data. `/{slug}/pesanan/<reference>`
   is a 404: the reference grants nothing (ADR-0017).
 
 ### C. Concurrency & seat accounting (ADR-0006)
 
-- [ ] **AC-19 Last seat.** Given a departure with 1 seat left, when two customers submit for 1 participant at the same
+- [x] **AC-19 Last seat.** Given a departure with 1 seat left, when two customers submit for 1 participant at the same
   moment from separate database connections, then exactly one booking is created, the other customer gets AC-14's
   "Penuh" state, `seats_taken` = capacity, and there is one `booking.created` event.
-- [ ] **AC-20 Last seats, larger groups.** Given 3 seats left, when two customers submit for 2 participants each at the
+- [x] **AC-20 Last seats, larger groups.** Given 3 seats left, when two customers submit for 2 participants each at the
   same moment, then exactly one succeeds and the other gets "Sisa kursi tinggal 1. Kurangi jumlah peserta."
-- [ ] **AC-21 Booking against a capacity cut.** F-003 AC-39's two tests run against the real booking path instead of
+- [x] **AC-21 Booking against a capacity cut.** F-003 AC-39's two tests run against the real booking path instead of
   the `take_seats.php` simulation: customer first → the seller's cut is refused; seller first → the booking is refused;
   never `seats_taken > capacity`.
-- [ ] **AC-22 Booking against a hold release.** Given a departure whose only free seats belong to a hold that is being
+- [x] **AC-22 Booking against a hold release.** Given a departure whose only free seats belong to a hold that is being
   released by the expiry job, when a customer books those seats at the same moment, then both finish without a lost
   update: afterwards `seats_taken` equals the sum of participants of the departure's holding bookings.
-- [ ] **AC-23 Seat invariant.** After every test in this feature that changes bookings, for each departure
+- [x] **AC-23 Seat invariant.** After every test in this feature that changes bookings, for each departure
   `seats_taken` = Σ participants of its bookings in holding statuses. Database `CHECK`s reject: `participants < 1`;
   `unit_price` outside Rp1.000–Rp100.000.000; `total_amount ≠ participants × unit_price`; a status outside the
   glossary set; `cancel_reason` set without `cancelled` or missing with it (F-009 Data & rules).
 
 ### D. Hold & expiry
 
-- [ ] **AC-24 Expiry job.** Given an `awaiting_payment` booking with `hold_expires_at ≤ now`, when
+- [x] **AC-24 Expiry job.** Given an `awaiting_payment` booking with `hold_expires_at ≤ now`, when
   `bookings:release-expired-holds` runs (scheduler: every minute, `withoutOverlapping`, `onOneServer`), then, under the
   departure lock, the booking becomes `cancelled` with `cancel_reason = hold_expired`, `seats_taken` drops by its
   participants, and one `booking.hold_expired` event is written with actor `system` naming the command (F-009 A11).
   Running it twice, or two runs at once, gives the same end state and one event (F-009 B4). The command is the only new
   entry in `cross_organization_allowlist`; it lists ids across organizations and releases each as its organization,
   like `departures:close-past-deadline`.
-- [ ] **AC-25 What the job never releases.** A booking in `needs_review` (whatever its `hold_expires_at`), `paid`,
+- [x] **AC-25 What the job never releases.** A booking in `needs_review` (whatever its `hold_expires_at`), `paid`,
   `cancelled`, or `awaiting_payment` with `hold_expires_at > now` is untouched. Boundary: at `created_at` + 1:59:59 the
   hold is active; at + 2:00:00 it has expired.
-- [ ] **AC-26 Inline release.** Given a full departure whose seats are partly held by an expired, not-yet-released
+- [x] **AC-26 Inline release.** Given a full departure whose seats are partly held by an expired, not-yet-released
   hold, when a customer books it with the scheduler stopped, then the booking transaction first releases the expired
   holds of **that** departure (same status change, seat return and `booking.hold_expired` event as AC-24), then takes
   the seats; the customer is not turned away (ADR-0026 §7).
-- [ ] **AC-27 One "hold active" rule.** `Booking::holdIsActive(now)` is true exactly when status is `awaiting_payment`
+- [x] **AC-27 One "hold active" rule.** `Booking::holdIsActive(now)` is true exactly when status is `awaiting_payment`
   and `now < hold_expires_at`; an expired hold is inactive even before any job runs. F-006's evidence upload must use
   it (ADR-0006: upload after expiry is refused; upload before expiry stops the clock).
-- [ ] **AC-28 No extension.** `hold_expires_at` is set once at creation: it is not mass-assignable, no route changes
+- [x] **AC-28 No extension.** `hold_expires_at` is set once at creation: it is not mass-assignable, no route changes
   it, and the booking service refuses to change it on an existing booking (ADR-0006: sellers cannot extend a hold).
 
 ### E. Customer booking page (1d/2e, top half)
 
-- [ ] **AC-29 Content.** Given a booking in `awaiting_payment`, when its link is opened, then the page shows "Pesanan
+- [x] **AC-29 Content.** Given a booking in `awaiting_payment`, when its link is opened, then the page shows "Pesanan
   terkirim", the reference in large type, the status pill "◷ Menunggu pembayaran" (tint + glyph + word), the countdown
   ("1 j 52 m"; "52 m" under an hour; "< 1 m" under a minute) and "Kursi ditahan s.d. 16.40. Setelah itu kursi dilepas
   otomatis." ("s.d. besok 01.10" when the release is on the next local day); and a summary: trip name, date line,
   meeting point and time, Nama, Nomor WhatsApp, "2 peserta × Rp1.250.000" and "Total Rp2.500.000".
-- [ ] **AC-30 Countdown without a trusted phone clock.** The page receives the server's current time and
+- [x] **AC-30 Countdown without a trusted phone clock.** The page receives the server's current time and
   `hold_expires_at`; the countdown runs on the offset between them, so a wrong phone clock does not change it. At zero
   the page switches to the expired state (AC-31) without a reload.
-- [ ] **AC-31 Expired.** Given a booking cancelled with `hold_expired` — or `awaiting_payment` past `hold_expires_at`
+- [x] **AC-31 Expired.** Given a booking cancelled with `hold_expired` — or `awaiting_payment` past `hold_expires_at`
   before the job has run — then the page shows "– Dibatalkan", "Waktu pembayaran habis. Kursi sudah dilepas." and,
   while the trip is still published, an ink link "Pesan lagi" to the trip page. No countdown.
-- [ ] **AC-32 Other statuses.** Given any other status, the page shows its pill from the glossary status set (glyph +
+- [x] **AC-32 Other statuses.** Given any other status, the page shows its pill from the glossary status set (glyph +
   word, never colour alone) and no countdown; F-006 adds its own content for `needs_review`, `paid` and `rejected`.
-- [ ] **AC-33 Kabari operator via WhatsApp.** The page has an ink-outline "Kabari operator via WhatsApp" linking to
+- [x] **AC-33 Kabari operator via WhatsApp.** The page has an ink-outline "Kabari operator via WhatsApp" linking to
   `https://wa.me/<seller digits>?text=…` with `lang/id/booking.php → whatsapp.customer`, URL-encoded: "Halo :seller,
   saya sudah pesan :trip tanggal :date untuk :n orang. Kode pesanan :reference." It opens in a new tab/app
   (`rel="noopener noreferrer"`). There is no gold button on the page until F-006 adds "Unggah bukti transfer".
-- [ ] **AC-34 Page outlives the trip's state.** Given the trip was unpublished, or the departure closed, filled or
+- [x] **AC-34 Page outlives the trip's state.** Given the trip was unpublished, or the departure closed, filled or
   started after booking, then the booking page still renders (F-003 AC-15).
-- [ ] **AC-35 Token checks.** Given a wrong token, another booking's token of another seller under this slug, a token
+- [x] **AC-35 Token checks.** Given a wrong token, another booking's token of another seller under this slug, a token
   with one character changed, or the reference instead of a token, then the response is the same 404 page as AC-2.
-- [ ] **AC-36 Headers and head tags.** The booking page sends `Referrer-Policy: no-referrer`, `Cache-Control:
+- [x] **AC-36 Headers and head tags.** The booking page sends `Referrer-Policy: no-referrer`, `Cache-Control:
   no-store, private` and `X-Robots-Tag: noindex`; the form sends `Cache-Control: no-store, private`. The booking page
   `<title>` is "Pesanan Anda · :seller"; neither page renders Open Graph tags or any customer data in `<head>`.
-- [ ] **AC-37 Only listed fields leave the server.** The form and booking page props are built by an explicit presenter
+- [x] **AC-37 Only listed fields leave the server.** The form and booking page props are built by an explicit presenter
   (no model `toArray()`); a test asserts the exact keys in Data & rules → *Public fields* and that no numeric id,
   `organization_id`, `access_token_hash`, other bookings, `seats_taken` or seller-private data is present.
 
 ### F. Tenancy, abuse, logs, integration
 
-- [ ] **AC-38 Cross-tenant.** Given sellers A (`kencana`) and B (`bahari`): (a) `GET` and `POST /kencana/<trip of
+- [x] **AC-38 Cross-tenant.** Given sellers A (`kencana`) and B (`bahari`): (a) `GET` and `POST /kencana/<trip of
   A>/pesan` with B's departure public id → 404, no booking, B's `seats_taken` unchanged; (b) `/kencana/<trip of B's
   slug>/pesan` → 404; (c) B's booking token under `/kencana/pesanan/…` → 404, and under `/bahari/pesanan/…` → 200;
   (d) a seller of A signed in who books on B's page creates a booking that belongs to B, and neither page shows any of
   A's data (F-009 A5 booking case; ADR-0021).
-- [ ] **AC-39 Rate limits.** `POST …/pesan` uses `throttle:public-booking`: 5 per hour per normalised phone and 30 per
+- [x] **AC-39 Rate limits.** `POST …/pesan` uses `throttle:public-booking`: 5 per hour per normalised phone and 30 per
   10 minutes per IP (`config/rakyt.php`). An empty or unparseable phone adds no phone bucket — only the IP limit applies
   (F-009 R1). Over a limit, the form shows "Terlalu banyak percobaan. Coba lagi dalam n menit." and keeps the typed
   values (F-009 A14). The form and booking page GETs use `throttle:public-page`.
-- [ ] **AC-40 Logs.** Given a request to a booking page, then no log line, error-tracker payload or exception context
+- [x] **AC-40 Logs.** Given a request to a booking page, then no log line, error-tracker payload or exception context
   contains the token (the path segment after `/pesanan/` is redacted, F-009 R20), and phone numbers are masked
   (F-009 A24).
-- [ ] **AC-41 F-003 integration.** The real `DepartureBookings` binding replaces `SeatsTakenDepartureBookings`:
+- [x] **AC-41 F-003 integration.** The real `DepartureBookings` binding replaces `SeatsTakenDepartureBookings`:
   `hasAnyBooking` is true for a departure with any booking, cancelled ones included (F-003 AC-16, AC-29 — delete is not
   offered, and the `bookings` foreign key also restricts deleting the departure); `activeBookingCount` counts bookings
   in holding statuses (F-003 AC-32's "n pesanan yang ada").
-- [ ] **AC-42 Phone width and design rules.** Both pages work at 360 px without horizontal scroll; tap targets ≥ 44 px;
+- [x] **AC-42 Phone width and design rules.** Both pages work at 360 px without horizontal scroll; tap targets ≥ 44 px;
   text ≥ 12 px (11 px only for uppercase kickers); the form's total and "Kirim pesanan" sit in a sticky bottom bar that
   never covers the last field; exactly one gold button per screen; status words always carry a glyph (ADR-0008); all
   copy comes from `lang/id/booking.php`. *Device review with F-002/F-003's.*
@@ -409,6 +409,33 @@ queues it, pass ids and load inside `handle()` under `ScopedToOrganization`).
 | JS (Vitest) | `tests/js/booking.test.js`: stepper clamp, total, countdown offset and formatting ("1 j 52 m", "< 1 m"), release-time wording (today / besok) |
 | Manual | 360 px browser check of both pages; real-device review with F-002/F-003 |
 
+## Build notes (2026-10-19)
+
+Built test-first on `claude/f-005-customer-booking-9edbd4`; every AC above has a passing test (AC-42's real-device
+review is still to do together with F-002/F-003's, as the AC says). Choices the spec left open are in
+[ADR-0028](../decisions/0028-customer-booking-implementation-choices.md) (proposed). Differences from the text above:
+
+- **Booking page without a session** (ADR-0028 §1, amends ADR-0027 §3): `GET /{slug}/pesanan/{token}` runs without
+  `StartSession`/CSRF, because a session stores each visited URL — token included — in the `sessions` table. The form
+  and its submit keep the session. F-006 must give its upload POST the session group.
+- **AC-15, trip unpublished or switched to `request_date` meanwhile:** the submit is AC-2's 404 (the form URL would 404
+  too), not the AC-3 state; nothing is written. A change landing between that check and the lock is caught by
+  `isBookable()` under the lock and shows the AC-3 state.
+- **Opening the form also releases the departure's expired holds** (ADR-0028 §4), so a late scheduler does not show
+  "Penuh" for free seats (AC-26).
+- **Lock order:** the organization row is locked *before* the submission-key check (ADR-0028 §3), so two same-key
+  submits from two connections serialise.
+- **Expiry job heartbeat** (Data & rules → Expiry job): F-009 B3's heartbeat does not exist yet; the command is
+  scheduled `everyMinute()->withoutOverlapping()->onOneServer()` and joins the heartbeat when B3 lands.
+- **Q6–Q8, Q10–Q13** are still open; their recommended defaults are what is built.
+- **Status glyph for `completed`:** "☑" (the glossary has none; ADR-0028 §10).
+
+Code: `app/Bookings` (`BookingService`, `BookingPresenter`, `BookingRefused`, `BookingDepartureBookings`,
+`Jobs/ReleaseExpiredHolds`), `app/Organizations/BookingCode.php`, `app/Http/Controllers/PublicPages/BookingController.php`,
+`resources/js/pages/Public/BookingForm.vue`, `Booking.vue`, `resources/js/lib/booking.js`, `lang/id/booking.php`.
+Tests: `tests/Feature/Bookings/*` (form, creation, booking code, expiry, page, tenancy/abuse/logs/integration,
+concurrency), F-003's `CapacityConcurrencyTest` on the real booking path, `tests/js/booking.test.js`.
+
 ## Open questions
 
 None blocks building: each has a recommended default that the builder implements unless Rengga overrides it. All can
@@ -468,3 +495,4 @@ booking route; **R20** is AC-40; **R17** applies only if a queued job is added. 
 - 2026-10-19 — Q3 decided: one status column (ADR-0026 §1–2)
 - 2026-10-19 — ADR-0026 accepted as a whole; Q9 decided
 - 2026-10-19 — ADR-0027 accepted as a whole; Q4, Q5 decided
+- 2026-10-19 — Built (builder): AC-1…AC-42 and AC-17b covered by tests; F-009 R1 and R20 fixed; real `DepartureBookings` bound; F-003 AC-39 on the real booking path; ADR-0028 proposed (booking page without a session, booking-code insert, form-time hold release). Status → `done`
