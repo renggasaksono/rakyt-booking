@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\PublicPages\Middleware\ResolvePublicOrganization;
 use App\Tenancy\CurrentOrganization;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -36,6 +37,11 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        // Public pages show nothing of the signed-in seller (F-002 AC-7, AC-8).
+        if (ResolvePublicOrganization::isPublicPage($request)) {
+            return parent::share($request);
+        }
+
         return [
             ...parent::share($request),
             'flash' => fn () => [

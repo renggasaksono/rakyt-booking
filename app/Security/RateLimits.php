@@ -42,6 +42,11 @@ final class RateLimits
             self::limit('evidence_upload.per_token', 'evidence:'.hash('sha256', (string) $request->route('token'))),
         ]);
 
+        // F-002 AC-9: public seller and trip pages.
+        RateLimiter::for('public-page', fn (Request $request) => [
+            self::limit('public_page.per_ip', 'public-page-ip:'.$request->ip()),
+        ]);
+
         RateLimiter::for('slug-check', fn (Request $request) => [
             self::limit('slug_check.per_ip', 'slug-ip:'.$request->ip()),
         ]);

@@ -59,6 +59,10 @@ return [
         'payment_change' => [
             'per_user' => [10, 15],
         ],
+        // F-002 AC-9: public seller and trip pages (GET), per IP.
+        'public_page' => [
+            'per_ip' => [120, 1],
+        ],
     ],
 
     /*
@@ -81,6 +85,20 @@ return [
 
     // Public host shown in booking links (rakyt.id/<slug>).
     'public_host' => env('RAKYT_PUBLIC_HOST', 'rakyt.id'),
+
+    /*
+    | Public booking pages (F-002 Data & rules).
+    */
+    'public' => [
+        // AC-19: "Tinggal n dari m kursi" when seats left are at most this (Q4).
+        'low_seats' => 5,
+        // AC-19a: a closing date within this many days is always shown on its row.
+        'deadline_urgent_days' => 7,
+        // AC-18: departures shown before "Lihat n tanggal lainnya".
+        'departures_shown' => 10,
+        // AC-29: og:description length.
+        'description_max' => 200,
+    ],
 
     /*
     | Onboarding (F-001 C1, Q12): minutes left shown in each step header,

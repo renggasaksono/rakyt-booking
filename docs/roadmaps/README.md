@@ -12,10 +12,10 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | Item | Status |
 |---|---|
 | Week 1 — resolve open questions, confirm proposed ADRs, scaffold Laravel app | scaffold done (ADR-0020); ADR-0011 still proposed |
-| [F-009](../features/F-009-tenancy-security-operations.md) Tenancy & security baseline (slice A wk 2 · ops wk 4 · hardening wk 6) | in-progress — slice A built; B, C to do |
+| [F-009](../features/F-009-tenancy-security-operations.md) Tenancy & security baseline (slice A wk 2 · ops wk 4 · hardening wk 6) | in-progress — slice A built (A5 done with F-002); B, C to do |
 | [F-003](../features/F-003-trips-and-departures.md) Trips & departures | in-progress — built on `feat/F-003-trips-and-departures`; 38/43 ACs covered by tests; AC-3/7/7a/41 partly covered, AC-35 is a pilot check; device review after F-001 section A |
-| [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | in-progress — merged (PR #5); manual-test fixes on `fix/F-001-manual-test` add Pengaturan → Rekening (F5, the bank / e-wallet subset of F-006) and F6; 60/65 ACs covered by tests; C3/F1/T3 partly covered, D7 waits on F-002, P1 device review; ADR-0023 accepted |
-| [F-002](../features/F-002-public-booking-page.md) Public booking page | ready — spec 2026-10-19 (AC-1…AC-39 + AC-19a); all questions decided; ADR-0024 accepted |
+| [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | in-progress — merged (PR #5); manual-test fixes on `fix/F-001-manual-test` add Pengaturan → Rekening (F5, the bank / e-wallet subset of F-006) and F6; 63/65 ACs covered by tests (D7, F1, T3 completed by F-002); C3 partly covered, P1 device review; ADR-0023 accepted |
+| [F-002](../features/F-002-public-booking-page.md) Public booking page | in-progress — built on `feat/F-002-public-booking-page`; 39/40 ACs covered by tests (AC-35 Lighthouse is a pre-pilot manual check; AC-36 device review pending); closes F-001 D7/F1/T3 and F-009 A5; ADR-0025 accepted; Q13 decided |
 | [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | planned |
 | [F-004](../features/F-004-request-a-date.md) Request-a-date | planned |
 | [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | planned |

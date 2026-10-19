@@ -20,8 +20,8 @@ roadmap gate "Continue / pivot" measures exactly this).
 
 ## Readiness
 
-**`in-progress`** (built 2026-10-18 on `feat/F-001-seller-onboarding`, 58 of 63 criteria covered by tests; C3, D7, F1,
-T3 and P1 are partly covered — see each). Implementation choices: ADR-0023 (accepted 2026-10-19).
+**`in-progress`** (built 2026-10-18 on `feat/F-001-seller-onboarding`; D7, F1 and T3 completed by F-002 on
+2026-10-19; C3 and P1 are partly covered — see each). Implementation choices: ADR-0023 (accepted 2026-10-19).
 
 The blocking product decisions are made: sign-in is email + password (ADR-0012, replaces the rejected
 ADR-0009); the database is PostgreSQL (ADR-0013); a trip description is optional to publish (F-003 checklist).
@@ -141,8 +141,8 @@ from the rate-limit table in F-009; tests read the configured values rather than
 - [x] **D4** Given a successful first publish, then 4f shows "✓ Trip terbit · m menit s detik" where the time is `first_published_at − users.signup_started_at`, **only if** that is ≤ 60 minutes; otherwise "✓ Trip terbit". Then "Siap terima pesanan.", the trip card (cover, name, "Mulai Rp…", "24 Okt · 16 kursi" or "Ajukan tanggal" for request-date trips), "Link booking Anda" `rakyt.id/<slug>` with "Salin".
 - [x] **D5** "Salin" copies `https://rakyt.id/<slug>` and shows "Link disalin". The gold CTA "↗ Bagikan ke WA / IG" opens the native share sheet (Web Share API) with the link and a short Bahasa text; without Web Share it copies the link and shows "Link disalin". "Ke dashboard" is an ink-outline button.
 - [x] **D6** 4f lists "Nanti, dari dashboard": "Deskripsi, itinerary per hari & ketentuan" (links to the F-003 trip editor) and "Logo & bio usaha ±1 menit" (links to Pengaturan → Profil usaha, section F).
-- [ ] **D7** Given the published trip, then `rakyt.id/<slug>` shows it (F-002). Given a draft trip, then it is not reachable publicly by any URL (F-002 AC).
-  *Waits on F-002:* the public page is not built yet; drafts are not reachable through any F-001 route (T3).
+- [x] **D7** Given the published trip, then `rakyt.id/<slug>` shows it (F-002). Given a draft trip, then it is not reachable publicly by any URL (F-002 AC).
+  *Covered by F-002* AC-5, AC-13 and AC-16 tests (`tests/Feature/PublicPages`).
 
 ### E. Save and resume
 
@@ -153,8 +153,8 @@ from the rate-limit table in F-009; tests read the configured values rather than
 
 ### F. Organization profile — Pengaturan → Profil usaha (no mockup yet)
 
-- [ ] **F1** The owner can edit "Nama usaha", "Kota basis", "Nomor WhatsApp usaha" (same validation as B3, not verified), "Logo" (JPG/PNG/WebP, ≤ 2 MB, shown square) and "Bio singkat" (≤ 160 chars). Changes appear on the public page (F-002) immediately.
-  *Partly covered:* editing, validation and the logo are tested; "appears on the public page immediately" waits on F-002.
+- [x] **F1** The owner can edit "Nama usaha", "Kota basis", "Nomor WhatsApp usaha" (same validation as B3, not verified), "Logo" (JPG/PNG/WebP, ≤ 2 MB, shown square) and "Bio singkat" (≤ 160 chars). Changes appear on the public page (F-002) immediately.
+  *Covered:* editing, validation and the logo are tested here; the public page shows changes on the next load (F-002 AC-10).
 - [x] **F2** The slug is shown read-only after first publish with "Hubungi Rakyt untuk mengganti link." (Q3). Before first publish it is editable with the B5–B7, B10 rules.
 - [x] **F3** Account settings (email, password, sign-out) live in Pengaturan → Akun (A6, A11, A12), separate from the business profile.
 - [x] **F4** Given an organization with future departures that use a relative deadline preset (`same_day`, `h1`, `h3`, `h7`), when the owner changes the time zone in Profil usaha, then those deadlines are recomputed in the new zone with F-003's `DeadlineCalculator`, inside the same transaction, each change audited as `departure.deadline_changed`; custom deadlines keep their instant (ADR-0014, F-003 Q15).
@@ -166,8 +166,8 @@ from the rate-limit table in F-009; tests read the configured values rather than
 
 - [x] **T1** All onboarding and profile endpoints resolve the organization from the signed-in user's membership; none accepts an `organization_id` from the request.
 - [x] **T2** Given sellers A and B, when B requests A's draft trip, departure, payment method (onboarding or Pengaturan → Rekening) or organization profile by ID through any onboarding / profile / publish route (read, update, publish, delete photo), then the response is 404 (or the F-009 convention) and nothing changes. One test per resource.
-- [ ] **T3** Given A's draft trip, then it never appears on B's public page or any public URL, and A's payment-method details are never returned to B.
-  *Partly covered:* A's draft and payment details never reach B's onboarding pages (tested); the public-page half waits on F-002.
+- [x] **T3** Given A's draft trip, then it never appears on B's public page or any public URL, and A's payment-method details are never returned to B.
+  *Covered:* A's draft and payment details never reach B's onboarding pages (tested here) or any public page (F-002 AC-5, AC-7, AC-8, `PublicTenancyTest`).
 - [x] **T4** Uploaded trip photos and logos are stored under A's organization prefix; B cannot delete or replace them.
 - [x] **T5** Given a user with no membership in an organization, policies deny every seller action on it, even if UI links are crafted by hand.
 - [x] **T6** Account endpoints (email change, password change) act only on the signed-in user; a user ID in the request is ignored.
@@ -267,3 +267,4 @@ None block building. The spec uses the recommended default for each; override an
 - 2026-10-19 — Rengga: ADR-0023 accepted; Q15 decided (email change takes effect at once; F-009 B12 reworded)
 - 2026-10-19 — Manual-test fixes: Pengaturan → Rekening added (F5) so a seller who saved a draft without an account can add one and publish (C12, Q10); seats helper made generic (C5); past deadline presets hidden and the meeting-time rule shown only when it applies (C6, F-003 AC-21–23); "+ Tambah rekening lain" (C11); every Pengaturan sub-page links back to Pengaturan (F6)
 - 2026-10-19 — Review follow-up: step 4's QRIS note no longer names a Pengaturan → Pembayaran menu that does not exist ("QRIS bisa ditambahkan nanti.", C11); Pengaturan → Rekening saves have their own limiter (`payment-change`, 10 per 15 min per user)
+- 2026-10-19 — F-002 build: D7, F1 (public half) and T3 (public half) covered by the public-page tests; ticked

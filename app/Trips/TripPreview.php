@@ -4,10 +4,10 @@ namespace App\Trips;
 
 use App\Models\Trip;
 use App\Models\TripDeparture;
-use Carbon\CarbonImmutable;
 
 /**
- * The live preview card (F-003 AC-13), matching the F-002 trip card.
+ * The live preview card (F-003 AC-13), matching the F-002 trip card: the same
+ * "Mulai Rp…" function and the same departures (open for booking, F-002 Q7).
  */
 final class TripPreview
 {
@@ -16,26 +16,20 @@ final class TripPreview
      */
     public static function for(Trip $trip): array
     {
-        $today = TripDeparture::today($trip->organization);
-
-        $open = $trip->departures()
-            ->where('status', DepartureStatus::Open)
-            ->whereDate('start_date', '>=', $today)
+        $bookable = $trip->departures()
+            ->openForBooking(TripDeparture::today($trip->organization))
             ->orderBy('start_date')
             ->orderBy('id')
             ->get();
 
-        $prices = $open->map(fn (TripDeparture $departure) => $departure->price_override ?? $trip->base_price)->filter(fn ($price) => $price !== null);
-
-        $next = $open->first(fn (TripDeparture $departure) => $departure->booking_deadline_at->greaterThan(CarbonImmutable::now()));
+        $next = $trip->isScheduled() ? $bookable->first() : null;
 
         $cover = $trip->photos()->first();
 
         return [
             'cover_url' => $cover?->url(800),
             'name' => $trip->name,
-            // Lowest effective price among open future departures, else the base price.
-            'from_price' => $prices->isNotEmpty() ? $prices->min() : $trip->base_price,
+            'from_price' => TripPricing::fromPrice($trip, $bookable),
             'next_departure' => $next === null ? null : [
                 'start_date' => $next->start_date->toDateString(),
                 'seats_left' => $next->seatsLeft(),

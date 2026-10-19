@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureOnboardingFinished;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\PublicPages\Middleware\ResolvePublicOrganization;
 use App\Security\InertiaErrorResponse;
 use App\Security\Middleware\AssignRequestId;
 use App\Security\Middleware\NoReferrer;
@@ -13,11 +14,13 @@ use App\Tenancy\Middleware\ResolveCurrentOrganization;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\MalformedUrlException;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -36,16 +39,22 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
         ]);
 
-        // Route model binding must see the current organization (F-009 A2).
+        // Route model binding must see the current organization (F-009 A2);
+        // public pages then replace it with the slug's organization (F-002 AC-7).
         $middleware->prependToPriorityList(
             before: SubstituteBindings::class,
             prepend: ResolveCurrentOrganization::class,
+        );
+        $middleware->prependToPriorityList(
+            before: SubstituteBindings::class,
+            prepend: ResolvePublicOrganization::class,
         );
 
         $middleware->alias([
             'no-referrer' => NoReferrer::class,
             'organization' => EnsureCurrentOrganization::class,
             'onboarded' => EnsureOnboardingFinished::class,
+            'public-organization' => ResolvePublicOrganization::class,
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));
@@ -55,6 +64,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // A path that is not valid UTF-8 names no page: the same Bahasa 404 as an unknown slug (F-002 AC-3).
+        $exceptions->map(MalformedUrlException::class, fn (MalformedUrlException $e) => new NotFoundHttpException($e->getMessage(), $e));
 
         $exceptions->render(fn (ThrottleRequestsException $e, Request $request) => ThrottledResponse::render($e, $request));
 
