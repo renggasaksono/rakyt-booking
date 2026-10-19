@@ -34,4 +34,4 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0022](0022-trips-implementation-choices.md) | Implementation choices for trips and departures (F-003) | accepted | 2026-10-18 |
 | [0023](0023-onboarding-and-accounts-implementation-choices.md) | Implementation choices for seller accounts and onboarding (F-001) | accepted | 2026-10-19 |
 | [0024](0024-public-page-rendering-and-caching.md) | Public pages — Inertia without SSR, server-rendered head tags, split JavaScript, no page cache | accepted | 2026-10-19 |
-| [0025](0025-public-pages-implementation-choices.md) | Implementation choices for the public booking pages (F-002) | proposed | 2026-10-19 |
+| [0025](0025-public-pages-implementation-choices.md) | Implementation choices for the public booking pages (F-002) | accepted | 2026-10-19 |

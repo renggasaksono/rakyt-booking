@@ -93,7 +93,7 @@ zone (ADR-0014). *Bookable* is the single server-side rule from F-003 (`TripDepa
   prop keys and that no numeric `id`, `organization_id`, `public_id` of the organization, email, member, payment
   method, `seats_taken`, audit data or draft trip is present. Departures are identified by their `public_id` only.
   *Build note: photo and logo URLs contain the organization's `public_id` in their storage path (ADR-0015); it is
-  sent as no field and appears nowhere else — see Q13.*
+  sent as no field and appears nowhere else — accepted in Q13.*
 - [x] **AC-9 Rate limit.** Public page GETs use the named limiter `throttle:public-page` (per IP; value in
   `config/rakyt.php`, default 120 per minute). Over the limit, the response is the Bahasa 429 page.
 
@@ -338,11 +338,12 @@ All decided by Rengga on 2026-10-19: Q3 rejected (page live immediately), Q5 ref
 - [x] **Q11 Suspended sellers.** F-002 builds the single `PublicVisibility` check; until F-014 decides, every
   organization is public. The suspension behaviour itself stays open in F-014. — Rengga
 - [x] **Q12 Share button on the trip page.** Not in P0; revisit with pilot evidence. — Rengga
-- [ ] **Q13 Organization `public_id` in photo URLs.** ADR-0015 stores photos and logos at
+- [x] **Q13 Organization `public_id` in photo URLs.** ADR-0015 stores photos and logos at
   `org/{organization public_id}/…`, so every public photo URL shows it, while AC-8 lists that id as not public. It
   grants nothing on its own today (no route takes it). *Recommended:* accept — AC-8 means no such field; keep the
   ADR-0015 layout. Alternative: a superseding ADR with a per-organization media prefix that is not the `public_id`
-  (needs a move of every stored file). Raised by the builder, 2026-10-19 (ADR-0025 §10).
+  (needs a move of every stored file). Raised by the builder, 2026-10-19 (ADR-0025 §10). **Accepted as recommended**
+  on 2026-10-19: AC-8 means no such field; the ADR-0015 layout stays. — Rengga
 
 ## Changelog
 
@@ -358,3 +359,5 @@ All decided by Rengga on 2026-10-19: Q3 rejected (page live immediately), Q5 ref
   tags, lazy page resolver + `npm run check:bundle`, shared `TripPricing::fromPrice()` (F-003 AC-13 reworded, Q7).
   AC-1…AC-39 and AC-19a covered by tests except AC-35 (Lighthouse, manual before pilot); AC-34's photo `max-age` is
   deploy config and AC-36 still needs a device review. Q13 raised. ADR-0025 proposed. Status → `in-progress`
+- 2026-10-19 — Rengga: ADR-0025 accepted; Q13 accepted as recommended (org `public_id` stays in media paths only). AC-35
+  and AC-36 stay open
