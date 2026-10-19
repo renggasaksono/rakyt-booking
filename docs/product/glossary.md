@@ -39,7 +39,8 @@ Source of UI wording: [design mockup](../design/README.md).
 | participants | peserta, jumlah peserta | Number of people on one booking; each takes one seat. |
 | unit price | harga / orang (pada pesanan) | The departure's effective price copied onto a booking when it is created; later price changes never alter it (ADR-0005, ADR-0026). |
 | booking total | total | `participants × unit price`, integer rupiah. |
-| booking reference | kode pesanan | Human-readable ID, e.g. `RKB-1024-0142`: `MMDD` = departure start date, `NNNN` = the seller's own booking counter; unique per seller (ADR-0026, proposed). Display only — never grants access. |
+| booking code | kode usaha | 3–4 upper-case characters identifying a seller inside booking references (`BRM`), derived from the slug at sign-up, unique, fixed in P0 (ADR-0026). |
+| booking reference | kode pesanan | Human-readable ID, e.g. `RKB-BRM-1024-0142`: seller's booking code, `MMDD` = departure start date, `NNNN` = the seller's own booking counter; unique across the platform (ADR-0026, proposed). Display only — never grants access. |
 | booking access token | — (in link) | Unguessable token in the customer's booking/payment link ([ADR-0017](../decisions/0017-customer-booking-access-token.md)). |
 | customer booking page | halaman pesanan | `rakyt.id/<slug>/pesanan/<token>` — the customer's page for one booking: reference, status, hold countdown, payment (F-005, F-006; ADR-0027, proposed). |
 | seat hold | kursi ditahan | Seats reserved for an unpaid booking for 2 hours; uploading payment evidence stops the clock until the seller reviews it (ADR-0006). |

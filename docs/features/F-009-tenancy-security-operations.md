@@ -155,7 +155,7 @@ Operations follow ADR-0016.
 - Cache keys and queued-job payloads that touch seller data include `organization_id`.
 - System jobs that intentionally cross organizations (hold expiry, deadline auto-close) and the admin-module query classes (ADR-0011) are the **only** code allowed to remove the global scope; system jobs are listed in one allowlist (A8), admin queries are covered by A8a.
 - No super-admin bypass through seller routes, scopes or memberships; the platform admin is not an organization member (ADR-0011). Production data fixes by Rakyt staff go through artisan commands that write audit events (actor `rakyt_staff:<name>`).
-- **Customer access** (no account, ADR-0017): a customer reaches their booking/payment page through an **unguessable access token** (at least 128 random bits) in the URL, never through the human-readable booking reference alone. `RKB-MMDD-NNNN` can be guessed and would expose other customers' names and phone numbers. (Built in F-005/F-006.)
+- **Customer access** (no account, ADR-0017): a customer reaches their booking/payment page through an **unguessable access token** (at least 128 random bits) in the URL, never through the human-readable booking reference alone. `RKB-CODE-MMDD-NNNN` can be guessed and would expose other customers' names and phone numbers. (Built in F-005/F-006.)
 
 ### Owner organization tables (built in slice A)
 

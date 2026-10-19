@@ -133,10 +133,16 @@ Test names: `test_ac_<n>_…`.
 - [ ] **AC-16 Idempotent submit.** Given the same submission key is posted twice (double tap, retry after a timeout),
   then exactly one booking exists, seats are taken once, one audit event is written, and both responses redirect to the
   same booking page. A new form load gets a new key.
-- [ ] **AC-17 Booking reference.** Given a booking on a departure starting 24 Okt, then its reference is
-  `RKB-1024-NNNN`, where NNNN is the organization's next booking number zero-padded to 4 digits (more digits after
-  9 999); references are unique per organization and two simultaneous bookings never get the same number (ADR-0026 §5,
-  Q2).
+- [ ] **AC-17 Booking reference.** Given a seller with booking code `BRM` and a booking on a departure starting
+  24 Okt, then its reference is `RKB-BRM-1024-NNNN`, where NNNN is the organization's next booking number zero-padded to
+  4 digits (more digits after 9 999). Two simultaneous bookings of one seller never get the same number, and two
+  sellers whose counters are equal still get different references (`RKB-BRM-1024-0144` vs `RKB-KMD-1024-0144`): a
+  reference is unique across the platform (ADR-0026 §5, Q2).
+- [ ] **AC-17b Seller booking code.** Given an organization is created (F-001 sign-up) or exists before this feature
+  (migration backfill), then it has a `booking_code` of 3–4 upper-case characters derived from its slug
+  (`bromo-adventure` → `BRM`, `komodo-trip` → `KMD`), unique across all organizations (two sellers racing for the same
+  code: the unique index decides and the loser gets the next candidate), never `RKB`, and unchanged when the seller
+  later changes their slug or name.
 - [ ] **AC-18 Access token.** Given a booking, then its link carries a token of 32 random URL-safe characters; the
   database stores its SHA-256 hash (unique, used for lookup) and an encrypted copy, never the plain token in a readable
   column (ADR-0027 §2). The token is not in any audit event, log line or flashed session data. `/{slug}/pesanan/<reference>`
@@ -260,7 +266,7 @@ Test names: `test_ac_<n>_…`.
 | `organization_id` | FK, not null | Tenant scope (ADR-0004) |
 | `public_id` | ULID, unique | For seller URLs (F-007) |
 | `trip_departure_id` | bigint | Composite FK `(organization_id, trip_departure_id)` → `trip_departures (organization_id, id)`, **restrict on delete** (add `UNIQUE (organization_id, id)` on `trip_departures`) |
-| `reference` | string(16) | `RKB-MMDD-NNNN`; `UNIQUE (organization_id, reference)` |
+| `reference` | string(24) | `RKB-CODE-MMDD-NNNN`; `UNIQUE (organization_id, reference)`; unique platform-wide by construction (unique `booking_code` + per-organization counter, AC-17) |
 | `access_token_hash` | char(64) | SHA-256 of the token; unique |
 | `access_token` | text | Laravel `encrypted` cast; hidden from serialisation |
 | `submission_key` | uuid | `UNIQUE (organization_id, submission_key)` (AC-16) |
@@ -279,6 +285,13 @@ Indexes: `(status, hold_expires_at)` for the expiry job; `(organization_id, trip
 `(organization_id, created_at)` for F-007. Schema and model guards (F-009 A6/A7) must pass.
 
 **`organizations.last_booking_number`** (new, integer, default 0): the per-organization reference counter (ADR-0026 §5).
+
+**`organizations.booking_code`** (new, string(4), not null after backfill): `CHECK (booking_code ~ '^[A-Z]{3}[A-Z0-9]?$'
+AND booking_code <> 'RKB')`, `UNIQUE`. Set once when the organization is created; never edited in P0 (no UI, and
+`booking_code` joins `organization_id` among the attributes that cannot be updated once a booking exists). Derivation
+from the slug: first letter, then the next consonants (`bromo-adventure` → `BRM`); on collision try other letter
+combinations from the slug, then the 3-letter stem plus a digit (`BRM2`…`BRM9`), then four random letters. The insert
+relies on the unique index, not a prior check (AC-17b). (ADR-0026 §5.)
 
 ### Statuses and transitions (ADR-0026)
 
@@ -404,10 +417,10 @@ change before the pilot at the cost of test data only.
 
 - [x] **Q1 Hold length and evidence.** Decided 2026-10-17: 2 h fixed, upload stops the clock, no manual extension
   (ADR-0006 accepted). — Rengga
-- [ ] **Q2 Reference format.** *Recommended:* `MMDD` = departure start date (the mockup's 14 Nov booking created on
-  16 Okt reads `RKB-1114-0144`); `NNNN` = per-organization counter, unique per organization (not per platform as the
-  old draft said), ≥ 4 digits. Why: the seller and customer talk about the departure date; a platform-wide counter hits
-  9 999 early and gains nothing since the reference grants no access. ADR-0026 §5. — Rengga · *not blocking*
+- [x] **Q2 Reference format.** Decided 2026-10-19: `RKB-<seller code>-<MMDD>-<NNNN>`, e.g. `RKB-BRM-1114-0144`.
+  `MMDD` = departure start date; `NNNN` = per-organization counter (≥ 4 digits); the seller code makes every reference
+  unique across the platform, so support can identify the seller from the reference alone. The mockups'
+  `RKB-1114-0144` gains the code segment. ADR-0026 §5. — Rengga
 - [ ] **Q3 Booking status model** (also F-006 Q1). *Recommended:* one `bookings.status` with the glossary set +
   `cancel_reason`; amounts and evidence in F-006's `payment_records`; blueprint "pending/confirmed" are UI groupings.
   Why: one pill per booking in every mockup; one place answers "does this hold seats?". ADR-0026 §1–2. — Rengga ·
@@ -455,3 +468,4 @@ booking route; **R20** is AC-40; **R17** applies only if a queued job is added. 
   job, audit, public fields, rate limits, edge cases, test plan. Evidence upload and the `needs_review` transition moved
   to F-006 (F-005 keeps the rule they use, AC-27). Reference format given a default (Q2); Q3–Q13 added with defaults.
   ADR-0026 and ADR-0027 proposed. Status → `ready`
+- 2026-10-19 — Q2 decided: reference `RKB-<seller code>-MMDD-NNNN`, unique platform-wide; AC-17 updated, AC-17b and `organizations.booking_code` added

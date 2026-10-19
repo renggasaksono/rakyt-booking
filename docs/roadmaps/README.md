@@ -37,7 +37,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
 | Platform admin inside the same app, gated, no impersonation; admin login = email + password + TOTP | Accept | [ADR-0011](../decisions/0011-platform-admin-access.md) · F-010–F-015 | Before admin build (wk 4) |
-| Booking record: one status column (glossary set + `cancel_reason`); holding statuses; lock order; price snapshot; reference `RKB-<departure MMDD>-<per-seller NNNN>`; idempotent submit; inline release of expired holds | Accept | [ADR-0026](../decisions/0026-booking-record-and-lifecycle.md) · F-005 Q2, Q3 · F-006 Q1 | Before F-006 is `ready` (F-005 builds on the default) |
+| Booking record: one status column (glossary set + `cancel_reason`); holding statuses; lock order; price snapshot; reference `RKB-<seller code>-<departure MMDD>-<per-seller NNNN>`, unique platform-wide; idempotent submit; inline release of expired holds | Accept | [ADR-0026](../decisions/0026-booking-record-and-lifecycle.md) · F-005 Q2, Q3 · F-006 Q1 | Before F-006 is `ready` (F-005 builds on the default) |
 | Customer booking routes under the slug (`/<slug>/pesanan/<token>`), token stored as hash + encrypted copy, session + CSRF on booking routes only | Accept | [ADR-0027](../decisions/0027-customer-booking-routes-and-access-token.md) · F-005 Q4, Q5 | Before pilot (F-005 builds on the default) |
 
 ### Week 1 — choices outside the specs
@@ -69,7 +69,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Ask "Nama Anda" at sign-up | Yes | [F-001 Q13](../features/F-001-seller-onboarding.md#open-questions) |
 | Password confirmation field | No; show/hide toggle | [F-001 Q14](../features/F-001-seller-onboarding.md#open-questions) |
 | Auth events of a seller without an organization yet | Not audited in P0 | [F-001 Q17](../features/F-001-seller-onboarding.md#open-questions) |
-| Booking reference `RKB-MMDD-NNNN`: MMDD = departure date; NNNN per seller, unique per seller | As stated (ADR-0026) | [F-005 Q2](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
 | International (non-+62) customer WhatsApp numbers | Indonesian mobiles only in P0 | [F-005 Q6](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
 | Maximum participants per booking | No cap beyond seats left | [F-005 Q7](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
 | Telling the seller about a new booking | No email/push in F-005; customer "Kabari operator via WhatsApp"; F-007 dashboard | [F-005 Q8](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |

@@ -44,10 +44,13 @@ list) build on them. Four things are open or unwritten:
 4. **Price snapshot.** A booking stores `unit_price` (the departure's effective price at creation) and
    `total_amount = participants × unit_price` (`CHECK`). The form sends the unit price it showed; if the server's price
    differs, the booking is refused and the new price shown, so a customer never owes a total they did not see.
-5. **Reference** `RKB-MMDD-NNNN`: `MMDD` is the **departure start date**; `NNNN` is a **per-organization** counter
-   (`organizations.last_booking_number`, incremented atomically inside the booking transaction), zero-padded to at least
-   four digits (`RKB-1024-10023` after 9 999). Unique per organization (`UNIQUE (organization_id, reference)`), not per
-   platform; admin search (F-013) always shows the seller next to it. The reference is display-only (ADR-0017).
+5. **Reference** `RKB-CODE-MMDD-NNNN` (e.g. `RKB-BRM-1024-0142`): `CODE` is the organization's **booking code**
+   (`organizations.booking_code`, 3–4 upper-case characters derived from the slug at creation, `UNIQUE` across all
+   organizations, never `RKB`, fixed for the life of the organization in P0); `MMDD` is the **departure start date**;
+   `NNNN` is a **per-organization** counter (`organizations.last_booking_number`, incremented atomically inside the
+   booking transaction), zero-padded to at least four digits (`RKB-BRM-1024-10023` after 9 999). Because the code is
+   unique and the counter is unique within the organization, every reference is **unique across the platform**, and
+   support can tell the seller from the reference alone. The reference is display-only (ADR-0017).
 6. **Idempotent submit.** The form carries a random submission key; `UNIQUE (organization_id, submission_key)` makes a
    repeated submit return the booking it already created instead of a second hold.
 7. **Expiry.** A scheduled command releases `awaiting_payment` bookings whose `hold_expires_at ≤ now` (status
@@ -59,9 +62,9 @@ list) build on them. Four things are open or unwritten:
 ## Consequences
 
 - Good: one place answers "does this booking hold seats?"; the seat counter cannot drift silently (invariant test and
-  `CHECK`s); no deadlock between bookings and time-zone changes; references stay short and readable per seller.
+  `CHECK`s); no deadlock between bookings and time-zone changes; references stay readable, number per seller without gaps, and are unique platform-wide.
 - Bad / costs: a seller's bookings serialise on the organization row for the length of a booking transaction (fine at
-  pilot volume). Two sellers can show the same reference; support must always ask which seller.
+  pilot volume). References are four characters longer than the mockups'; every organization needs a booking code (backfilled for existing ones), and a seller cannot rename it in P0.
 - Follow-ups: F-006 decides `rejected` (re-upload, clock) and adds `payment_records`; F-007 adds seller cancellation
   (`cancel_reason = seller`) through the same service; F-004 decides whether accepted date requests create bookings
   through it.
@@ -70,8 +73,13 @@ list) build on them. Four things are open or unwritten:
 
 - **Two status fields** (booking: pending/confirmed/cancelled/completed; payment: awaiting/needs_review/paid/rejected)
   — every list, pill and rule would have to combine them; the mockups already show one pill per booking.
-- **Platform-wide `NNNN`** — reaches 9 999 early and makes every seller's numbers jump; buys nothing, since the
-  reference grants no access.
+- **Platform-wide `NNNN`** — unique, but reaches 9 999 early, makes every seller's numbers jump (revealing other
+  sellers' volume) and serialises all bookings on one counter.
+- **Per-seller `NNNN` without a seller segment** (the first draft) — two sellers show the same reference, so support
+  must always ask which seller. Rejected 2026-10-19 (F-005 Q2).
+- **Seller code replacing `RKB`** (`BRM-1024-0142`) — shorter, but drops the recognisable Rakyt prefix.
+- **Organization id as the segment** (`RKB-27-1024-0142`) — no new column, but unreadable and reveals the number of
+  sellers.
 - **`MMDD` = booking date** — the mockup's 14 Nov booking made on 16 Okt reads `1114`; the departure date is what the
   seller and customer talk about.
 - **Counting seats from bookings on every read** (no counter) — simpler writes, but every public page and list would
