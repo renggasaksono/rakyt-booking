@@ -414,7 +414,7 @@ queues it, pass ids and load inside `handle()` under `ScopedToOrganization`).
 
 Built test-first on `claude/f-005-customer-booking-9edbd4`; every AC above has a passing test (AC-42's real-device
 review is still to do together with F-002/F-003's, as the AC says). Choices the spec left open are in
-[ADR-0028](../decisions/0028-customer-booking-implementation-choices.md) (proposed). Differences from the text above:
+[ADR-0028](../decisions/0028-customer-booking-implementation-choices.md) (accepted 2026-10-19). Differences from the text above:
 
 - **Session payloads are encrypted** (ADR-0028 §1): a session stores each visited URL — the booking page's token
   included — so `SESSION_ENCRYPT` defaults to `true`. The booking page runs the session like the form (ADR-0027 §3),
@@ -499,3 +499,4 @@ booking route; **R20** is AC-40; **R17** applies only if a queued job is added. 
 - 2026-10-19 — ADR-0027 accepted as a whole; Q4, Q5 decided
 - 2026-10-19 — Built (builder): AC-1…AC-42 and AC-17b covered by tests; F-009 R1 and R20 fixed; real `DepartureBookings` bound; F-003 AC-39 on the real booking path; ADR-0028 proposed (booking page without a session, booking-code insert, form-time hold release). Status → `done`
 - 2026-10-19 — Review fixes: `total_amount` bigint (overflow above Rp2,1 miliar), booking page keeps the session with encrypted session payloads (Rengga's decision; ADR-0028 §1 revised), submission keys bound to their departure, clock read under the lock, two-connection same-key test, AC-15 reworded
+- 2026-10-19 — ADR-0028 accepted by Rengga

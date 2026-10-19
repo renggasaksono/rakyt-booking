@@ -16,7 +16,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | [F-003](../features/F-003-trips-and-departures.md) Trips & departures | in-progress — built on `feat/F-003-trips-and-departures`; 38/43 ACs covered by tests; AC-3/7/7a/41 partly covered, AC-35 is a pilot check; device review after F-001 section A |
 | [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | in-progress — merged (PR #5); manual-test fixes on `fix/F-001-manual-test` add Pengaturan → Rekening (F5, the bank / e-wallet subset of F-006) and F6; 63/65 ACs covered by tests (D7, F1, T3 completed by F-002); C3 partly covered, P1 device review; ADR-0023 accepted |
 | [F-002](../features/F-002-public-booking-page.md) Public booking page | in-progress — built on `feat/F-002-public-booking-page`; 39/40 ACs covered by tests (AC-35 Lighthouse is a pre-pilot manual check; AC-36 device review pending); closes F-001 D7/F1/T3 and F-009 A5; ADR-0025 accepted; Q13 decided |
-| [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | done — built on `claude/f-005-customer-booking-9edbd4` (not merged); AC-1…AC-42 + AC-17b covered by tests (AC-42 real-device review with F-002/F-003's); closes F-009 R1, R20; ADR-0028 proposed; Q6–Q8, Q10–Q13 defaults in use |
+| [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | done — built on `claude/f-005-customer-booking-9edbd4` (not merged); AC-1…AC-42 + AC-17b covered by tests (AC-42 real-device review with F-002/F-003's); closes F-009 R1, R20; ADR-0028 accepted; Q6–Q8, Q10–Q13 defaults in use |
 | [F-004](../features/F-004-request-a-date.md) Request-a-date | planned |
 | [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | planned |
 | [F-006](../features/F-006-payment-instructions-and-records.md) Payment instructions & records | planned |
@@ -37,7 +37,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
 | Platform admin inside the same app, gated, no impersonation; admin login = email + password + TOTP | Accept | [ADR-0011](../decisions/0011-platform-admin-access.md) · F-010–F-015 | Before admin build (wk 4) |
-| F-005 implementation choices: encrypted session payloads (booking page keeps its session, ADR-0027 §3), booking-code insert retry, hold release on opening the form, submission keys bound to their departure | Accept | [ADR-0028](../decisions/0028-customer-booking-implementation-choices.md) · F-005 | Before F-005 merges |
 
 ### Week 1 — choices outside the specs
 

@@ -1,7 +1,7 @@
 ---
 id: 0028
 title: Implementation choices for customer booking and seat hold (F-005)
-status: proposed
+status: accepted
 date: 2026-10-19
 deciders: [Rengga]
 related: [F-005, F-003, F-006, F-009, ADR-0006, ADR-0021, ADR-0025, ADR-0026, ADR-0027]
@@ -10,8 +10,8 @@ related: [F-005, F-003, F-006, F-009, ADR-0006, ADR-0021, ADR-0025, ADR-0026, AD
 # 0028. Implementation choices for customer booking and seat hold (F-005)
 
 *Proposed by the builder agent on 2026-10-19 while building F-005; §1 revised the same day after review (Rengga: keep
-the session, encrypt it). Waits for Rengga's acceptance; the points are technical calls within ADR-0006, ADR-0026 and
-ADR-0027.*
+the session, encrypt it). Accepted by Rengga on 2026-10-19 as a whole; the points are technical calls within ADR-0006,
+ADR-0026 and ADR-0027.*
 
 ## Context
 
