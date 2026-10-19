@@ -44,6 +44,10 @@ Source of UI wording: [design mockup](../design/README.md).
 | payment method | rekening / metode pembayaran | One bank or e-wallet account (QRIS, cash in F-006) in the payment instructions; belongs to the organization. |
 | deposit | DP (uang muka) | Partial payment (P1). |
 | public page | halaman publik | `rakyt.id/<slug>` — the seller's shareable booking page. |
+| seller page / trip page | halaman usaha / halaman trip | The two public pages: `rakyt.id/<slug>` lists published trips; `rakyt.id/<slug>/<trip-slug>` shows one trip and its departures (F-002). |
+| from-price | mulai Rp… | Lowest effective price among a trip's bookable departures, else its base price. Shown on trip cards and the F-003 preview. |
+| bookable | bisa dipesan / tidak bisa dipesan | Departure that accepts bookings now: trip published and scheduled, departure open, before its deadline, seats left, not started (F-003 rule). |
+| link preview | pratinjau link | Title, text and photo WhatsApp/IG show for a shared link, from Open Graph tags (ADR-0024). |
 | booking link / slug | link booking | The `<slug>` in `rakyt.id/<slug>`; lowercase, 3–30 chars; locked after first publish in P0. |
 | audit event | riwayat perubahan | Append-only record of an important change (who, what, before/after, when). Not shown to sellers in P0. |
 | quick edit | edit cepat | Mobile sheet to change price, seats, open/closed in < 30 s. |

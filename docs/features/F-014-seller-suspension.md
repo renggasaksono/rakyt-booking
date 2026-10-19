@@ -42,6 +42,7 @@ F-010 · F-012 · F-015 · F-002 (public page) · F-005 (booking creation).
 Effects of suspension not yet decided — do not invent behaviour; resolve before `ready`:
 
 - [ ] Public page: hidden (404), or shown with a neutral "tidak tersedia" notice? — Rengga
+  *F-002 (ready 2026-10-19) routes every public page through one `PublicVisibility` check (F-002 Q11); the answer plugs in there.*
 - [ ] Can the seller still sign in (read-only) to handle existing customers? — Rengga
 - [ ] Existing unpaid bookings: do holds keep expiring normally? Can customers still upload payment evidence? — Rengga
 - [ ] Existing paid/upcoming bookings: who tells customers, and is the seller still expected to run the trip? — Rengga

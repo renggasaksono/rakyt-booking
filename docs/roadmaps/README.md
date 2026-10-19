@@ -15,7 +15,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | [F-009](../features/F-009-tenancy-security-operations.md) Tenancy & security baseline (slice A wk 2 · ops wk 4 · hardening wk 6) | in-progress — slice A built; B, C to do |
 | [F-003](../features/F-003-trips-and-departures.md) Trips & departures | in-progress — built on `feat/F-003-trips-and-departures`; 38/43 ACs covered by tests; AC-3/7/7a/41 partly covered, AC-35 is a pilot check; device review after F-001 section A |
 | [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | in-progress — merged (PR #5); manual-test fixes on `fix/F-001-manual-test` add Pengaturan → Rekening (F5, the bank / e-wallet subset of F-006) and F6; 60/65 ACs covered by tests; C3/F1/T3 partly covered, D7 waits on F-002, P1 device review; ADR-0023 accepted |
-| [F-002](../features/F-002-public-booking-page.md) Public booking page | planned |
+| [F-002](../features/F-002-public-booking-page.md) Public booking page | ready — spec 2026-10-19 (AC-1…AC-39 + AC-19a); all questions decided; ADR-0024 accepted |
 | [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | planned |
 | [F-004](../features/F-004-request-a-date.md) Request-a-date | planned |
 | [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | planned |
@@ -72,7 +72,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 
 | Decision | Source |
 |---|---|
-| SSR/caching for link previews (OG tags); Rakyt branding placement on free plan | [F-002](../features/F-002-public-booking-page.md#open-questions) |
 | Accepted date request → public or private departure; price on accept | [F-004](../features/F-004-request-a-date.md#open-questions) |
 | Booking reference format (`RKB-MMDD-NNNN`: departure or booking date) | [F-005](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
 | Booking vs payment status model; re-upload and hold clock after rejection; DP 50% in P0 or P1 | [F-006](../features/F-006-payment-instructions-and-records.md#open-questions) |
@@ -80,7 +79,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Admin auth mechanism; admin UI language (Bahasa or English) | [F-010](../features/F-010-admin-access-control.md#open-questions) |
 | Admin status mapping (depends on F-006) | [F-011](../features/F-011-admin-overview-dashboard.md#open-questions) |
 | Meaning of "last activity" in the seller directory | [F-012](../features/F-012-admin-seller-directory.md#open-questions) |
-| Suspension effects: public page, seller sign-in, unpaid holds, paid upcoming bookings | [F-014](../features/F-014-seller-suspension.md#open-questions) |
+| Suspension effects: public page, seller sign-in, unpaid holds, paid upcoming bookings (F-002 routes the public page through one `PublicVisibility` check) | [F-014](../features/F-014-seller-suspension.md#open-questions) |
 | Do sellers see admin actions on their organization | [F-015](../features/F-015-admin-audit-log.md#open-questions) |
 
 ### Missing mockups

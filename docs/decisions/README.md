@@ -33,3 +33,4 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0021](0021-tenancy-enforcement-mechanics.md) | How organization scoping is enforced in code | accepted | 2026-10-17 |
 | [0022](0022-trips-implementation-choices.md) | Implementation choices for trips and departures (F-003) | accepted | 2026-10-18 |
 | [0023](0023-onboarding-and-accounts-implementation-choices.md) | Implementation choices for seller accounts and onboarding (F-001) | accepted | 2026-10-19 |
+| [0024](0024-public-page-rendering-and-caching.md) | Public pages — Inertia without SSR, server-rendered head tags, split JavaScript, no page cache | accepted | 2026-10-19 |
