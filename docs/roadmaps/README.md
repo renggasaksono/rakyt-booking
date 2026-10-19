@@ -20,7 +20,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | [F-004](../features/F-004-request-a-date.md) Request-a-date | planned |
 | [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | planned |
 | [F-006](../features/F-006-payment-instructions-and-records.md) Payment instructions & records | planned |
-| [F-008](../features/F-008-whatsapp-handoff.md) WhatsApp handoff | planned |
+| [F-008](../features/F-008-whatsapp-handoff.md) WhatsApp handoff | ready — section A (Tanya via WhatsApp on the trip page, AC-A1…A11) approved 2026-10-19; section B (template set) still draft |
 | Internal admin panel — [F-010](../features/F-010-admin-access-control.md) access control, [F-011](../features/F-011-admin-overview-dashboard.md) overview, [F-012](../features/F-012-admin-seller-directory.md) seller directory, [F-013](../features/F-013-admin-booking-search.md) booking search, [F-014](../features/F-014-seller-suspension.md) suspension, [F-015](../features/F-015-admin-audit-log.md) admin audit log | planned |
 
 The admin panel is an internal tool for the sole platform admin (product owner) to onboard pilot sellers, inspect
