@@ -1,13 +1,15 @@
 ---
 id: 0029
 title: Implementation choices for the seller dashboard and booking list (F-007)
-status: proposed
+status: accepted
 date: 2026-10-19
-deciders: [Builder agent — needs Rengga's confirmation]
+deciders: [Rengga, Builder agent]
 related: [F-007, ADR-0004, ADR-0006, ADR-0021, ADR-0026, ADR-0027]
 ---
 
 # 0029. Implementation choices for the seller dashboard and booking list (F-007)
+
+*Accepted by Rengga on 2026-10-19.*
 
 ## Context
 

@@ -1,7 +1,7 @@
 ---
 id: F-007
 title: Seller dashboard ("Hari ini") & booking list
-status: in-progress
+status: done
 priority: P0
 roadmap: mvp-weeks-2-4
 mockups: [1e, 2f, 1g]
@@ -409,7 +409,7 @@ All decided 2026-10-19 (Rengga: "all as recommended").
 
 Built test-first on `claude/f-007-seller-dashboard-654ef1`; every AC above has a passing test (AC-38's real-device
 review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spec left open are in
-[ADR-0029](../decisions/0029-seller-dashboard-implementation-choices.md) (proposed).
+[ADR-0029](../decisions/0029-seller-dashboard-implementation-choices.md) (accepted by Rengga on 2026-10-19).
 
 - **Code:** `App\Dashboard\DashboardPresenter` (Hari ini), `App\Bookings\BookingFilters` (search/filters, AC-17–AC-20),
   `App\Bookings\SellerBookingPresenter` (items, detail, WhatsApp URLs), `BookingService::cancelBySeller()` (departure →
@@ -427,8 +427,8 @@ review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spe
   without an organization is redirected to onboarding on booking URLs too (AC-35) and a seller still onboarding
   resumes their step; a form write without an organization stays a 404 (F-001 E1).
 - Logs: the WhatsApp `text` parameter and a URL-encoded `/pesanan/<token>` are redacted (`RedactSensitiveData`).
-- **Status:** every AC has a passing test, but the build follows ADR-0029, which is still `proposed`; the spec moves
-  to `done` once Rengga accepts it (or the affected parts change).
+- **Status:** every AC has a passing test and ADR-0029 is accepted (Rengga, 2026-10-19), so the spec is `done`; AC-38's
+  real-device review is still to do with the other P0 screens.
 - Not done: `Inertia::encryptHistory()` on the detail (the customer link sits in `history.state`) — it needs
   `crypto.subtle`, which plain-HTTP local dev does not have; revisit with HTTPS everywhere (F-009 hardening).
 - The audit catalogue gains `booking.cancelled` (actor `user`); F-009's audited-actions table lists it.
@@ -447,3 +447,4 @@ review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spe
   round-trip, search and extra props. Status → `done` (AC-38 device review pending with the other P0 screens)
 - 2026-10-19 — Review fixes: AC-35 redirect before binding, token/`text` redaction in logs, fuller exact-key tests,
   currency from lang. Status → `in-progress` until ADR-0029 is accepted
+- 2026-10-19 — ADR-0029 accepted (Rengga). Status → `done` (AC-38 real-device review pending with the other P0 screens)

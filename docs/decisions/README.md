@@ -38,4 +38,4 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0026](0026-booking-record-and-lifecycle.md) | Booking record, status lifecycle, reference and seat accounting | accepted | 2026-10-19 |
 | [0027](0027-customer-booking-routes-and-access-token.md) | Customer booking routes — URL shape, token storage, session | accepted | 2026-10-19 |
 | [0028](0028-customer-booking-implementation-choices.md) | Implementation choices for customer booking and seat hold (F-005) | accepted | 2026-10-19 |
-| [0029](0029-seller-dashboard-implementation-choices.md) | Implementation choices for the seller dashboard and booking list (F-007) | proposed | 2026-10-19 |
+| [0029](0029-seller-dashboard-implementation-choices.md) | Implementation choices for the seller dashboard and booking list (F-007) | accepted | 2026-10-19 |

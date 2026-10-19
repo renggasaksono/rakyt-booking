@@ -18,7 +18,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | [F-002](../features/F-002-public-booking-page.md) Public booking page | in-progress — built on `feat/F-002-public-booking-page`; 39/40 ACs covered by tests (AC-35 Lighthouse is a pre-pilot manual check; AC-36 device review pending); closes F-001 D7/F1/T3 and F-009 A5; ADR-0025 accepted; Q13 decided |
 | [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | done — built on `claude/f-005-customer-booking-9edbd4` (not merged); AC-1…AC-42 + AC-17b covered by tests (AC-42 real-device review with F-002/F-003's); closes F-009 R1, R20; ADR-0028 accepted; Q6–Q8, Q10–Q13 defaults in use |
 | [F-004](../features/F-004-request-a-date.md) Request-a-date | planned |
-| [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | in-progress — built on `claude/f-007-seller-dashboard-654ef1` (not merged); AC-1…AC-38 covered by tests (AC-38 real-device review with the other P0 screens); `done` once ADR-0029 is accepted; Konfirmasi / Tolak come with F-006, date-request rows with F-004; ADR-0029 proposed |
+| [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | done — built on `claude/f-007-seller-dashboard-654ef1` (not merged); AC-1…AC-38 covered by tests (AC-38 real-device review with the other P0 screens); Konfirmasi / Tolak come with F-006, date-request rows with F-004; ADR-0029 accepted |
 | [F-006](../features/F-006-payment-instructions-and-records.md) Payment instructions & records | planned |
 | [F-008](../features/F-008-whatsapp-handoff.md) WhatsApp handoff | planned |
 | Internal admin panel — [F-010](../features/F-010-admin-access-control.md) access control, [F-011](../features/F-011-admin-overview-dashboard.md) overview, [F-012](../features/F-012-admin-seller-directory.md) seller directory, [F-013](../features/F-013-admin-booking-search.md) booking search, [F-014](../features/F-014-seller-suspension.md) suspension, [F-015](../features/F-015-admin-audit-log.md) admin audit log | planned |
@@ -37,7 +37,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
 | Platform admin inside the same app, gated, no impersonation; admin login = email + password + TOTP | Accept | [ADR-0011](../decisions/0011-platform-admin-access.md) · F-010–F-015 | Before admin build (wk 4) |
-| Seller dashboard choices: Hari ini's "Ingatkan via WA" through a redirect route (token kept out of Hari ini), list filters carried into detail URLs, search rules, extra props | Accept | [ADR-0029](../decisions/0029-seller-dashboard-implementation-choices.md) · F-007 | Before merging F-007 |
 
 ### Week 1 — choices outside the specs
 
