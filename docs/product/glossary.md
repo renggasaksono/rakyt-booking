@@ -75,6 +75,6 @@ Source of UI wording: [design mockup](../design/README.md).
 | `completed` | Selesai | | Trip has happened |
 
 > The blueprint names booking statuses *pending, confirmed, cancelled, completed*; the mockup refines payment states.
-> How the two map onto each other is an open question in [F-006](../features/F-006-payment-instructions-and-records.md);
-> [ADR-0026](../decisions/0026-booking-record-and-lifecycle.md) (proposed) keeps this one set on `bookings.status` and
-> treats *pending* (`awaiting_payment`, `needs_review`) and *confirmed* (`paid`) as UI groupings.
+> Decided 2026-10-19 ([F-005 Q3](../features/F-005-customer-booking-and-seat-hold.md#open-questions),
+> [ADR-0026](../decisions/0026-booking-record-and-lifecycle.md) §1–2): this one set lives on `bookings.status`;
+> *pending* (`awaiting_payment`, `needs_review`) and *confirmed* (`paid`) are UI groupings.

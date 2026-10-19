@@ -370,7 +370,7 @@ queues it, pass ids and load inside `handle()` under `ScopedToOrganization`).
 - Hold that outlasts the booking deadline or even the meeting time (a booking just before a same-day deadline): kept
   exactly 2 h per ADR-0006; the seller sorts it out (Q12).
 - Same phone booking the same departure twice: allowed (families, corrections), capped by the rate limit.
-- Reference counter past 9 999 (AC-17); two sellers with the same reference (allowed; ADR-0026).
+- Reference counter past 9 999 (AC-17); two sellers with the same counter value (different references through the seller code, AC-17).
 - Wrong/forged/other-seller token, reference as token (AC-35, AC-38); token in logs (AC-40) or referrer (AC-36).
 - Signed-in seller booking another seller's trip, or their own (AC-38 d — a booking is never tied to a user).
 - Trip unpublished or departure closed after booking (AC-34). Seller slug changed by support: old links 404 (ADR-0027).
@@ -421,10 +421,10 @@ change before the pilot at the cost of test data only.
   `MMDD` = departure start date; `NNNN` = per-organization counter (≥ 4 digits); the seller code makes every reference
   unique across the platform, so support can identify the seller from the reference alone. The mockups'
   `RKB-1114-0144` gains the code segment. ADR-0026 §5. — Rengga
-- [ ] **Q3 Booking status model** (also F-006 Q1). *Recommended:* one `bookings.status` with the glossary set +
-  `cancel_reason`; amounts and evidence in F-006's `payment_records`; blueprint "pending/confirmed" are UI groupings.
-  Why: one pill per booking in every mockup; one place answers "does this hold seats?". ADR-0026 §1–2. — Rengga ·
-  *not blocking F-005* (it uses only `awaiting_payment` and `cancelled`), *must be settled before F-006 is `ready`*
+- [x] **Q3 Booking status model** (also F-006 Q1). Decided 2026-10-19: one `bookings.status` with the glossary set +
+  `cancel_reason`; amounts and evidence in F-006's `payment_records`; blueprint "pending/confirmed" are UI groupings
+  (pending = `awaiting_payment`/`needs_review`, confirmed = `paid`). Holding statuses: `awaiting_payment`,
+  `needs_review`, `paid`. ADR-0026 §1–2. — Rengga
 - [ ] **Q4 Booking page URL** `/{slug}/pesanan/{token}` instead of `/b/{token}`. *Recommended:* the slug form. Why: the
   organization comes from the slug, so no cross-organization lookup or allowlist entry; the link shows the seller's
   name. Cost: about 15 more characters in WhatsApp. ADR-0027 §1. — Rengga · *not blocking*
@@ -469,3 +469,4 @@ booking route; **R20** is AC-40; **R17** applies only if a queued job is added. 
   to F-006 (F-005 keeps the rule they use, AC-27). Reference format given a default (Q2); Q3–Q13 added with defaults.
   ADR-0026 and ADR-0027 proposed. Status → `ready`
 - 2026-10-19 — Q2 decided: reference `RKB-<seller code>-MMDD-NNNN`, unique platform-wide; AC-17 updated, AC-17b and `organizations.booking_code` added
+- 2026-10-19 — Q3 decided: one status column (ADR-0026 §1–2)

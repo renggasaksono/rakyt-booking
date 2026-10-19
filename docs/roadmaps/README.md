@@ -37,7 +37,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
 | Platform admin inside the same app, gated, no impersonation; admin login = email + password + TOTP | Accept | [ADR-0011](../decisions/0011-platform-admin-access.md) · F-010–F-015 | Before admin build (wk 4) |
-| Booking record: one status column (glossary set + `cancel_reason`); holding statuses; lock order; price snapshot; reference `RKB-<seller code>-<departure MMDD>-<per-seller NNNN>`, unique platform-wide; idempotent submit; inline release of expired holds | Accept | [ADR-0026](../decisions/0026-booking-record-and-lifecycle.md) · F-005 Q2, Q3 · F-006 Q1 | Before F-006 is `ready` (F-005 builds on the default) |
+| Booking record: lock order; price snapshot (F-005 Q9); idempotent submit; inline release of expired holds. Already decided by Rengga 2026-10-19: one status column + holding statuses (Q3), reference `RKB-<seller code>-MMDD-NNNN` (Q2) | Accept | [ADR-0026](../decisions/0026-booking-record-and-lifecycle.md) · F-005 Q2, Q3, Q9 · F-006 Q1 | Before F-005 merges (builder uses the defaults) |
 | Customer booking routes under the slug (`/<slug>/pesanan/<token>`), token stored as hash + encrypted copy, session + CSRF on booking routes only | Accept | [ADR-0027](../decisions/0027-customer-booking-routes-and-access-token.md) · F-005 Q4, Q5 | Before pilot (F-005 builds on the default) |
 
 ### Week 1 — choices outside the specs
@@ -83,7 +83,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Decision | Source |
 |---|---|
 | Accepted date request → public or private departure; price on accept | [F-004](../features/F-004-request-a-date.md#open-questions) |
-| Booking vs payment status model (one status column proposed in ADR-0026); re-upload and hold clock after rejection; does `rejected` hold seats; DP 50% in P0 or P1 | [F-006](../features/F-006-payment-instructions-and-records.md#open-questions) |
+| Re-upload and hold clock after rejection; does `rejected` hold seats; DP 50% in P0 or P1 | [F-006](../features/F-006-payment-instructions-and-records.md#open-questions) |
 | Mobile dashboard mockup; manual booking entry | [F-007](../features/F-007-seller-dashboard-and-bookings.md#open-questions) |
 | Admin auth mechanism; admin UI language (Bahasa or English) | [F-010](../features/F-010-admin-access-control.md#open-questions) |
 | Admin status mapping (depends on F-006) | [F-011](../features/F-011-admin-overview-dashboard.md#open-questions) |
