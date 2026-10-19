@@ -119,14 +119,26 @@ class TripDeparture extends Model
      */
     public function scopeBookable(Builder $query, string $today, ?CarbonInterface $now = null): void
     {
+        $query->openForBooking($today, $now)
+            ->whereHas('trip', fn (Builder $trip) => $trip
+                ->where('status', 'published')
+                ->where('booking_mode', 'scheduled'));
+    }
+
+    /**
+     * The departure's own half of bookable(), without the trip conditions. The
+     * editor preview (F-003 AC-13) uses it so a draft trip previews what its
+     * public card will show once published (F-002 AC-15).
+     *
+     * @param  Builder<TripDeparture>  $query
+     */
+    public function scopeOpenForBooking(Builder $query, string $today, ?CarbonInterface $now = null): void
+    {
         // Bindings are written without an offset, so compare in UTC (ADR-0014).
         $query->where('status', DepartureStatus::Open)
             ->where('booking_deadline_at', '>', CarbonImmutable::instance($now ?? CarbonImmutable::now())->utc())
             ->whereColumn('seats_taken', '<', 'capacity')
-            ->whereDate('start_date', '>=', $today)
-            ->whereHas('trip', fn (Builder $trip) => $trip
-                ->where('status', 'published')
-                ->where('booking_mode', 'scheduled'));
+            ->whereDate('start_date', '>=', $today);
     }
 
     /**
