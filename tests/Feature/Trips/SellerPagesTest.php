@@ -23,17 +23,18 @@ class SellerPagesTest extends TestCase
     {
         [$a] = $this->createTenants();
 
+        // F-007 AC-2 extends the F-003 layout to six items.
         $this->actingAsTenant($a)->get(route('trips.index'))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Trips/Index')
-                ->has('seller.nav', 2)
-                ->where('seller.nav.0.label', 'Trip & keberangkatan')
-                ->where('seller.nav.0.url', route('trips.index'))
-                ->where('seller.nav.0.active', true)
+                ->has('seller.nav', 6)
+                ->where('seller.nav.2.label', 'Trip & keberangkatan')
+                ->where('seller.nav.2.url', route('trips.index'))
+                ->where('seller.nav.2.active', true)
                 // F-001 F3: Pengaturan hosts Profil usaha and Akun.
-                ->where('seller.nav.1.url', route('settings.index'))
-                ->where('seller.nav.1.active', false)
+                ->where('seller.nav.5.url', route('settings.index'))
+                ->where('seller.nav.5.active', false)
                 ->where('seller.close_label', 'Tutup'));
     }
 

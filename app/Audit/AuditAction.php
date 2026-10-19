@@ -10,6 +10,8 @@ enum AuditAction: string
     case BookingCreated = 'booking.created';
     case BookingStatusChanged = 'booking.status_changed';
     case BookingHoldExpired = 'booking.hold_expired';
+    // F-007 AC-29: the seller cancels a holding booking.
+    case BookingCancelled = 'booking.cancelled';
 
     case PaymentEvidenceUploaded = 'payment.evidence_uploaded';
     case PaymentVerified = 'payment.verified';

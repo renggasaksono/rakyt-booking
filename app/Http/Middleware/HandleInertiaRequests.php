@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Bookings\BookingFilters;
+use App\Dashboard\DashboardPresenter;
 use App\PublicPages\Middleware\ResolvePublicOrganization;
 use App\Tenancy\CurrentOrganization;
 use Illuminate\Http\Request;
@@ -48,16 +50,8 @@ class HandleInertiaRequests extends Middleware
                 'toast' => $request->session()->get('toast'),
                 'notice' => $request->session()->get('notice'),
             ],
-            // Seller layout copy and links (F-003 minimal layout, F-001 Pengaturan); F-007 adds more items.
-            'seller' => fn () => $request->user() === null || ! app(CurrentOrganization::class)->check() ? null : [
-                'nav' => [
-                    ['key' => 'trips', 'label' => __('trips.nav.trips'), 'url' => route('trips.index'), 'active' => $request->routeIs('trips.*', 'departures.*')],
-                    ['key' => 'settings', 'label' => __('profile.settings.title'), 'url' => route('settings.index'), 'active' => $request->routeIs('settings.*')],
-                ],
-                'brand' => __('trips.nav.brand'),
-                'menu_label' => __('trips.nav.menu'),
-                'close_label' => __('trips.nav.close'),
-            ],
+            // Seller navigation (F-007 AC-2–AC-4): desktop side nav, phone bottom nav, Perlu tindakan counts.
+            'seller' => fn () => $request->user() === null || ! app(CurrentOrganization::class)->check() ? null : $this->sellerNav($request),
             // F-001 A6, A10: account menu and the non-blocking verification banner.
             'account' => fn () => $request->user() === null ? null : [
                 'name' => $request->user()->name,
@@ -75,6 +69,50 @@ class HandleInertiaRequests extends Middleware
                     'account' => route('settings.account'),
                 ],
             ],
+        ];
+    }
+
+    /**
+     * Desktop: Hari ini, Pesanan, Trip & keberangkatan, Pembayaran, Halaman
+     * publik, Pengaturan; the phone shows the items with `phone` (Q2). Pesanan
+     * and Pembayaran carry the Perlu tindakan count — one query, current
+     * organization only, seller pages only (public pages return early above).
+     *
+     * @return array<string, mixed>
+     */
+    private function sellerNav(Request $request): array
+    {
+        $organization = app(CurrentOrganization::class)->get();
+        $count = DashboardPresenter::actionNeededCount();
+        $badge = $count > 0 ? ['count' => $count, 'label' => __('dashboard.nav.badge', ['n' => $count])] : null;
+        $payments = $request->routeIs('bookings.index') && $request->query('status') === BookingFilters::ACTION_NEEDED;
+
+        $item = fn (string $key, string $label, string $url, bool $active, array $extra = []) => [
+            'key' => $key,
+            'label' => $label,
+            'phone_label' => null,
+            'url' => $url,
+            'active' => $active,
+            'badge' => null,
+            'external' => false,
+            'phone' => false,
+            ...$extra,
+        ];
+
+        return [
+            'nav' => [
+                $item('today', __('dashboard.nav.today'), route('dashboard'), $request->routeIs('dashboard'), ['phone' => true]),
+                $item('bookings', __('dashboard.nav.bookings'), route('bookings.index'), $request->routeIs('bookings.*') && ! $payments, ['phone' => true, 'badge' => $badge]),
+                $item('trips', __('dashboard.nav.trips'), route('trips.index'), $request->routeIs('trips.*', 'departures.*'), ['phone' => true, 'phone_label' => __('dashboard.nav.trips_short')]),
+                $item('payments', __('dashboard.nav.payments'), route('bookings.index', ['status' => BookingFilters::ACTION_NEEDED]), $payments, ['badge' => $badge]),
+                $item('public_page', __('dashboard.nav.public_page'), route('public.seller', ['organization' => $organization->slug]), false, ['external' => true]),
+                $item('settings', __('dashboard.nav.settings'), route('settings.index'), $request->routeIs('settings.*', 'payment-methods.*'), ['phone' => true]),
+            ],
+            'brand' => __('trips.nav.brand'),
+            'menu_label' => __('trips.nav.menu'),
+            'close_label' => __('trips.nav.close'),
+            'external_mark' => __('dashboard.nav.external'),
+            'new_tab' => __('dashboard.nav.new_tab'),
         ];
     }
 }

@@ -93,6 +93,10 @@ booking must go back, open WhatsApp, and explain which trip they mean.
 - [ ] Numbers stored E.164; links use digits only.
 - [ ] Works on Android and iOS browsers and in IG/TikTok in-app browsers.
 
+F-007 hand-off (2026-10-19): F-007 adds two seller → customer messages in `lang/id/bookings.php → whatsapp`
+(`reminder` with the customer's booking link, `cancelled`); move them into this feature's template set with F-005's
+`booking.php → whatsapp.customer`.
+
 ## Data & rules
 
 ### Section A
@@ -139,5 +143,6 @@ booking must go back, open WhatsApp, and explain which trip they mean.
 ## Changelog
 
 - 2026-10-17 — created
+- 2026-10-19 — F-007 hand-off noted (reminder and cancellation messages)
 - 2026-10-19 — Planner: section A (Tanya via WhatsApp on the trip page) with AC-A1…AC-A11 from the contextual
   WhatsApp change request; D1–D3 approved by Rengga; section A `ready`, section B still draft

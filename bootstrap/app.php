@@ -49,6 +49,16 @@ return Application::configure(basePath: dirname(__DIR__))
             before: SubstituteBindings::class,
             prepend: ResolvePublicOrganization::class,
         );
+        // A user without an organization, or still onboarding, is redirected before a
+        // seller-owned binding can 404 (F-001 E1/E2, F-007 AC-35).
+        $middleware->prependToPriorityList(
+            before: SubstituteBindings::class,
+            prepend: EnsureCurrentOrganization::class,
+        );
+        $middleware->prependToPriorityList(
+            before: SubstituteBindings::class,
+            prepend: EnsureOnboardingFinished::class,
+        );
 
         $middleware->alias([
             'no-referrer' => NoReferrer::class,

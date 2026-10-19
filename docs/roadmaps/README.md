@@ -18,7 +18,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | [F-002](../features/F-002-public-booking-page.md) Public booking page | in-progress — built on `feat/F-002-public-booking-page`; 39/40 ACs covered by tests (AC-35 Lighthouse is a pre-pilot manual check; AC-36 device review pending); closes F-001 D7/F1/T3 and F-009 A5; ADR-0025 accepted; Q13 decided |
 | [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | done — built on `claude/f-005-customer-booking-9edbd4` (not merged); AC-1…AC-42 + AC-17b covered by tests (AC-42 real-device review with F-002/F-003's); closes F-009 R1, R20; ADR-0028 accepted; Q6–Q8, Q10–Q13 defaults in use |
 | [F-004](../features/F-004-request-a-date.md) Request-a-date | planned |
-| [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | planned |
+| [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | done — built on `claude/f-007-seller-dashboard-654ef1` (not merged); AC-1…AC-38 covered by tests (AC-38 real-device review with the other P0 screens); Konfirmasi / Tolak come with F-006, date-request rows with F-004; ADR-0029 accepted |
 | [F-006](../features/F-006-payment-instructions-and-records.md) Payment instructions & records | planned |
 | [F-008](../features/F-008-whatsapp-handoff.md) WhatsApp handoff | ready — section A (Tanya via WhatsApp on the trip page, AC-A1…A11) approved 2026-10-19; section B (template set) still draft |
 | Internal admin panel — [F-010](../features/F-010-admin-access-control.md) access control, [F-011](../features/F-011-admin-overview-dashboard.md) overview, [F-012](../features/F-012-admin-seller-directory.md) seller directory, [F-013](../features/F-013-admin-booking-search.md) booking search, [F-014](../features/F-014-seller-suspension.md) suspension, [F-015](../features/F-015-admin-audit-log.md) admin audit log | planned |
@@ -81,7 +81,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 |---|---|
 | Accepted date request → public or private departure; price on accept | [F-004](../features/F-004-request-a-date.md#open-questions) |
 | Re-upload and hold clock after rejection; does `rejected` hold seats; DP 50% in P0 or P1 | [F-006](../features/F-006-payment-instructions-and-records.md#open-questions) |
-| Mobile dashboard mockup; manual booking entry | [F-007](../features/F-007-seller-dashboard-and-bookings.md#open-questions) |
 | Admin auth mechanism; admin UI language (Bahasa or English) | [F-010](../features/F-010-admin-access-control.md#open-questions) |
 | Admin status mapping (depends on F-006) | [F-011](../features/F-011-admin-overview-dashboard.md#open-questions) |
 | Meaning of "last activity" in the seller directory | [F-012](../features/F-012-admin-seller-directory.md#open-questions) |
@@ -91,7 +90,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 ### Missing mockups
 
 Sign-up / sign-in / password reset (F-001) · Pengaturan → Akun, Profil usaha and Rekening (F-001) · mobile trip editor (F-003 Q8) ·
-mobile dashboard (F-007).
+mobile dashboard (F-007 Q1 decided: build phone-first, device review instead).
 
 ## Next — after pilot feedback (P1)
 

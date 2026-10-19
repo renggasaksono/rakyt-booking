@@ -87,6 +87,21 @@ class Booking extends Model
             ->where('hold_expires_at', '<=', CarbonImmutable::instance($now)->utc());
     }
 
+    /**
+     * Perlu tindakan (F-007 AC-8): to check, or awaiting payment with an
+     * active hold. An expired hold the job has not released yet is excluded.
+     *
+     * @param  Builder<Booking>  $query
+     */
+    public function scopeActionNeeded(Builder $query, CarbonInterface $now): void
+    {
+        $query->where(fn (Builder $q) => $q
+            ->where('status', BookingStatus::NeedsReview)
+            ->orWhere(fn (Builder $q) => $q
+                ->where('status', BookingStatus::AwaitingPayment)
+                ->where('hold_expires_at', '>', CarbonImmutable::instance($now)->utc())));
+    }
+
     public static function hashToken(string $token): string
     {
         return hash('sha256', $token);

@@ -187,7 +187,8 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 - **F-005:** maintains `seats_taken`; snapshots unit price on bookings; uses the same row lock and the *Bookable* rule.
 - **F-002:** renders trips/departures, uses `slug`, photo variants and the *Bookable* rule.
 - **F-004:** decides whether accepted requests create departures (they would appear in this list).
-- **F-007:** "Edit cepat" on Hari ini opens this feature's quick-edit sheet.
+- **F-007:** "Edit cepat" on Hari ini opens this feature's quick-edit sheet (F-007 AC-13; `quickUpdate` already
+  redirects back). F-007's booking list accepts `?keberangkatan=<public_id>`, so a departure card can link "Lihat pesanan".
 - **ADR-0013:** database is PostgreSQL (row locks via `SELECT … FOR UPDATE`, as ADR-0006 assumes).
 - **F-009 hand-offs (2026-10-18):** trips, departures and trip media use `BelongsToOrganization` + a policy extending `OrganizationOwnedPolicy` + the cross-tenant harness (guard tests fail otherwise). Photos use `MediaPath`, `UploadRules::tripPhoto()` and `PublicImage::sanitize()`; add the pixel-dimension cap first (**F-009 R3**). The deadline auto-close job must be added to `config/rakyt.php → cross_organization_allowlist` and audit with `Actor::system()` (**F-009 A11**). Also owned here: **F-009 R14** (`UniqueInCurrentOrganization` for the trip slug; no bare `exists:`/`unique:` rules), **R15** (soft-delete route binding) and **R16** (nested `scopeBindings()` routes) — non-numeric ids must be a 404, not a 500.
 
