@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-weeks-2-6
 mockups: []
 decisions: ["0002", "0003", "0004", "0006", "0007", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0020", "0021"]
-updated: 2026-10-17
+updated: 2026-10-19
 ---
 
 # F-009 · Tenancy, security & operations baseline
@@ -71,7 +71,10 @@ Tags: **(auto)** = automated test in CI · **(ops)** = verified by a rehearsal o
 - [x] **A2 (auto)** Given Org A's owner is signed in, when they request show/update/delete/custom actions for a record belonging to Org B by ID in the URL, then the response is **404** and the record is unchanged in the database.
 - [x] **A3 (auto)** Given Org A's owner submits a form whose payload references an Org B record (e.g. `departure_id`, `trip_id`, `booking_id`), when the request is processed, then it fails validation (422) and nothing is written.
 - [x] **A4 (auto)** Given a seller-owned record is created through the app, when `organization_id` is omitted, then it is filled from the current organization; when a request tries to set or change `organization_id` (mass assignment or update), then the value is ignored or rejected and the stored value is unchanged.
-- [ ] **A5 (auto)** Given a public (unauthenticated) request for `rakyt.id/<slug-of-A>/…` that names a trip, departure or booking ID belonging to Org B, or an unpublished/draft trip of Org A, then the response is 404.
+- [x] **A5 (auto)** Given a public (unauthenticated) request for `rakyt.id/<slug-of-A>/…` that names a trip, departure or booking ID belonging to Org B, or an unpublished/draft trip of Org A, then the response is 404.
+  *Covered by F-002* (`PublicTenancyTest`): B's trip by slug, public id or id, B's departure id, and A's draft under A's
+  slug are 404; the organization comes from the slug (ADR-0021, ADR-0025). Booking URLs come with F-005, which adds its
+  own A5 case.
 - [x] **A6 (auto) Schema guard:** Given the full migration set, when the guard test runs, then every table has a non-null, indexed, foreign-keyed `organization_id`, except tables on an explicit allowlist in the test (e.g. `users`, `organizations`, `sessions`, `jobs`, `failed_jobs`, `cache`, `migrations`, `password_reset_tokens`, framework tables). Adding a table without either is a failing test.
 - [x] **A7 (auto) Model guard:** every Eloquent model whose table has `organization_id` uses the scoping trait and has a registered policy; otherwise the test fails.
 - [x] **A8 (auto)** Given a queued job or scheduled command acts on seller data, when it runs without a signed-in user, then it either (a) receives an explicit `organization_id` and scopes to it, or (b) is on a reviewed allowlist of system jobs that deliberately query across organizations (hold expiry, deadline closing) and only touches the columns it needs. A test asserts the allowlist is exactly what is expected.
@@ -259,7 +262,6 @@ Primitives are exercised by a test-only resource (`tests/Fixtures/Tenancy/ProbeN
 
 **Still open in slice A** (each ticks when the named feature lands):
 
-- **A5** public 404s — needs the public pages and their slug context (F-002).
 - **A8a** admin queries — the bypass guard already permits only `app/Admin/Queries`; the `platform-admin` gate comes with F-010.
 - **A9** harness exists and is proven on the probe resource; ticks when F-001, F-003–F-007 use it for their resources.
 - **A15a** reset enumeration — the reset screen is F-001 (A7 there); the `password-reset` limiter is ready.
@@ -340,3 +342,4 @@ Q2–Q5 have recommended defaults (most are captured in ADR-0016 and ADR-0018). 
 - 2026-10-18 — R3 corrected (review B1): the 40 MP cap did not fit GD's real memory use (8.3 B/px). The cap is now derived from an explicit 320 MB budget (29 MP), proven by `PhotoMemoryBudgetTest`; re-ticked
 - 2026-10-18 — F-001 build: A14b, A15a, R4, R7 done. New limiters `verification-resend` and `account-change`; a `mail` log channel (redacted, HTML part dropped) for the local mailer. B12 conflicts with F-001 A11 (email change takes effect at once) — see F-001 Q15
 - 2026-10-19 — B12 reworded after F-001 Q15 (Rengga): the email change takes effect at once; the 24-hour payment-instruction block stays required (F-001 Q16)
+- 2026-10-19 — F-002 build: A5 done (public 404s from the slug context). Non-UTF-8 paths are now a 404 app-wide (ADR-0025 §2); the 429 page links home too

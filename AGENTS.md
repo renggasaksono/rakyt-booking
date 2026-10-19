@@ -79,6 +79,10 @@ checkout made before the rename may still show `Pages/`: fix it once with `mv re
 - All UI copy lives in `lang/id/*.php` (Vue pages get it as props); never hard-code Bahasa strings in views.
 - Audited actions go through `App\Audit\AuditLog`, inside the same `DB::transaction` as the change.
 - Public endpoints get a named limiter (`throttle:public-booking`, …); customer token pages get `no-referrer`.
+- Public pages (`/<slug>`, `/<slug>/<trip>`, F-002) are *fallback* routes: the organization comes from the slug
+  (`ResolvePublicOrganization`), never the session. Read trips via `PublicVisibility::trips()`, add fields to
+  `PublicPagePresenter` one by one (the exact-keys test lists them), and never show a signed-in seller's data there.
+  "Mulai Rp…" is `TripPricing::fromPrice()` everywhere.
 - Test names: `test_ac_<id>_…` in lower case (Pint rewrites `test_AC_…` to `test_a_c_…`).
 - Timestamps: PostgreSQL sessions run in UTC and Laravel writes Carbon values **without an offset**. Convert to UTC
   (`->utc()`) before storing or comparing in a query; compute local times with the organization's `timezone`.
