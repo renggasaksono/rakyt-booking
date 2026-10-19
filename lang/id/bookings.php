@@ -7,6 +7,8 @@
 
 return [
 
+    'currency' => 'Rp',
+
     'index' => [
         'title' => 'Pesanan',
         'search' => 'Cari nama, nomor WA, atau kode pesanan',

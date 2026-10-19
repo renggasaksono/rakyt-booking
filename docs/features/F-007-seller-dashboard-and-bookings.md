@@ -1,7 +1,7 @@
 ---
 id: F-007
 title: Seller dashboard ("Hari ini") & booking list
-status: done
+status: in-progress
 priority: P0
 roadmap: mvp-weeks-2-4
 mockups: [1e, 2f, 1g]
@@ -423,9 +423,14 @@ review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spe
   `DashboardTenancyTest` (AC-34–AC-37), `DashboardDesignTest` (AC-38); `tests/js/dashboard.test.js`.
 - `/dashboard` now redirects to `/hari-ini`; F-003's `SellerPagesTest` and F-001's `ResumeTest` were updated for the
   six-item nav and the new landing.
-- A user signed in without an organization gets **404** on `/pesanan/{id}` (and its cancel/remind), because the
-  tenant-scoped route binding runs before the `organization` middleware's onboarding redirect; `/hari-ini` and
-  `/pesanan` redirect to onboarding as AC-35 says. Nothing is exposed either way (ADR-0029, Consequences).
+- `organization` and `onboarded` now run before route model binding (`bootstrap/app.php` priority list), so a user
+  without an organization is redirected to onboarding on booking URLs too (AC-35) and a seller still onboarding
+  resumes their step; a form write without an organization stays a 404 (F-001 E1).
+- Logs: the WhatsApp `text` parameter and a URL-encoded `/pesanan/<token>` are redacted (`RedactSensitiveData`).
+- **Status:** every AC has a passing test, but the build follows ADR-0029, which is still `proposed`; the spec moves
+  to `done` once Rengga accepts it (or the affected parts change).
+- Not done: `Inertia::encryptHistory()` on the detail (the customer link sits in `history.state`) — it needs
+  `crypto.subtle`, which plain-HTTP local dev does not have; revisit with HTTPS everywhere (F-009 hardening).
 - The audit catalogue gains `booking.cancelled` (actor `user`); F-009's audited-actions table lists it.
 
 ## Changelog
@@ -440,3 +445,5 @@ review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spe
 - 2026-10-19 — Q1–Q7 decided as recommended (Rengga)
 - 2026-10-19 — Builder: AC-1…AC-38 built and covered by tests; ADR-0029 (proposed) for the reminder route, filter
   round-trip, search and extra props. Status → `done` (AC-38 device review pending with the other P0 screens)
+- 2026-10-19 — Review fixes: AC-35 redirect before binding, token/`text` redaction in logs, fuller exact-key tests,
+  currency from lang. Status → `in-progress` until ADR-0029 is accepted

@@ -23,7 +23,7 @@ const props = defineProps({
 
 const b = computed(() => props.booking);
 const people = computed(() => t(props.copy, 'index.participants', { n: b.value.participants }));
-const total = computed(() => `Rp${formatRupiah(b.value.total_amount)}`);
+const total = computed(() => `${t(props.copy, 'currency')}${formatRupiah(b.value.total_amount)}`);
 const start = computed(() => dayMonth(b.value.departure.start_date, props.context.today, props.calendar));
 const range = computed(() => formatDates(b.value.departure.start_date, b.value.departure.end_date, props.context.today, props.calendar));
 const created = computed(() => createdLabel(b.value.created_at, props.context.now, props.context.timezone, props.copy, props.calendar));

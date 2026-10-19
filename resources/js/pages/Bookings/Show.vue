@@ -27,7 +27,7 @@ const props = defineProps({
 
 const calendar = computed(() => props.copy.calendar);
 const b = computed(() => props.booking);
-const rupiah = (n) => `Rp${formatRupiah(n)}`;
+const rupiah = (n) => `${t(props.copy, 'currency')}${formatRupiah(n)}`;
 const created = computed(() => createdLong(b.value.created_at, props.context.now, props.context.timezone, calendar.value));
 const dates = computed(() => dateLine(b.value.departure.start_date, b.value.departure.end_date, props.context.today, calendar.value));
 const meetingText = computed(() => meetingLine(props.meeting));

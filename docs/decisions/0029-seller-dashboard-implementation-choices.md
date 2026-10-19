@@ -45,9 +45,8 @@ in Hari ini.
 ## Consequences
 
 - Good: the token never sits in Hari ini's props, HTML or Inertia history; one parser decides every filter.
-- Bad / costs: one more seller route (`/pesanan/{id}/ingatkan`); the list's filters appear in detail URLs (redacted in
-  logs). A user without an organization gets 404 on a booking URL (the scoped route binding runs before the
-  `organization` redirect) — nothing is exposed, but it is not the onboarding redirect the other F-007 routes give.
+- Bad / costs: one more seller route (`/pesanan/{id}/ingatkan`); the list's filters appear in detail URLs (`cari` and
+  the WhatsApp `text` are redacted in logs).
 - Follow-ups: F-008 moves `bookings.whatsapp.*` into its template set; F-006 may give Pembayaran its own page.
 
 ## Alternatives considered

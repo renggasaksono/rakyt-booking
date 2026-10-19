@@ -130,9 +130,16 @@ class DashboardTenancyTest extends TestCase
         foreach (['/hari-ini', '/pesanan'] as $uri) {
             $this->actingAs($orphan)->get($uri)->assertRedirect(route('onboarding.organization'));
         }
-        // A booking URL resolves through the organization scope first: without one it does not exist.
-        $this->actingAs($orphan)->get('/pesanan/'.$this->aBooking->public_id)->assertNotFound();
+        // Checked before route binding: booking URLs redirect too; a form write is a 404 (F-001 E1).
+        foreach (['/pesanan/'.$this->aBooking->public_id, '/pesanan/'.$this->aBooking->public_id.'/ingatkan'] as $uri) {
+            $this->actingAs($orphan)->get($uri)->assertRedirect(route('onboarding.organization'));
+        }
         $this->actingAs($orphan)->post('/pesanan/'.$this->aBooking->public_id.'/batalkan')->assertNotFound();
+
+        // A seller still onboarding resumes their step, also on a booking URL (F-001 E2).
+        $onboarding = $this->createTenant(['onboarding_skipped_at' => null, 'first_published_at' => null]);
+        $this->actingAsTenant($onboarding)->get('/pesanan/'.$this->aBooking->public_id)->assertRedirect();
+        $this->assertStringContainsString('/mulai', (string) $this->actingAsTenant($onboarding)->get('/pesanan/'.$this->aBooking->public_id)->headers->get('Location'));
         $this->assertSame(BookingStatus::AwaitingPayment, Booking::acrossOrganizations()->findOrFail($this->aBooking->id)->status);
 
         // Nothing here lives under /admin (ADR-0011).
@@ -158,6 +165,9 @@ class DashboardTenancyTest extends TestCase
         $departure = $props['departures'][0];
         $this->assertSame(['trip', 'seats', 'closes_on'], array_slice(array_keys($departure), -3));
         $this->assertSame(['capacity', 'paid', 'held', 'empty'], array_keys($departure['seats']));
+        $this->assertSame(['timezone', 'today', 'now_local', 'default_deadline_preset', 'now'], array_keys($props['context']));
+        $this->assertSame(['name'], array_keys($props['action_needed']['items'][0]['trip']));
+        $this->assertSame(['start_date', 'end_date'], array_keys($props['action_needed']['items'][0]['departure']));
 
         $this->assertNoSecrets($props, withToken: false);
     }
@@ -169,11 +179,28 @@ class DashboardTenancyTest extends TestCase
         $this->assertSame(['cari', 'status', 'trip', 'dari', 'sampai', 'keberangkatan'], array_keys($list['filters']));
         $this->assertSame(['statuses', 'trips', 'departure'], array_keys($list['options']));
         $this->assertSame(['page', 'next_url', 'prev_url'], array_keys($list['pagination']));
-        $this->assertArrayNotHasKey('whatsapp_reminder_url', $list['bookings'][0]);
+        $this->assertSame([
+            'public_id', 'reference', 'customer_name', 'participants', 'total_amount', 'status', 'hold_expires_at',
+            'created_at', 'trip', 'departure', 'urls',
+        ], array_keys($list['bookings'][0]));
+        $this->assertSame(['id', 'name'], array_keys($list['options']['trips'][0]));
+        $this->assertSame(['value', 'label'], array_keys($list['options']['statuses'][0]));
+        $this->assertSame(['now', 'timezone', 'today'], array_keys($list['context']));
+        $this->assertSame(['index', 'public_url'], array_keys($list['urls']));
         $this->assertNoSecrets($list, withToken: false);
 
         $detail = $this->detailProps($this->a, $this->aBooking);
         $this->assertSame(['booking', 'trip', 'meeting', 'whatsapp', 'context', 'copy', 'urls'], array_values(array_diff(array_keys($detail), ['errors', 'flash', 'seller', 'account'])));
+        $this->assertSame([
+            'public_id', 'reference', 'customer_name', 'participants', 'total_amount', 'status', 'hold_expires_at',
+            'created_at', 'trip', 'departure', 'urls', 'customer_phone', 'notes', 'unit_price', 'cancel_reason',
+            'customer_url', 'can_cancel',
+        ], array_keys($detail['booking']));
+        $this->assertSame(['name'], array_keys($detail['booking']['trip']));
+        $this->assertSame(['start_date', 'end_date'], array_keys($detail['booking']['departure']));
+        $this->assertSame(['show'], array_keys($detail['booking']['urls']));
+        $this->assertSame(['name', 'edit_url'], array_keys($detail['trip']));
+        $this->assertSame(['point', 'time'], array_keys($detail['meeting']));
         $this->assertSame(['chat_url', 'reminder_url', 'cancelled_url'], array_keys($detail['whatsapp']));
         $this->assertSame(['now', 'timezone', 'today'], array_keys($detail['context']));
         $this->assertSame(['back', 'cancel'], array_keys($detail['urls']));
@@ -202,6 +229,32 @@ class DashboardTenancyTest extends TestCase
         foreach (['/pesanan', '/pesanan/'.$this->aBooking->public_id, '/hari-ini'] as $uri) {
             $this->assertSame('no-store, private', $this->actingAsTenant($this->a)->get($uri)->headers->get('Cache-Control'), $uri);
         }
+    }
+
+    public function test_ac_24_the_reminder_url_never_logs_the_token_or_the_customer(): void
+    {
+        $token = $this->aBooking->access_token;
+        $url = $this->detailProps($this->a, $this->aBooking)['whatsapp']['reminder_url'];
+        $this->assertStringContainsString(rawurlencode('/pesanan/'.$token), $url);
+        $text = substr($url, strpos($url, '?text=') + 6);
+
+        foreach (['Redirect to '.$url, 'text='.$text, $text, rawurldecode($text)] as $message) {
+            $record = (new RedactSensitiveData)(new LogRecord(
+                datetime: new DateTimeImmutable,
+                channel: 'test',
+                level: Level::Info,
+                message: $message,
+                context: ['location' => $url],
+            ));
+
+            $json = json_encode([$record->message, $record->context], JSON_UNESCAPED_SLASHES);
+            $this->assertStringNotContainsString($token, $json, $message);
+        }
+
+        $record = (new RedactSensitiveData)(new LogRecord(datetime: new DateTimeImmutable, channel: 'test', level: Level::Info, message: $url));
+        $this->assertStringNotContainsString('Agus', $record->message);
+        // The number is masked too (F-009 A24).
+        $this->assertStringContainsString('https://wa.me/+62813****222?text=[redacted]', $record->message);
     }
 
     public function test_ac_37_the_search_term_is_redacted_from_logged_urls(): void

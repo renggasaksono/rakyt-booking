@@ -157,7 +157,7 @@ final class SellerBookingPresenter
      */
     public static function rupiah(int $amount): string
     {
-        return __('booking.currency').number_format($amount, 0, ',', '.');
+        return __('bookings.currency').number_format($amount, 0, ',', '.');
     }
 
     private function dates(Organization $organization, Booking $booking, CarbonInterface $now): string
