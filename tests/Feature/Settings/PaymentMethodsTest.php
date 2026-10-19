@@ -160,5 +160,9 @@ class PaymentMethodsTest extends TestCase
 
         $this->actingAsTenant($this->seller)->get(route('trips.edit', $trip))
             ->assertInertia(fn (AssertableInertia $page) => $page->where('urls.payment_setup', route('payment-methods.index')));
+
+        // Phone width: the checklist under "Pratinjau" carries the link too, not only the desktop sidebar.
+        $editor = file_get_contents(resource_path('js/pages/Trips/Edit.vue'));
+        $this->assertStringContainsString(':href="urlState.payment_setup"', $editor);
     }
 }
