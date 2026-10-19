@@ -5,6 +5,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Bookings\SellerBookingController;
+use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\Onboarding\OnboardingController;
 use App\Http\Controllers\PublicPages\BookingController;
@@ -90,8 +92,16 @@ Route::middleware('auth')->group(function () {
 | (E1); one still in the guided flow resumes it (E2).
 */
 Route::middleware(['auth', 'organization', 'onboarded'])->group(function () {
-    // F-007 builds the "Hari ini" dashboard; until then sellers land on their trips.
-    Route::get('/dashboard', fn () => redirect()->route('trips.index'))->name('dashboard');
+    // "Hari ini" (F-007 AC-1): sellers land here after sign-in and onboarding.
+    Route::get('/hari-ini', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', fn () => redirect()->route('dashboard'));
+
+    // The seller's bookings (F-007 sections C–E). `pesanan` is a reserved slug.
+    Route::get('/pesanan', [SellerBookingController::class, 'index'])->name('bookings.index');
+    Route::get('/pesanan/{booking}', [SellerBookingController::class, 'show'])->name('bookings.show');
+    Route::post('/pesanan/{booking}/batalkan', [SellerBookingController::class, 'cancel'])->name('bookings.cancel');
+    // Hari ini's "Ingatkan via WA": redirects to WhatsApp so the token stays out of its props (ADR-0029 §1).
+    Route::get('/pesanan/{booking}/ingatkan', [SellerBookingController::class, 'remind'])->middleware('no-referrer')->name('bookings.remind');
 
     Route::get('/pengaturan', [SettingsController::class, 'index'])->name('settings.index');
     Route::get('/pengaturan/profil', [ProfileController::class, 'edit'])->name('settings.profile');

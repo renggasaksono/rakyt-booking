@@ -91,7 +91,8 @@ class ResumeTest extends TestCase
 
         foreach ([$skipped, $published] as $tenant) {
             $this->post(route('login'), ['email' => $tenant->owner->email, 'password' => 'password'])->assertRedirect(route('dashboard'));
-            $this->get(route('dashboard'))->assertRedirect(route('trips.index'));
+            // F-007 AC-1: the dashboard is "Hari ini".
+            $this->get(route('dashboard'))->assertOk();
             $this->get(route('trips.index'))->assertOk();
             $this->get(route('onboarding.trip'))->assertRedirect(route('dashboard'));
             $this->post(route('logout'));

@@ -34,10 +34,17 @@ class RedactSensitiveData implements ProcessorInterface
 
     private const PHONE_PATTERN = '/(?<![\d+])(?:\+?62|0)[\s-]?8(?:[\s-]?\d){7,11}(?!\d)/';
 
-    private const URL_SECRET_PARAM_PATTERN = '/([?&](?:signature|token|access_token)=)[^&\s"\']+/i';
+    /**
+     * `cari` is the seller's booking search — a customer name or phone (F-007 AC-37); `text` is a
+     * prefilled WhatsApp message, which carries names and the customer link with its token (F-007 AC-25).
+     */
+    private const URL_SECRET_PARAM_PATTERN = '/([?&](?:signature|token|access_token|cari|text)=)[^&\s"\']+/i';
 
     /** The customer booking token is a path segment: /<slug>/pesanan/<token> (F-005 AC-40, F-009 R20, ADR-0027 §5). Also JSON-escaped. */
     private const BOOKING_TOKEN_PATH_PATTERN = '~(\\\\?/pesanan\\\\?/)[^/?#\s"\'\\\\]+~';
+
+    /** The same path URL-encoded, e.g. inside a wa.me `text` that was logged on its own (F-007 AC-24). */
+    private const ENCODED_BOOKING_TOKEN_PATTERN = '~(%2Fpesanan%2F)[A-Za-z0-9]+~i';
 
     public function __invoke(LogRecord $record): LogRecord
     {
@@ -152,6 +159,7 @@ class RedactSensitiveData implements ProcessorInterface
     {
         $value = preg_replace(self::URL_SECRET_PARAM_PATTERN, '$1'.self::REDACTED, $value) ?? $value;
         $value = preg_replace(self::BOOKING_TOKEN_PATH_PATTERN, '$1'.self::REDACTED, $value) ?? $value;
+        $value = preg_replace(self::ENCODED_BOOKING_TOKEN_PATTERN, '$1'.self::REDACTED, $value) ?? $value;
 
         return preg_replace_callback(
             self::PHONE_PATTERN,

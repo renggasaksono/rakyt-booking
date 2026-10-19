@@ -10,6 +10,7 @@ use App\Models\Booking;
 use App\Models\Organization;
 use App\Models\Trip;
 use App\Models\TripDeparture;
+use App\Models\User;
 use App\Tenancy\CurrentOrganization;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -25,7 +26,8 @@ use LogicException;
  *
  * Lock order is fixed — organization row (only when a reference number is
  * taken) → departure row → booking rows — the same order as the time-zone
- * change (organization, then departures), so the two never deadlock.
+ * change (organization, then departures), so the two never deadlock. The
+ * seller's cancellation (F-007) takes no organization lock: no reference.
  */
 final class BookingService
 {
@@ -101,6 +103,44 @@ final class BookingService
             }
 
             $this->release($locked, $booking, $actor);
+
+            return true;
+        });
+    }
+
+    /**
+     * The seller cancels a booking (F-007 AC-29–AC-33): departure row, then
+     * booking row, re-read under the locks; only a booking still in a holding
+     * status changes, so the expiry job, a second tab or a double submit can
+     * never return its seats twice (AC-30, AC-31). Any departure date (AC-33);
+     * a closed departure stays closed (AC-32). The hold time is unchanged.
+     *
+     * @return bool whether the booking was cancelled now
+     */
+    public function cancelBySeller(Booking $booking, User $seller): bool
+    {
+        return DB::transaction(function () use ($booking, $seller) {
+            $locked = TripDeparture::query()->whereKey($booking->trip_departure_id)->lockForUpdate()->firstOrFail();
+            $fresh = Booking::query()->whereKey($booking->getKey())->lockForUpdate()->first();
+
+            if ($fresh === null || ! $fresh->status->holdsSeats()) {
+                return false;
+            }
+
+            $before = $fresh->status;
+            $fresh->status = BookingStatus::Cancelled;
+            $fresh->cancel_reason = CancelReason::Seller;
+            $fresh->save();
+
+            $this->changeSeats($locked, -$fresh->participants);
+
+            $this->audit->record(AuditAction::BookingCancelled, $fresh,
+                before: ['status' => $before->value, 'cancel_reason' => null],
+                after: ['status' => BookingStatus::Cancelled->value, 'cancel_reason' => CancelReason::Seller->value],
+                actor: Actor::user($seller),
+            );
+
+            $booking->setRawAttributes($fresh->getAttributes(), true);
 
             return true;
         });
