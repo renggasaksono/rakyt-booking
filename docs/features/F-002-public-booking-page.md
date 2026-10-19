@@ -235,38 +235,53 @@ zone (ADR-0014). *Bookable* is the single server-side rule from F-003 (`TripDepa
 
 | Method & path | Name | Notes |
 |---|---|---|
-| `GET /{organization:slug}` | `public.seller` | Registered **last** in `routes/web.php`, constrained to the slug format (F-001 B5) so it never shadows app routes; reserved slugs are 404 (they are also refused at sign-up, F-001 B7). |
-| `GET /{organization:slug}/{trip:slug}` | `public.trip` | Trip resolved through the organization scope **and** `status = published`. |
+| `GET /{organization}` | `public.seller` | A Laravel *fallback* route (matched after every other route, so it never shadows an app route) accepting any segment (`[^/]+`); `ResolvePublicOrganization` checks the slug format (F-001 B5), length, reserved slugs (also refused at sign-up, F-001 B7), UTF-8 and NUL, so every bad slug is the same 404 (ADR-0025 §1). |
+| `GET /{organization}/{trip}` | `public.trip` | Same; the controller reads the trip through `PublicVisibility::trips()` (organization scope **and** `status = published`), not by implicit binding (ADR-0025 §3). |
 | `GET /{slug}/{trip}/pesan?keberangkatan=` | — | Owned by F-005; F-002 only builds the link. |
 | `GET /{slug}/{trip}/ajukan-tanggal` | — | Owned by F-004; F-002 only builds the link. |
 
-Middleware for public routes: `web`, `throttle:public-page`, a new `public-organization` resolver (below). **Not**
-`auth`, `organization` or `onboarded`.
+Middleware for public routes: `web` **without its session middleware** (`StartSession`, `ShareErrorsFromSession`,
+CSRF, `AuthenticateSession`, `ResolveCurrentOrganization`), `throttle:public-page`, and the `public-organization`
+resolver (below). **Not** `auth`, `organization` or `onboarded`. Public pages start no session and set no cookie
+(ADR-0025, amendment 2026-10-19).
 
 ### Tenancy (ADR-0004, ADR-0021)
 
 - A `ResolvePublicOrganization` middleware looks the organization up by lower-cased slug (organizations are not
   tenant-scoped, ADR-0021), 404s an unknown slug (AC-3), and sets
-  `CurrentOrganization` to it **before** route model binding — replacing anything a session might have set. Trips and
+  `CurrentOrganization` to it **before** route model binding — replacing anything set before it (the public routes
+  run without a session, so nothing of a signed-in seller is read). Trips and
   departures are then read through the normal organization scope; no `acrossOrganizations()` and no allowlist entry.
 - Visibility goes through one method (e.g. `PublicVisibility::organizationIsPublic(Organization)`) so F-014 can add
   its suspension rule in one place (Q11).
 - Trip lookup: `slug` within the current organization ∧ `status = published`; anything else is a 404 (F-009 A5).
-  Non-UTF-8, NUL or over-long values are a 404 before reaching PostgreSQL (`App\Tenancy\RouteKey`, ADR-0022 §4).
+  Non-UTF-8, NUL or over-long values are a 404 before reaching PostgreSQL (the middleware's own check, same rule as
+  `App\Tenancy\RouteKey`, ADR-0022 §4; a non-UTF-8 path is already a 404 at the framework level, ADR-0025 §2).
 - Cross-tenant tests use `tests/Support/InteractsWithTenants` (AC-6, AC-7) plus an F-009 A5 test.
 
 ### Public fields
 
-Only these leave the server (AC-8); a presenter (e.g. `App\Public\PublicTripPresenter`) builds them explicitly — no
-`toArray()` of models.
+Only these leave the server (AC-8); `App\PublicPages\PublicPagePresenter` builds them explicitly — no `toArray()` of
+models. `PublicTenancyTest::test_ac_8_…` asserts exactly these keys.
 
-- **Organization:** `name`, `slug`, `city`, `bio`, logo URL, WhatsApp link (built server-side), share URL.
-- **Trip (card):** `slug`, `name`, cover URLs (variants), from-price, status line data (`next_start_date`,
-  `seats_left`, or the `request_date` / no-date state).
-- **Trip (page):** the card fields + `type`, duration label, `short_description`, photo URLs (variants, order),
-  `inclusions[]`, `exclusions[]`, `meeting_point`, `meeting_time`, `map_url`, `itinerary[]`, `terms`, `booking_mode`.
-- **Departure:** `public_id`, `start_date`, `end_date`, `seats_left`, `capacity`, effective price (bookable rows only),
-  `booking_deadline_at` (local date), state `bookable | full | closed`.
+- **Seller page props:** `title`, `organization`, `trips[]`, `context` (`today`), `copy` (`lang/id/public.php`),
+  `calendar` (month names), `urls` (`home`), plus Inertia's `errors`.
+- **Organization (seller page):** `name`, `slug`, `city`, `bio`, `logo_url`, `whatsapp_url` (built server-side),
+  `share_url`. On the trip page only `name` and `slug`.
+- **Trip card:** `slug`, `name`, `url`, `cover` (`src`, `srcset`, or null), `from_price`, `state`
+  (`bookable | request_date | no_date`), `next_start_date`, `seats_left` (both null unless `bookable`).
+- **Trip page props:** `title`, `organization`, `trip`, `departures[]`, `context` (`today`, `now_local` — the
+  organization's local "now"), `rules` (`low_seats`, `urgent_days`, `shown`), `copy`, `calendar`, `urls` (`seller`,
+  `book`, `request_date`, `home`), plus `errors`.
+- **Trip (page):** `slug`, `name`, `type`, `type_label`, `duration` (display label or null), `short_description`,
+  `booking_mode`, `from_price`, `photos[]` (`src`, `srcset`, in order), `inclusions[]`, `exclusions[]`,
+  `meeting_point`, `meeting_time`, `map_url` (http/https only, else null), `itinerary[]` (`day`, `text`; filled days
+  only), `terms`.
+- **Departure:** `public_id`, `start_date`, `end_date`, `state` (`bookable | full | closed`); for bookable rows also
+  `seats_left`, `capacity`, `price` (effective), `deadline` (local `YYYY-MM-DD HH:mm`) and `deadline_preset` — all
+  five null on full and closed rows.
+- **Head tags** (server-rendered, AC-29/AC-30): title, `og:title`, `og:description`, `og:image`, `og:url`/canonical,
+  plus the fixed `og:type`, `og:site_name`, `og:locale`.
 
 ### Rules
 
@@ -361,3 +376,6 @@ All decided by Rengga on 2026-10-19: Q3 rejected (page live immediately), Q5 ref
   deploy config and AC-36 still needs a device review. Q13 raised. ADR-0025 proposed. Status → `in-progress`
 - 2026-10-19 — Rengga: ADR-0025 accepted; Q13 accepted as recommended (org `public_id` stays in media paths only). AC-35
   and AC-36 stay open
+- 2026-10-19 — Review follow-up: public routes run without a session or cookies (no `sessions` row per crawler or
+  link-preview hit; ADR-0025 amendment); Data & rules → Routes, Tenancy and Public fields brought in line with the
+  code (fallback routes, no implicit trip binding, the exact prop keys)
