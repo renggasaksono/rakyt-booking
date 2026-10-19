@@ -69,6 +69,10 @@ jobs:
       - name: Build assets
         run: npm run build
 
+      # F-002 AC-33: public pages stay within their JavaScript budget.
+      - name: Check public page bundle size
+        run: npm run check:bundle
+
       - name: Run JS unit tests
         run: npm test
 
