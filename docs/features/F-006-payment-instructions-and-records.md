@@ -52,6 +52,15 @@ so it sets the `XSRF-TOKEN` cookie and shows flashed messages; register the uplo
 `BookingService` for every status change that moves seats, and `Booking::holdIsActive()` for the upload check.
 `bookings.total_amount` is `bigint`; give `payment_records` amounts the same.
 
+**F-007 hand-offs (2026-10-19):** F-007 builds the Perlu tindakan rows on Hari ini and the seller booking detail
+`/pesanan/{public_id}`; this feature adds **Konfirmasi / Tolak** (and the evidence thumbnail) to the `needs_review`
+rows and the detail — inline, without leaving Hari ini (the old F-007 AC "Konfirmasi / Tolak work inline from the
+action list" lives here now). Konfirmasi / Tolak are ink / ink-outline: "+ Trip baru" stays the page's one gold
+button. The transitions go through `BookingService` under the departure → booking lock, like F-007's
+`cancelBySeller`. Perlu tindakan orders `needs_review` by `updated_at` until this feature adds its own timestamp.
+F-007's nav item "Pembayaran" is a shortcut to `/pesanan?status=perlu_tindakan`; give it its own page here only if
+needed (F-007 Q2).
+
 ## Changelog
 
 - 2026-10-17 — created
@@ -61,3 +70,4 @@ so it sets the `XSRF-TOKEN` cookie and shows flashed messages; register the uplo
 - 2026-10-19 — Q1 decided: one booking status column (F-005 Q3, ADR-0026 §1–2)
 - 2026-10-19 — F-005 built: booking page without a session (ADR-0028 §1) noted for the upload route
 - 2026-10-19 — F-005 review: booking page keeps the session (encrypted), note updated
+- 2026-10-19 — F-007 ready: Konfirmasi / Tolak inline on its rows moved here; hand-off noted

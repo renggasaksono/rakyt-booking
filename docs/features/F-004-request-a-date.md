@@ -28,6 +28,10 @@ Private tours and some day trips have no fixed schedule; the operator confirms a
 - [ ] Accepting a request produces a booking in `awaiting_payment` with payment instructions (F-006).
 - [ ] "Balas" opens WhatsApp with a prefilled message (F-008).
 
+F-007 hand-off (2026-10-19): Pesanan terbaru (Hari ini) and the booking list `/pesanan` are built by F-007 from
+`bookings`; add date requests to both with the "◐ Permintaan tanggal" pill and "Balas", and decide whether they count
+in Perlu tindakan and the nav badge (F-007 AC-4, AC-8).
+
 ## Open questions
 
 - [ ] Does accepting create a public departure (others can join) or a private one?
@@ -36,3 +40,4 @@ Private tours and some day trips have no fixed schedule; the operator confirms a
 ## Changelog
 
 - 2026-10-17 — created
+- 2026-10-19 — F-007 hand-off noted (list and Pesanan terbaru rows)
