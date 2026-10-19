@@ -10,6 +10,7 @@ use App\Onboarding\OnboardingService;
 use App\Organizations\BookingSlug;
 use App\Organizations\OrganizationRules;
 use App\Payments\PaymentMethodRules;
+use App\Payments\PaymentMethodService;
 use App\Tenancy\CurrentOrganization;
 use App\Trips\BookingMode;
 use App\Trips\DeadlinePreset;
@@ -289,20 +290,10 @@ class OnboardingController extends Controller
             return $redirect;
         }
 
-        $providers = [];
-
-        foreach (config('rakyt.payment_providers') as $key => $provider) {
-            $providers[] = ['value' => $key, 'label' => $provider['label'], 'type' => $provider['type'], 'asks_name' => $provider['name'] ?? false];
-        }
-
         return $this->step(4, 'Onboarding/Payment', [
             'methods' => $this->onboarding->paymentMethods(),
-            'providers' => $providers,
-            'limits' => [
-                'methods' => (int) config('rakyt.onboarding.max_payment_methods'),
-                'holder' => PaymentMethodRules::HOLDER_MAX,
-                'provider_name' => PaymentMethodRules::PROVIDER_NAME_MAX,
-            ],
+            'providers' => PaymentMethodService::providerOptions(),
+            'limits' => PaymentMethodService::formLimits(),
             'urls' => [
                 'store' => route('onboarding.payment'),
                 'back' => route('onboarding.schedule'),
@@ -332,15 +323,7 @@ class OnboardingController extends Controller
             return redirect()->route('dashboard')->with('toast', __('onboarding.payment.draft_saved'));
         }
 
-        $validator = Validator::make(['methods' => $methods], PaymentMethodRules::rules(requireOne: true), PaymentMethodRules::messages(), PaymentMethodRules::attributes());
-        $validator->after(function ($validator) use ($methods) {
-            foreach (is_array($methods) ? PaymentMethodRules::missingProviderNames($methods) : [] as $key => $message) {
-                $validator->errors()->add($key, $message);
-            }
-        });
-        $data = $validator->validate();
-
-        $missing = $this->onboarding->publish($organization, $trip, $data['methods']);
+        $missing = $this->onboarding->publish($organization, $trip, PaymentMethodRules::validate($methods));
 
         if ($missing !== []) {
             return $this->toFirstFailingStep($trip, $missing);

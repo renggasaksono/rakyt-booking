@@ -69,6 +69,51 @@ final class PaymentMethodService
     }
 
     /**
+     * The organization's accounts as form blocks (step 4, Pengaturan → Rekening).
+     *
+     * @return list<array{id: string, provider: string, provider_name: ?string, account_number: string, account_holder: string}>
+     */
+    public function forForm(): array
+    {
+        return PaymentMethod::query()->orderBy('position')->orderBy('id')->get()
+            ->map(fn (PaymentMethod $method) => [
+                'id' => $method->public_id,
+                'provider' => $method->provider,
+                'provider_name' => $method->provider_name,
+                'account_number' => $method->account_number,
+                'account_holder' => $method->account_holder,
+            ])->values()->all();
+    }
+
+    /**
+     * The "Bank / e-wallet" picker (C10).
+     *
+     * @return list<array{value: string, label: string, type: string, asks_name: bool}>
+     */
+    public static function providerOptions(): array
+    {
+        $providers = [];
+
+        foreach (config('rakyt.payment_providers') as $key => $provider) {
+            $providers[] = ['value' => $key, 'label' => $provider['label'], 'type' => $provider['type'], 'asks_name' => $provider['name'] ?? false];
+        }
+
+        return $providers;
+    }
+
+    /**
+     * @return array{methods: int, holder: int, provider_name: int}
+     */
+    public static function formLimits(): array
+    {
+        return [
+            'methods' => (int) config('rakyt.onboarding.max_payment_methods'),
+            'holder' => PaymentMethodRules::HOLDER_MAX,
+            'provider_name' => PaymentMethodRules::PROVIDER_NAME_MAX,
+        ];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private static function snapshot(PaymentMethod $method): array

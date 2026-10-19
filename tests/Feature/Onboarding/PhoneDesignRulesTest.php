@@ -48,7 +48,7 @@ class PhoneDesignRulesTest extends TestCase
 
         // Phone, price, seats and account number get the numeric keyboard.
         $this->assertStringContainsString('inputmode="numeric"', $read('pages/Onboarding/Organization'));
-        $this->assertStringContainsString('inputmode="numeric"', $read('pages/Onboarding/Payment'));
+        $this->assertStringContainsString('inputmode="numeric"', $read('components/PaymentMethodFields'));
         $this->assertStringContainsString('inputmode="numeric"', $read('components/MoneyInput'));
         $this->assertStringContainsString('inputmode="numeric"', $read('components/Stepper'));
     }

@@ -55,6 +55,10 @@ return [
         'account_change' => [
             'per_user' => [10, 15],
         ],
+        // F-001 F5: Pengaturan → Rekening saves.
+        'payment_change' => [
+            'per_user' => [10, 15],
+        ],
     ],
 
     /*
@@ -65,7 +69,7 @@ return [
     'reserved_slugs' => [
         'admin', 'api', 'app', 'auth', 'login', 'logout', 'masuk', 'keluar', 'daftar', 'register', 'signup',
         'password', 'reset', 'lupa-password', 'verify', 'verifikasi', 'email', 'dashboard', 'hari-ini', 'pesanan',
-        'pembayaran', 'trip', 'trips', 'keberangkatan', 'pengaturan', 'settings', 'akun', 'account', 'profil',
+        'pembayaran', 'rekening', 'trip', 'trips', 'keberangkatan', 'pengaturan', 'settings', 'akun', 'account', 'profil',
         'profile', 'onboarding', 'mulai', 'help', 'bantuan', 'support', 'cs', 'kontak', 'contact', 'about',
         'tentang', 'blog', 'docs', 'status', 'legal', 'syarat', 'privasi', 'terms', 'privacy', 'pricing', 'harga',
         'paket', 'pro', 'business', 'enterprise', 'rakyt', 'rakytbooking', 'booking', 'book', 'pesan', 'www',

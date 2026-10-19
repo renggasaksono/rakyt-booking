@@ -157,7 +157,7 @@ class GuidedTripTest extends TestCase
                 ->where('trip.booking_mode', 'scheduled')
                 ->where('context.default_deadline_preset', 'h3')
                 ->where('options.limits.seats_max', 500)
-                ->where('copy.schedule.seats_hint', 'Kapasitas kapal / homestay')
+                ->where('copy.schedule.seats_hint', 'Jumlah peserta maksimal untuk keberangkatan ini.')
                 ->where('copy.schedule.end_hint', 'Tanggal selesai otomatis dari durasi :duration.'));
 
         $this->actingAsTenant($this->seller)->post(route('onboarding.schedule'), $this->scheduleInput())
@@ -255,7 +255,7 @@ class GuidedTripTest extends TestCase
                 ->where('copy.payment.note', 'Uang langsung masuk ke rekening Anda. Rakyt tidak memegang dana dan tidak memotong biaya.')
                 ->where('copy.payment.account_number_ewallet', 'Nomor HP / akun')
                 ->where('copy.payment.account_holder_hint', 'Harus sama persis dengan buku tabungan. Ditampilkan ke pelanggan.')
-                ->where('copy.payment.add', '+ Tambah rekening atau QRIS lain')
+                ->where('copy.payment.add', '+ Tambah rekening lain')
                 ->where('limits.methods', 5)
                 ->where('providers.0', ['value' => 'bca', 'label' => 'BCA', 'type' => 'bank', 'asks_name' => false])
                 ->has('providers', 18));

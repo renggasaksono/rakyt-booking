@@ -797,6 +797,11 @@ const inputClass = (field) => [
                         :class="item.done ? 'text-ink' : 'text-secondary'"
                     >
                         <span aria-hidden="true">{{ item.done ? '✓' : '○' }}</span> {{ t(copy, `checklist.items.${item.key}`) }}
+                        <a
+                            v-if="item.key === 'payment_instructions' && !item.done && urlState.payment_setup"
+                            :href="urlState.payment_setup"
+                            class="inline-flex min-h-11 items-center text-sogan underline"
+                        >— {{ t(copy, 'checklist.payment_link') }}</a>
                     </li>
                 </ul>
             </div>

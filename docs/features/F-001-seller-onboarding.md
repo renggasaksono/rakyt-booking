@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-weeks-2-3
 mockups: [4a, 4b, 4c, 4d, 4e, 4f]
 decisions: ["0003", "0004", "0005", "0007", "0008", "0010", "0012", "0013", "0018", "0019", "0023"]
-updated: 2026-10-18
+updated: 2026-10-19
 ---
 
 # F-001 · Seller onboarding & organization profile
@@ -51,7 +51,8 @@ must be rechecked in pilot (Q12).
   resume where they left off.
 - **F. Organization profile in Pengaturan** (no mockup yet): edit business name, base city, WhatsApp contact
   number, logo and short bio after onboarding (blueprint P0 "organization profile, contact details, basic
-  branding"; 4f lists "Logo & bio usaha" as "Nanti, dari dashboard").
+  branding"; 4f lists "Logo & bio usaha" as "Nanti, dari dashboard"), and Pengaturan → Rekening for the bank /
+  e-wallet accounts after onboarding (F5, the F-006 subset).
 
 **Out (explicitly):**
 - WhatsApp / SMS code sign-in, magic links, social login, two-factor authentication (ADR-0012).
@@ -122,14 +123,14 @@ from the rate-limit table in F-009; tests read the configured values rather than
 - [ ] **C3** Step 2 photos: "+ Galeri" opens the phone's picker (multiple select); the first photo is the cover ("sampul"); each photo shows upload progress and a retry on failure; the seller can remove a photo. File type and size limits follow F-003. Photos are stored under the organization's media prefix (ADR-0004).
   *Partly covered:* upload to the draft, the organization prefix, cover order and F-003 limits are tested; per-photo progress and "Coba lagi" were checked in the browser (2026-10-18), not in CI.
 - [x] **C4** Step 2 fields: "Nama trip" required (3–80 chars, F-003 `TripRules`; F-003 Q11); "Durasi" required, using the F-003 duration picker (presets + "Atur sendiri", nights ≤ days); "Termasuk apa saja?" optional multi-select chips plus "+ Lainnya" (free text, max 40 chars per item). **No description field** (optional to publish; added later from the dashboard). Gold CTA "Lanjut ke harga & jadwal". On submit the trip is saved as **draft** in the seller's organization.
-- [x] **C5** Step 3 (Jadwal), scheduled trips: "Harga per orang" (required integer rupiah, 1.000–100.000.000, shown with thousand separators "1.250.000", numeric keyboard); "Tanggal berangkat pertama" (required, today or later in the organization's timezone; end date shown read-only from duration: "s.d. Sab 26 Okt" + "Tanggal selesai otomatis dari durasi 3H2M."); "Jumlah kursi" (required integer 1–500, helper "Kapasitas kapal / homestay"); "Tutup pemesanan" via the F-003 deadline picker, shown as a real date.
-- [x] **C6** Step 3 deadline default: the organization's default deadline (initially H-3, per mockup 4d). Given the default would fall in the past (e.g. departure in 2 days), then past presets are disabled and the nearest valid preset is preselected. A deadline in the past or after the departure start is rejected.
+- [x] **C5** Step 3 (Jadwal), scheduled trips: "Harga per orang" (required integer rupiah, 1.000–100.000.000, shown with thousand separators "1.250.000", numeric keyboard); "Tanggal berangkat pertama" (required, today or later in the organization's timezone; end date shown read-only from duration: "s.d. Sab 26 Okt" + "Tanggal selesai otomatis dari durasi 3H2M."); "Jumlah kursi" (required integer 1–500, helper "Jumlah peserta maksimal untuk keberangkatan ini."); "Tutup pemesanan" via the F-003 deadline picker, shown as a real date.
+- [x] **C6** Step 3 deadline default: the organization's default deadline (initially H-3, per mockup 4d). Given the default would fall in the past (e.g. departure in 2 days), then past presets are hidden from the picker (not shown struck through), "Pilih tanggal & jam…" always stays, and the nearest valid preset is preselected. A deadline in the past or after the departure start is rejected. The rule "Hanya boleh sebelum jam kumpul…" is shown only when the departure has a meeting time or "Pilih tanggal & jam…" is chosen (onboarding asks for no meeting time). *Tested:* past-preset fallback and hiding, and when the rule shows, in Vitest (`tests/js/deadline.test.js`, `onboarding.test.js`).
 - [x] **C7** Step 3 shows a plain-words summary that updates live: "16 kursi · Rp1.250.000/orang · pesanan ditutup Senin 21 Okt 23.59". Gold CTA "Lanjut ke pembayaran". On submit, the base price is saved on the trip and one departure is created (price override empty, `seats_taken = 0`, status open).
 - [x] **C8** Step 3, request-date trips (Private, or any trip with booking mode `request_date`): only "Harga per orang" is asked, with helper "Pelanggan mengajukan tanggal; Anda membalas dari dashboard." No departure is created. Header still reads "Langkah 3 dari 4 · Jadwal".
 - [x] **C9** "+ Tambah tanggal lain" on step 3 is not shown in onboarding; after publish, extra departures are added in the F-003 editor. (Keeps the step inside its 2-minute budget.)
 - [x] **C10** Step 4 (Pembayaran): title "Ke mana pelanggan transfer?", note "Uang langsung masuk ke rekening Anda. Rakyt tidak memegang dana dan tidak memotong biaya." Fields: "Bank / e-wallet" (picker, list in Data & rules, plus "Lainnya" with a name field), "Nomor rekening" (digits only, 5–20, spaces ignored; for e-wallets the label reads "Nomor HP / akun"), "Atas nama" (required, 2–100 chars, helper "Harus sama persis dengan buku tabungan. Ditampilkan ke pelanggan.").
-- [x] **C11** "+ Tambah rekening atau QRIS lain" in onboarding adds another bank / e-wallet block (max 5 in onboarding); QRIS is set up later in Pengaturan → Pembayaran (F-006). Payment methods belong to the organization, not to the trip.
-- [x] **C12** Gold CTA on step 4 is "Terbitkan trip"; below it, "Belum siap? Simpan sebagai draf — trip belum bisa dipesan." Saving as draft does not require any payment method and keeps whatever valid payment fields were entered.
+- [x] **C11** "+ Tambah rekening lain" in onboarding adds another bank / e-wallet block (max 5 in onboarding); Below it: "QRIS bisa ditambahkan nanti." — QRIS comes with F-006, and the copy names no menu until that screen exists. Payment methods belong to the organization, not to the trip.
+- [x] **C12** Gold CTA on step 4 is "Terbitkan trip"; below it, "Belum siap? Simpan sebagai draf — trip belum bisa dipesan." Saving as draft does not require any payment method and keeps whatever valid payment fields were entered. A seller who saved a draft without an account adds one later in Pengaturan → Rekening (F5) — the F-003 editor's checklist item "atur rekening" links there — and then publishes from the editor (tested end to end).
 - [x] **C13** Every step has a back control that returns to the previous step with saved values shown. A failed save keeps all input and shows "Gagal menyimpan. Periksa koneksi lalu coba lagi."; the CTA shows a loading state and ignores repeat taps while saving.
 
 ### D. Publish & share (4f)
@@ -158,10 +159,13 @@ from the rate-limit table in F-009; tests read the configured values rather than
 - [x] **F3** Account settings (email, password, sign-out) live in Pengaturan → Akun (A6, A11, A12), separate from the business profile.
 - [x] **F4** Given an organization with future departures that use a relative deadline preset (`same_day`, `h1`, `h3`, `h7`), when the owner changes the time zone in Profil usaha, then those deadlines are recomputed in the new zone with F-003's `DeadlineCalculator`, inside the same transaction, each change audited as `departure.deadline_changed`; custom deadlines keep their instant (ADR-0014, F-003 Q15).
 
+- [x] **F5** Pengaturan → Rekening (`/pengaturan/rekening`, route `payment-methods.index`) lists the organization's bank / e-wallet accounts with the step 4 fields and rules (C10, max 5, at least one kept) and saves them with the same service (own limiter `throttle:payment-change`, 10 per 15 min per user): one `payment_instructions.changed` audit event with before/after values per real change, none when nothing changed. It is on the Pengaturan index and linked from the F-003 editor's publish checklist, at phone width too (the list under "Pratinjau"). Page visits during the guided flow resume it (E2). QRIS and cash stay in F-006. No mockup; built from the 4e block.
+- [x] **F6** Every Pengaturan sub-page (Profil usaha, Akun, Pemesanan, Rekening) links back to the Pengaturan index with the same label "← Pengaturan". Akun opened before step 1 links back to onboarding ("← Kembali").
+
 ### Tenant isolation (ADR-0004, F-009) — tests required
 
 - [x] **T1** All onboarding and profile endpoints resolve the organization from the signed-in user's membership; none accepts an `organization_id` from the request.
-- [x] **T2** Given sellers A and B, when B requests A's draft trip, departure, payment method or organization profile by ID through any onboarding / profile / publish route (read, update, publish, delete photo), then the response is 404 (or the F-009 convention) and nothing changes. One test per resource.
+- [x] **T2** Given sellers A and B, when B requests A's draft trip, departure, payment method (onboarding or Pengaturan → Rekening) or organization profile by ID through any onboarding / profile / publish route (read, update, publish, delete photo), then the response is 404 (or the F-009 convention) and nothing changes. One test per resource.
 - [ ] **T3** Given A's draft trip, then it never appears on B's public page or any public URL, and A's payment-method details are never returned to B.
   *Partly covered:* A's draft and payment details never reach B's onboarding pages (tested); the public-page half waits on F-002.
 - [x] **T4** Uploaded trip photos and logos are stored under A's organization prefix; B cannot delete or replace them.
@@ -201,7 +205,7 @@ booking or seat hold happens here. Capacity changes after publish go through F-0
 - `signup_started_at` = the moment the sign-up form is submitted successfully (user created).
 - No plan limits are enforced in P0 (ADR-0019); `plan` is stored (default `free`) for later. Mockup copy "Gratis untuk 1 trip aktif" is sample text.
 - Slugs are lowercase, 3–30 chars, `[a-z0-9-]`, no leading/trailing/double hyphen, unique, not reserved.
-- **Initial reserved slugs** (config, extend freely): `admin, api, app, auth, login, logout, masuk, keluar, daftar, register, signup, password, reset, lupa-password, verify, verifikasi, email, dashboard, hari-ini, pesanan, pembayaran, trip, trips, keberangkatan, pengaturan, settings, akun, account, profil, profile, onboarding, mulai, help, bantuan, support, cs, kontak, contact, about, tentang, blog, docs, status, legal, syarat, privasi, terms, privacy, pricing, harga, paket, pro, business, enterprise, rakyt, rakytbooking, booking, book, pesan, www, mail, static, assets, storage, media, cdn, img, images, public, null, undefined, new, edit, test, demo`. Plus every first route segment (B7).
+- **Initial reserved slugs** (config, extend freely): `admin, api, app, auth, login, logout, masuk, keluar, daftar, register, signup, password, reset, lupa-password, verify, verifikasi, email, dashboard, hari-ini, pesanan, pembayaran, rekening, trip, trips, keberangkatan, pengaturan, settings, akun, account, profil, profile, onboarding, mulai, help, bantuan, support, cs, kontak, contact, about, tentang, blog, docs, status, legal, syarat, privasi, terms, privacy, pricing, harga, paket, pro, business, enterprise, rakyt, rakytbooking, booking, book, pesan, www, mail, static, assets, storage, media, cdn, img, images, public, null, undefined, new, edit, test, demo`. Plus every first route segment (B7).
 - Bank / e-wallet picker (initial list, config): BCA, BRI, BNI, Mandiri, BSI, CIMB Niaga, Permata, BTN, Danamon, Bank Jago, SeaBank, BPD (isi nama), GoPay, OVO, DANA, ShopeePay, LinkAja, Lainnya.
 - Elapsed-time metric: `signup_started_at` → `first_published_at`; both kept for the "time to first published trip" metric (roadmap gate, blueprint §9).
 - Timezone: every date rule (departure ≥ today, deadline) uses the organization's timezone (ADR-0007).
@@ -209,7 +213,7 @@ booking or seat hold happens here. Capacity changes after publish go through F-0
 **Edge cases covered above:** duplicate email (A2); credential stuffing / brute force (A4); reset-link email
 enumeration (A7); expired or reused reset / verification links (A8, A10); hijacked-session email change (A11);
 malformed / foreign WhatsApp numbers (B3); double submit (A3, B9, C13, D2); slug race (B10); reserved slug vs.
-route collision (B7); deadline default in the past (C6); request-date trip with no departure (C8); slow / failed
+route collision (B7); deadline default in the past (C6); draft saved without any account (C12, F5); request-date trip with no departure (C8); slow / failed
 photo upload (C3); lost connection mid-step (C13); stale draft with past dates (E4); cross-tenant ID guessing (T2).
 
 ## Dependencies
@@ -238,13 +242,13 @@ None block building. The spec uses the recommended default for each; override an
 - [ ] **Q7 — Inclusion chips.** Mockup 4c shows Karimunjawa-specific chips (Kapal, Homestay, Makan, Alat snorkel, Guide). *Recommend a generic set:* Transportasi, Penginapan, Makan, Guide, Tiket masuk, Dokumentasi, + Lainnya.
 - [x] **Q8 — Timezone for operators in WITA/WIT (Bali, NTT, Sulawesi, Papua).** Decided 2026-10-17: ADR-0014 accepted. *Recommend:* default WIB, selectable WIB/WITA/WIT in Pengaturan → Profil usaha; don't add a field to step 1 (time budget).
 - [ ] **Q9 — Who owns logo / bio / contact editing?** *Recommend: F-001 section F* (blueprint P0 lists it; nothing else owns it). Confirm, or move it to F-007.
-- [ ] **Q10 — Sellers who only take QRIS or cash.** *Recommend:* onboarding asks for bank / e-wallet only; QRIS-only or cash-only sellers save as draft, add the method in Pengaturan → Pembayaran (F-006), then publish. Revisit if pilots hit it.
+- [ ] **Q10 — Sellers who only take QRIS or cash.** *Recommend:* onboarding asks for bank / e-wallet only; QRIS-only or cash-only sellers save as draft, add the method in Pengaturan → Pembayaran (F-006), then publish. Revisit if pilots hit it. *Update 2026-10-19:* a seller who saved a draft without any account was stuck until F-006 (manual test). Pengaturan → Rekening (F5) now lets them add a bank / e-wallet account and publish from the editor; QRIS-only and cash-only sellers still wait on F-006.
 - [x] **Q11 — Is a description required to publish?** Decided 2026-10-17: no; F-003 checklist item is "Nama". Onboarding has no description field.
 - [ ] **Q12 — Recheck the time budget.** The ±9/±8/±4/±2 values assumed a 1-minute code sign-in. *Recommend:* keep them for build (config, C1), time 3–5 target users in week 1 prototype tests, and retune before pilot.
 - [ ] **Q13 — Ask "Nama Anda" at sign-up?** *Recommend: yes* — the dashboard greets by name ("Selamat pagi, Agus.") and support needs a person's name; it is one short field. Alternative: drop it and greet with the business name.
 - [ ] **Q14 — Sign-up form: password confirmation field?** *Recommend: no*, use a show/hide toggle (A1) — faster on a phone, same error protection. Reset is always available.
 - [x] **Q15 — Email change: now, or after verifying the new address?** *Decided 2026-10-19 (Rengga): at once, as built (A11); F-009 B12 reworded.* A11 (built) changes the email at once and resets verification; F-009 B12 says the change takes effect only after the new address is verified. *Recommend:* keep A11 for P0 (the current password is required, the old address is told, other devices are signed out) and reword F-009 B12; switch to verify-first if pilots show takeover attempts. Raised by the builder 2026-10-18.
-- [ ] **Q16 — ADR-0018's 24-hour block and change notice for payment instructions.** Not built in F-001: after a reset or email change, step 4 / later edits are not blocked, and the sign-in email is not notified of an account change (every change *is* audited as `payment_instructions.changed`). *Recommend:* build both with F-006's Pengaturan → Pembayaran. Recorded as a pre-pilot gate in the roadmap (blocks "Pilot go"). Raised by the builder 2026-10-18.
+- [ ] **Q16 — ADR-0018's 24-hour block and change notice for payment instructions.** Not built in F-001: after a reset or email change, step 4 / later edits are not blocked, and the sign-in email is not notified of an account change (every change *is* audited as `payment_instructions.changed`). *Recommend:* build both with F-006's Pengaturan → Pembayaran. Pengaturan → Rekening (F5, 2026-10-19) is a second write path through the same `PaymentMethodService::sync`, so the block and notice must cover it too. Recorded as a pre-pilot gate in the roadmap (blocks "Pilot go"). Raised by the builder 2026-10-18.
 - [ ] **Q17 — Auth events before step 1.** A seller with no organization yet (e.g. resetting the password before step 1) is not audited, because `audit_events` needs an organization. *Recommend:* accept for P0; nothing seller-owned exists to protect yet. Raised by the builder 2026-10-18.
 
 ## Changelog
@@ -261,3 +265,5 @@ None block building. The spec uses the recommended default for each; override an
 - 2026-10-18 — Review fix (blocker): `first_published_at` is now set in `TripService::publish`, so a publish from the F-003 editor after "Simpan sebagai draf" also locks the slug (F2) and records the first publish (D2); tested
 - 2026-10-18 — Review fix (C12): "Simpan sebagai draf" leaves a saved account whose edit is not valid unchanged instead of removing it; tested
 - 2026-10-19 — Rengga: ADR-0023 accepted; Q15 decided (email change takes effect at once; F-009 B12 reworded)
+- 2026-10-19 — Manual-test fixes: Pengaturan → Rekening added (F5) so a seller who saved a draft without an account can add one and publish (C12, Q10); seats helper made generic (C5); past deadline presets hidden and the meeting-time rule shown only when it applies (C6, F-003 AC-21–23); "+ Tambah rekening lain" (C11); every Pengaturan sub-page links back to Pengaturan (F6)
+- 2026-10-19 — Review follow-up: step 4's QRIS note no longer names a Pengaturan → Pembayaran menu that does not exist ("QRIS bisa ditambahkan nanti.", C11); Pengaturan → Rekening saves have their own limiter (`payment-change`, 10 per 15 min per user)

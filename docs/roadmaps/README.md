@@ -14,7 +14,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | Week 1 — resolve open questions, confirm proposed ADRs, scaffold Laravel app | scaffold done (ADR-0020); ADR-0011 still proposed |
 | [F-009](../features/F-009-tenancy-security-operations.md) Tenancy & security baseline (slice A wk 2 · ops wk 4 · hardening wk 6) | in-progress — slice A built; B, C to do |
 | [F-003](../features/F-003-trips-and-departures.md) Trips & departures | in-progress — built on `feat/F-003-trips-and-departures`; 38/43 ACs covered by tests; AC-3/7/7a/41 partly covered, AC-35 is a pilot check; device review after F-001 section A |
-| [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | in-progress — built on `feat/F-001-seller-onboarding`; 58/63 ACs covered by tests; C3/F1/T3 partly covered, D7 waits on F-002, P1 device review; ADR-0023 accepted; PR #5 |
+| [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | in-progress — merged (PR #5); manual-test fixes on `fix/F-001-manual-test` add Pengaturan → Rekening (F5, the bank / e-wallet subset of F-006) and F6; 60/65 ACs covered by tests; C3/F1/T3 partly covered, D7 waits on F-002, P1 device review; ADR-0023 accepted |
 | [F-002](../features/F-002-public-booking-page.md) Public booking page | planned |
 | [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | planned |
 | [F-004](../features/F-004-request-a-date.md) Request-a-date | planned |
@@ -43,7 +43,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
 | Transactional email provider (SPF/DKIM) | — | [F-001](../features/F-001-seller-onboarding.md#dependencies) | Pilot |
-| **Pre-pilot gate:** ADR-0018 24-hour block on payment-instruction changes after a password reset or email change, and the change notice to the sign-in email — not built by F-001 | Build with F-006 Pengaturan → Pembayaran | [F-001 Q16](../features/F-001-seller-onboarding.md#open-questions) · [ADR-0018](../decisions/0018-account-recovery-and-payment-instruction-protection.md) | Pilot (blocks "Pilot go") |
+| **Pre-pilot gate:** ADR-0018 24-hour block on payment-instruction changes after a password reset or email change, and the change notice to the sign-in email — not built by F-001. Two write paths now go through `PaymentMethodService::sync`: onboarding step 4 and Pengaturan → Rekening (F-001 F5); both must be covered | Build with F-006 Pengaturan → Pembayaran | [F-001 Q16](../features/F-001-seller-onboarding.md#open-questions) · [ADR-0018](../decisions/0018-account-recovery-and-payment-instruction-protection.md) | Pilot (blocks "Pilot go") |
 | Syarat & Privasi text; PDP law (UU 27/2022) | Short Bahasa notice before pilot; formal review before launch | [F-009 Q9](../features/F-009-tenancy-security-operations.md#open-questions) | Pilot |
 | Free-tier limits and pricing | Decide after pilot | [ADR-0019](../decisions/0019-defer-free-tier-limits.md) | After pilot |
 
@@ -61,7 +61,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Onboarding "selesai dalam" timer | Show only if published ≤ 60 min after sign-up | [F-001 Q5](../features/F-001-seller-onboarding.md#open-questions) |
 | "Termasuk apa saja?" chips | Generic set (Transportasi, Penginapan, Makan, Guide, …) | [F-001 Q7](../features/F-001-seller-onboarding.md#open-questions) |
 | Who owns logo / bio / contact editing | F-001 section F | [F-001 Q9](../features/F-001-seller-onboarding.md#open-questions) |
-| QRIS-only or cash-only sellers in onboarding | Bank/e-wallet only; others add theirs via F-006 | [F-001 Q10](../features/F-001-seller-onboarding.md#open-questions) |
+| QRIS-only or cash-only sellers in onboarding | Bank/e-wallet only; others add theirs via F-006 (a draft without any account can add a bank / e-wallet in Pengaturan → Rekening, F-001 F5) | [F-001 Q10](../features/F-001-seller-onboarding.md#open-questions) |
 | Onboarding time budget (±9/8/4/2 min) | Keep for build; retime in wk-1 user tests | [F-001 Q12](../features/F-001-seller-onboarding.md#open-questions) |
 | Ask "Nama Anda" at sign-up | Yes | [F-001 Q13](../features/F-001-seller-onboarding.md#open-questions) |
 | Password confirmation field | No; show/hide toggle | [F-001 Q14](../features/F-001-seller-onboarding.md#open-questions) |
@@ -84,7 +84,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 
 ### Missing mockups
 
-Sign-up / sign-in / password reset (F-001) · Pengaturan → Akun and Profil usaha (F-001) · mobile trip editor (F-003 Q8) ·
+Sign-up / sign-in / password reset (F-001) · Pengaturan → Akun, Profil usaha and Rekening (F-001) · mobile trip editor (F-003 Q8) ·
 mobile dashboard (F-007).
 
 ## Next — after pilot feedback (P1)

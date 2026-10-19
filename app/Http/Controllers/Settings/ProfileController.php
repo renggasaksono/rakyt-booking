@@ -61,6 +61,7 @@ class ProfileController extends Controller
                 'slug' => route('onboarding.slug'),
                 'back' => route('settings.index'),
             ],
+            'backLabel' => __('profile.settings.back'),
             'copy' => __('profile'),
             'onboardingCopy' => __('onboarding.organization'),
         ]);
