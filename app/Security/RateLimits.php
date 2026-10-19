@@ -6,6 +6,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use LogicException;
 
 /**
  * Named limiters for public and auth endpoints (F-009 A14, A15). Values come
@@ -32,15 +33,26 @@ final class RateLimits
             self::limit('signup.per_ip', 'signup-ip:'.$request->ip()),
         ]);
 
-        RateLimiter::for('public-booking', fn (Request $request) => [
-            self::limit('public_booking.per_phone', 'booking-phone:'.PhoneNumber::normalize($request->input('phone'))),
+        // F-009 R1: an empty or unparseable phone adds no phone bucket (everyone
+        // would share one); only the IP limit applies then (F-005 AC-39).
+        RateLimiter::for('public-booking', fn (Request $request) => array_values(array_filter([
+            ($phone = self::mobile($request->input('phone'))) === null
+                ? null
+                : self::limit('public_booking.per_phone', 'booking-phone:'.$phone),
             self::limit('public_booking.per_ip', 'booking-ip:'.$request->ip()),
-        ]);
+        ])));
 
-        RateLimiter::for('evidence-upload', fn (Request $request) => [
+        RateLimiter::for('evidence-upload', function (Request $request) {
+            $token = $request->route('token');
+
+            // F-009 R1: without the route parameter every upload would share one bucket.
+            if (! is_string($token) || $token === '') {
+                throw new LogicException('throttle:evidence-upload needs a {token} route parameter.');
+            }
+
             // Hash so the raw access token never lands in the cache store.
-            self::limit('evidence_upload.per_token', 'evidence:'.hash('sha256', (string) $request->route('token'))),
-        ]);
+            return [self::limit('evidence_upload.per_token', 'evidence:'.hash('sha256', $token))];
+        });
 
         // F-002 AC-9: public seller and trip pages.
         RateLimiter::for('public-page', fn (Request $request) => [
@@ -71,6 +83,17 @@ final class RateLimits
     public static function email(Request $request): string
     {
         return Str::lower(trim((string) $request->input('email')));
+    }
+
+    /**
+     * The normalised Indonesian mobile number (F-009 A15), or null when the
+     * input is not one.
+     */
+    public static function mobile(mixed $input): ?string
+    {
+        $phone = is_string($input) ? PhoneNumber::normalize($input) : null;
+
+        return $phone !== null && PhoneNumber::isMobile($phone) ? $phone : null;
     }
 
     private static function limit(string $key, string $by): Limit

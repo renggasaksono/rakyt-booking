@@ -20,9 +20,6 @@ final class OrganizationRules
 
     public const BIO_MAX = 160;
 
-    /** B3: +62 8 followed by 8–11 digits. */
-    private const WHATSAPP_PATTERN = '/^\+628\d{8,11}$/';
-
     /**
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>
@@ -95,7 +92,7 @@ final class OrganizationRules
     private static function whatsapp(): Closure
     {
         return function (string $attribute, mixed $value, Closure $fail) {
-            if (! is_string($value) || preg_match(self::WHATSAPP_PATTERN, $value) !== 1) {
+            if (! is_string($value) || ! PhoneNumber::isMobile($value)) {
                 $fail(__('onboarding.organization.whatsapp_invalid'));
             }
         };
