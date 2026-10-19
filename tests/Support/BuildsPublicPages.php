@@ -20,10 +20,8 @@ trait BuildsPublicPages
      */
     protected function seller(string $slug = 'kencana', string $name = 'Kencana Trip', array $attributes = []): Tenant
     {
-        $tenant = $this->createTenant();
-        $tenant->organization->update(['slug' => $slug, 'name' => $name, ...$attributes]);
-
-        return $tenant;
+        // Created with its slug, so the booking code derives from it (F-005 AC-17b).
+        return $this->createTenant(['slug' => $slug, 'name' => $name, ...$attributes]);
     }
 
     /**

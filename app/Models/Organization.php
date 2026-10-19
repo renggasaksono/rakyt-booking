@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use App\Organizations\BookingCode;
 use Database\Factories\OrganizationFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use LogicException;
 
 /**
  * The tenant boundary (ADR-0004). Not itself organization-scoped: route
@@ -18,13 +23,18 @@ class Organization extends Model
     /** @use HasFactory<OrganizationFactory> */
     use HasFactory;
 
-    protected $guarded = ['id', 'public_id'];
+    /**
+     * The booking code is derived once at creation and the booking counter is
+     * moved only by App\Bookings\BookingService (F-005 AC-17, AC-17b).
+     */
+    protected $guarded = ['id', 'public_id', 'booking_code', 'last_booking_number'];
 
     /** Database defaults, so new instances carry them too (ADR-0014, F-003 Q6). */
     protected $attributes = [
         'timezone' => 'Asia/Jakarta',
         'default_booking_deadline_preset' => 'h3',
         'plan' => 'free',
+        'last_booking_number' => 0,
     ];
 
     protected function casts(): array
@@ -32,6 +42,7 @@ class Organization extends Model
         return [
             'onboarding_skipped_at' => 'datetime',
             'first_published_at' => 'datetime',
+            'last_booking_number' => 'integer',
         ];
     }
 
@@ -40,6 +51,44 @@ class Organization extends Model
         static::creating(function (Organization $organization) {
             $organization->public_id ??= (string) Str::uuid();
         });
+
+        // F-005 AC-17b: references stay readable when the seller later changes their slug.
+        static::updating(function (Organization $organization) {
+            if ($organization->isDirty('booking_code') && $organization->getOriginal('booking_code') !== null) {
+                throw new LogicException('An organization\'s booking code never changes (ADR-0026 §5).');
+            }
+        });
+    }
+
+    /**
+     * Insert with the first free booking code derived from the slug (F-005
+     * AC-17b). The unique index decides, not a prior check: when another
+     * seller took the code first, the insert is retried with the next
+     * candidate inside a savepoint, so an outer transaction survives.
+     *
+     * @param  Builder<static>  $query
+     */
+    protected function performInsert(Builder $query)
+    {
+        if ($this->booking_code !== null) {
+            return parent::performInsert($query);
+        }
+
+        foreach (BookingCode::candidates((string) $this->slug) as $code) {
+            $this->booking_code = $code;
+
+            try {
+                return DB::transaction(fn () => parent::performInsert($query));
+            } catch (UniqueConstraintViolationException $e) {
+                if (! BookingCode::isConflict($e)) {
+                    $this->booking_code = null;
+
+                    throw $e;
+                }
+            }
+        }
+
+        throw new LogicException('No free booking code for this organization.');
     }
 
     /**

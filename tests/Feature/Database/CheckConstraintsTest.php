@@ -109,6 +109,7 @@ class CheckConstraintsTest extends TestCase
             'slug' => 'kencana-'.Str::lower(Str::random(8)),
             'city' => 'Jepara',
             'whatsapp' => '+6281277881020',
+            'booking_code' => collect(range('A', 'Z'))->random(4)->implode(''),
         ];
     }
 
