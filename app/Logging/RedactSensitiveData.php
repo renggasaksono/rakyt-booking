@@ -36,6 +36,9 @@ class RedactSensitiveData implements ProcessorInterface
 
     private const URL_SECRET_PARAM_PATTERN = '/([?&](?:signature|token|access_token)=)[^&\s"\']+/i';
 
+    /** The customer booking token is a path segment: /<slug>/pesanan/<token> (F-005 AC-40, F-009 R20, ADR-0027 §5). Also JSON-escaped. */
+    private const BOOKING_TOKEN_PATH_PATTERN = '~(\\\\?/pesanan\\\\?/)[^/?#\s"\'\\\\]+~';
+
     public function __invoke(LogRecord $record): LogRecord
     {
         $message = $record->message;
@@ -148,6 +151,7 @@ class RedactSensitiveData implements ProcessorInterface
     private function scrubString(string $value): string
     {
         $value = preg_replace(self::URL_SECRET_PARAM_PATTERN, '$1'.self::REDACTED, $value) ?? $value;
+        $value = preg_replace(self::BOOKING_TOKEN_PATH_PATTERN, '$1'.self::REDACTED, $value) ?? $value;
 
         return preg_replace_callback(
             self::PHONE_PATTERN,

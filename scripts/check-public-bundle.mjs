@@ -10,7 +10,13 @@ import { gzipSync } from 'node:zlib';
 const BUILD = 'public/build';
 const BUDGET = 150 * 1024;
 const ENTRY = 'resources/js/app.js';
-const PUBLIC_PAGES = ['resources/js/pages/Public/Seller.vue', 'resources/js/pages/Public/Trip.vue'];
+// F-005: the booking form and the customer booking page are public phone pages too.
+const PUBLIC_PAGES = [
+    'resources/js/pages/Public/Seller.vue',
+    'resources/js/pages/Public/Trip.vue',
+    'resources/js/pages/Public/BookingForm.vue',
+    'resources/js/pages/Public/Booking.vue',
+];
 
 const manifest = JSON.parse(readFileSync(`${BUILD}/manifest.json`, 'utf8'));
 let failed = false;

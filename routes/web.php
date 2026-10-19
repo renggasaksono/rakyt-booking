@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\Onboarding\OnboardingController;
+use App\Http\Controllers\PublicPages\BookingController;
 use App\Http\Controllers\PublicPages\PublicPageController;
 use App\Http\Controllers\Settings\AccountController;
 use App\Http\Controllers\Settings\PaymentMethodController;
@@ -128,6 +129,39 @@ Route::middleware(['auth', 'organization', 'onboarded'])->group(function () {
 
     Route::get('/pengaturan/pemesanan', [BookingSettingsController::class, 'edit'])->name('settings.booking.edit');
     Route::put('/pengaturan/pemesanan', [BookingSettingsController::class, 'update'])->name('settings.booking.update');
+});
+
+/*
+| Customer booking (F-005, ADR-0027): the form, its submit and the customer's
+| booking page. Fallback routes like the public pages below, so they never
+| shadow an app route; the organization comes from the slug.
+|
+| Unlike the public pages the form and its submit run the session, its errors
+| and CSRF (an Inertia POST, ADR-0027 §3), but never resolve the signed-in
+| seller: nothing of a seller's session is read here (AC-38 d).
+*/
+Route::middleware('public-organization')->withoutMiddleware([
+    AuthenticateSession::class,
+    ResolveCurrentOrganization::class,
+])->group(function () {
+    // The token pattern keeps `/<slug>/pesanan/pesan` (a trip called "pesanan") reaching the form.
+    // Read-only and session-less (ADR-0028): a session would store this URL, token included.
+    Route::get('/{organization}/pesanan/{token}', [BookingController::class, 'show'])
+        ->where(['organization' => '[^/]+', 'token' => '[A-Za-z0-9]{32}'])
+        ->middleware(['throttle:public-page', 'no-referrer'])
+        ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class])
+        ->fallback()
+        ->name('public.booking.show');
+    Route::get('/{organization}/{trip}/pesan', [BookingController::class, 'create'])
+        ->where(['organization' => '[^/]+', 'trip' => '[^/]+'])
+        ->middleware('throttle:public-page')
+        ->fallback()
+        ->name('public.booking.create');
+    Route::post('/{organization}/{trip}/pesan', [BookingController::class, 'store'])
+        ->where(['organization' => '[^/]+', 'trip' => '[^/]+'])
+        ->middleware('throttle:public-booking')
+        ->fallback()
+        ->name('public.booking.store');
 });
 
 /*
