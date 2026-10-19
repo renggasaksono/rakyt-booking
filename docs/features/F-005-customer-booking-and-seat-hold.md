@@ -393,8 +393,7 @@ queues it, pass ids and load inside `handle()` under `ScopedToOrganization`).
 - **F-008**: moves `whatsapp.customer` into its template set.
 - **F-014**: suspension hooks into `PublicVisibility` and so covers these routes; what a suspended seller's pending
   holds do is F-014's call.
-- **ADR-0026** (accepted 2026-10-19). **ADR-0027** (proposed): the builder implements its recommended defaults (this
-  spec says so); if Rengga changes it before the pilot, the change is a migration on test data only.
+- **ADR-0026, ADR-0027** (both accepted 2026-10-19).
 
 ## Test plan
 
@@ -425,12 +424,10 @@ change before the pilot at the cost of test data only.
   `cancel_reason`; amounts and evidence in F-006's `payment_records`; blueprint "pending/confirmed" are UI groupings
   (pending = `awaiting_payment`/`needs_review`, confirmed = `paid`). Holding statuses: `awaiting_payment`,
   `needs_review`, `paid`. ADR-0026 §1–2. — Rengga
-- [ ] **Q4 Booking page URL** `/{slug}/pesanan/{token}` instead of `/b/{token}`. *Recommended:* the slug form. Why: the
-  organization comes from the slug, so no cross-organization lookup or allowlist entry; the link shows the seller's
-  name. Cost: about 15 more characters in WhatsApp. ADR-0027 §1. — Rengga · *not blocking*
-- [ ] **Q5 Token storage.** *Recommended:* SHA-256 hash for lookup plus an encrypted copy, so the seller can copy or
-  resend the customer's link (F-007/F-008). Alternative: hash only, and a "new link" action that kills the old one.
-  ADR-0027 §2. — Rengga · *not blocking*
+- [x] **Q4 Booking page URL.** Decided 2026-10-19: `/{slug}/pesanan/{token}` (not `/b/{token}`); the organization
+  comes from the slug, so no cross-organization lookup. ADR-0027 §1 (accepted). — Rengga
+- [x] **Q5 Token storage.** Decided 2026-10-19: SHA-256 hash for lookup plus an encrypted copy, so the seller can copy or
+  resend the customer's link (F-007/F-008). ADR-0027 §2 (accepted). — Rengga
 - [ ] **Q6 Non-Indonesian WhatsApp numbers.** *Recommended:* P0 accepts Indonesian mobiles only (`+628…`), the same
   rule as sellers; foreign guests book through the seller by chat. Revisit if Bali/Labuan Bajo pilots ask. — Rengga ·
   *not blocking*
@@ -470,3 +467,4 @@ booking route; **R20** is AC-40; **R17** applies only if a queued job is added. 
 - 2026-10-19 — Q2 decided: reference `RKB-<seller code>-MMDD-NNNN`, unique platform-wide; AC-17 updated, AC-17b and `organizations.booking_code` added
 - 2026-10-19 — Q3 decided: one status column (ADR-0026 §1–2)
 - 2026-10-19 — ADR-0026 accepted as a whole; Q9 decided
+- 2026-10-19 — ADR-0027 accepted as a whole; Q4, Q5 decided

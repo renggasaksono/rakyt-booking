@@ -1,7 +1,7 @@
 ---
 id: 0027
 title: Customer booking routes — URL shape, token storage, session
-status: proposed
+status: accepted
 date: 2026-10-19
 deciders: [Rengga]
 related: [F-005, F-006, F-008, F-009, F-014, ADR-0017, ADR-0021, ADR-0025]
@@ -9,7 +9,7 @@ related: [F-005, F-006, F-008, F-009, F-014, ADR-0017, ADR-0021, ADR-0025]
 
 # 0027. Customer booking routes — URL shape, token storage, session
 
-*Proposed by the planner agent on 2026-10-19 while making F-005 `ready`.*
+*Proposed by the planner agent on 2026-10-19 while making F-005 `ready`; accepted by Rengga on 2026-10-19 as a whole (F-005 Q4, Q5).*
 
 ## Context
 

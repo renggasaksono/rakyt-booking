@@ -304,7 +304,7 @@ Primitives are exercised by a test-only resource (`tests/Fixtures/Tenancy/ProbeN
 - [ ] **R17** `SerializesModels` restores relations without an organization context, so they come back empty (silent data loss, not a leak). Pass ids, or `#[WithoutRelations]` and load inside `handle()` under `ScopedToOrganization`. — first queued job (F-005/F-008).
 - [ ] **R18** A24 polish: PII keys the pattern misses (camelCase `customerName`/`firstName`, `full-name`, `fullname`, `nama`, `bank_account`, `account_no`, `nomor_rekening`, `ktp_number`, `nik_number`); emails in values and under neutral keys (`to`, `recipient`); paginators and `JsonResource` bypass class + key (unwrap `items()` / `resource`); over-redaction of `queue_name`, `job_name`, `connection_name`, `table_name`; backed enums should log `->value`. — F-009.
 - [ ] **R19** S3 presigned URL parameters (`X-Amz-Signature`, `X-Amz-Security-Token`, `X-Amz-Credential`) are not redacted. — F-006, before the private disk moves to S3.
-- [ ] **R20** The booking access token in the `/b/{token}` path is not redacted in logs. — F-005. *(F-005 planning, 2026-10-19: the path is `/{slug}/pesanan/{token}` per ADR-0027, proposed; F-005 AC-40.)*
+- [ ] **R20** The booking access token in the `/b/{token}` path is not redacted in logs. — F-005. *(F-005 planning, 2026-10-19: the path is `/{slug}/pesanan/{token}` per ADR-0027, accepted; F-005 AC-40.)*
 - [ ] **R21** Secret keys the pattern misses: `pwd`, `pass`, `pin`, `otp`, `credentials`, `private_key`, and `Bearer …` values under neutral keys. — F-009.
 - [ ] **R22** `insertGetId([])` and `insertOrIgnoreReturning([])` build an organization-only row while `insert([])` is a no-op; make them consistent. — F-009 (nit).
 
