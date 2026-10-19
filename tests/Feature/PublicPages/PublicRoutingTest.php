@@ -4,8 +4,13 @@ namespace Tests\Feature\PublicPages;
 
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Organization;
+use App\Tenancy\Middleware\ResolveCurrentOrganization;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\AuthenticateSession;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\BuildsPublicPages;
 use Tests\Support\BuildsTrips;
@@ -80,8 +85,10 @@ class PublicRoutingTest extends TestCase
         $this->get('/admin/karimunjawa')->assertNotFound();
         $this->get('/kencana/kari%00munjawa')->assertNotFound();
         $this->get('/kencana/'.str_repeat('a', 101))->assertNotFound();
+
+        // Not UTF-8: rejected before routing (ADR-0025 §2), with the same body.
+        $this->assertSame($first->getContent(), $this->get('/%FF%FE')->assertNotFound()->getContent());
         $this->get('/kencana/kari%FFmunjawa')->assertNotFound();
-        $this->get('/%FF%FE')->assertNotFound();
     }
 
     public function test_ac_3_reserved_slugs_never_reach_the_database_lookup(): void
@@ -141,6 +148,31 @@ class PublicRoutingTest extends TestCase
             ->assertOk()
             ->assertHeader('X-Inertia', 'true')
             ->assertHeader('Cache-Control', 'no-cache, private');
+    }
+
+    public function test_public_pages_start_no_session_and_set_no_cookie(): void
+    {
+        $a = $this->seller();
+        $this->tripFor($a, ['name' => 'Karimunjawa'], published: true);
+        $this->app->make(Kernel::class);
+
+        foreach (['/kencana', '/kencana/karimunjawa', '/Kencana', '/tidak-ada', '/wp-login.php', '/kencana/tidak-ada'] as $path) {
+            $response = $this->get($path);
+
+            $this->assertSame([], $response->headers->getCookies(), $path);
+            $this->assertFalse($response->baseRequest->hasSession(), $path);
+        }
+
+        foreach (['public.seller', 'public.trip'] as $name) {
+            $middleware = app('router')->gatherRouteMiddleware(app('router')->getRoutes()->getByName($name));
+
+            foreach ([StartSession::class, PreventRequestForgery::class, AuthenticateSession::class, ResolveCurrentOrganization::class] as $excluded) {
+                $this->assertNotContains($excluded, $middleware, $name);
+            }
+        }
+
+        // Seller routes keep their session.
+        $this->get('/masuk')->assertCookie(config('session.cookie'));
     }
 
     public function test_ac_39_errors_are_the_bahasa_pages_with_a_home_link_and_no_seller_data(): void

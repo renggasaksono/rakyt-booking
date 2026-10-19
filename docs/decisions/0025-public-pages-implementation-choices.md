@@ -71,3 +71,20 @@ choices that the spec leaves open or words differently, each of which someone co
 - Implicit binding with an `Organization::trips()` relation — an unscoped relation on the tenant (ADR-0021).
 - Computing the closing-date wording on the server — the rest of the date wording already lives in the browser
   helpers (ADR-0022 §10); keeping it together keeps one formatter.
+
+## Amendment 2026-10-19 (review finding 2)
+
+With the full `web` group, every request to a public page — and, because the routes are fallbacks, every unknown one-
+or two-segment path such as `/wp-login.php` — started a session. Customers arriving from WhatsApp, link-preview bots
+and crawlers send no cookie, so each hit wrote a new `sessions` row (`SESSION_DRIVER=database`) for no use.
+
+**The public routes now run without the session middleware:** `StartSession`, `ShareErrorsFromSession`,
+`PreventRequestForgery` (CSRF), `AuthenticateSession` and `ResolveCurrentOrganization` are excluded on
+`public.seller` and `public.trip` (`routes/web.php`). Public pages are GET-only and show nothing of the visitor, so
+nothing there needs a session; their responses set no cookie. AC-7 now also holds by construction: the signed-in
+seller is never read. The shared-props guard (§4) stays as a second layer. Two consequences: the 301 case redirect,
+404 and 429 on these routes set no cookie either; and a seller's own session is not touched when they open their
+public page. Requests rejected before routing (non-UTF-8 paths, §2) were never in the web group.
+
+Also noted by the review: a non-GET request to any unknown one- or two-segment path is now a 405 (the fallback GET
+routes match the path), not a 404.

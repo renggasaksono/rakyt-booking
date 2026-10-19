@@ -16,7 +16,12 @@ use App\Http\Controllers\Trips\BookingSettingsController;
 use App\Http\Controllers\Trips\TripController;
 use App\Http\Controllers\Trips\TripDepartureController;
 use App\Http\Controllers\Trips\TripPhotoController;
+use App\Tenancy\Middleware\ResolveCurrentOrganization;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Session\Middleware\AuthenticateSession;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Inertia\Inertia;
 
 Route::get('/', fn () => Inertia::render('Home', [
@@ -132,8 +137,18 @@ Route::middleware(['auth', 'organization', 'onboarded'])->group(function () {
 | accept any segment so unknown, reserved and malformed slugs end in the same
 | 404 from ResolvePublicOrganization (AC-3). Not `auth`, `organization` or
 | `onboarded`: the organization comes from the slug (AC-7).
+|
+| No session (ADR-0025 amendment): customers, crawlers and link-preview bots send
+| no cookie, so a session would write a row per hit; nothing on these pages
+| needs one, and without it nothing of a signed-in seller can reach them.
 */
-Route::middleware(['throttle:public-page', 'public-organization'])->group(function () {
+Route::middleware(['throttle:public-page', 'public-organization'])->withoutMiddleware([
+    StartSession::class,
+    ShareErrorsFromSession::class,
+    PreventRequestForgery::class,
+    AuthenticateSession::class,
+    ResolveCurrentOrganization::class,
+])->group(function () {
     Route::get('/{organization}', [PublicPageController::class, 'seller'])
         ->where('organization', '[^/]+')
         ->fallback()
