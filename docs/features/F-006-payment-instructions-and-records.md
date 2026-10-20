@@ -386,6 +386,21 @@ spec left open are recorded in [ADR-0031](../decisions/0031-payment-records-impl
 - **Left for review:** AC-32 real-device review with the other P0 screens (and a real HEIC upload from an iPhone) is a
   manual check, as for F-002/F-003/F-005/F-007.
 
+## Follow-ups (post-merge review 2026-10-20)
+
+Non-blocking items from the PR #16 review (merged as-is by Rengga; recorded here instead of fixing now):
+
+- **`payment_records` CHECK constraints lack a dedicated test.** The four constraints (`amount_due >= 0`,
+  `decision IN ('confirmed','rejected')`, `(verified_at IS NULL) = (decision IS NULL)`, `reject_reason` only with
+  `decision = 'rejected'`) are correct and DB-enforced, but — unlike the QRIS constraints
+  (`CheckConstraintsTest::test_f006_qris_rows_carry_an_image_and_no_account`) — have no regression test, so a migration
+  that loosened them would pass CI. *Follow-up:* add a `payment_records` case to
+  `tests/Feature/Database/CheckConstraintsTest.php`.
+- **AC-24 audit-action name: doc vs code.** The payment-instruction-change event is `payment_instructions.changed` in
+  code (the existing F-001 event the test asserts), while this spec's AC-24 prose and [ADR-0030](../decisions/0030-payment-records-and-verification.md)
+  §6's Audit table call it `organization.payment_instructions_changed`. Cosmetic naming mismatch, no behavioural
+  impact. *Follow-up:* align the prose to the shipped value (`payment_instructions.changed`).
+
 ## Open questions
 
 Resolved 2026-10-20 (Rengga) — see [ADR-0030](../decisions/0030-payment-records-and-verification.md). Defaults are in
@@ -428,3 +443,5 @@ the acceptance criteria; each can change before the pilot at the cost of test da
 - 2026-10-20 — Built: `payment_records`, QRIS, evidence upload, seller verification, customer payment screen,
   Pengaturan → Pembayaran with the ADR-0018 block; closed F-009 A20/A21, R2, R19. All AC covered by tests; status →
   `done`. Implementation choices in ADR-0031
+- 2026-10-20 — Post-merge review (PR #16): two non-blocking follow-ups recorded (payment_records CHECK-constraint test;
+  AC-24 audit-action doc/code naming) — see Follow-ups
