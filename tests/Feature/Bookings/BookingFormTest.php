@@ -136,7 +136,7 @@ class BookingFormTest extends TestCase
         // AC-7: the hours come from the server's constant.
         $this->assertSame(120, $props['hold_minutes']);
         $this->assertSame(config('rakyt.booking.hold_minutes'), $props['hold_minutes']);
-        $this->assertSame('Kursi ditahan :hours jam sambil menunggu pembayaran. Lewat dari itu, kursi dilepas otomatis.', $copy['hold']);
+        $this->assertSame('Kursi ditahan :hours jam sampai dibayar, lalu dilepas.', $copy['hold']);
 
         // AC-8
         $this->assertSame('Data Anda hanya diteruskan ke :name untuk mengurus pesanan ini.', $copy['privacy']);

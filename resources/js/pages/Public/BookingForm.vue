@@ -95,31 +95,32 @@ function submit() {
         class="mx-auto max-w-md px-4"
         :class="bookable ? 'pb-72' : 'pb-32'"
     >
-        <nav class="flex h-14 items-center">
+        <nav class="flex h-14 items-center justify-between gap-3">
             <Link
                 :href="urls.trip"
-                class="-ml-3 inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-xl text-ink"
+                class="-ml-3 inline-flex min-h-11 min-w-11 items-center justify-center text-xl text-ink"
                 :aria-label="t(copy, 'form.back', { trip: trip.name })"
             >
                 <span aria-hidden="true">←</span>
             </Link>
-            <span class="ml-1 truncate text-sm text-secondary">{{ organization.name }}</span>
+            <!-- Step indicator sits on the top-right edge (mockup 1c). -->
+            <span class="font-heading text-[11px] font-semibold uppercase tracking-[.14em] text-secondary">
+                {{ t(copy, 'form.kicker') }}
+            </span>
         </nav>
 
         <header>
-            <p class="font-heading text-[11px] font-semibold uppercase tracking-[.14em] text-sogan">
-                {{ t(copy, 'form.kicker') }}
-            </p>
-            <h1 class="mt-1 font-heading text-2xl font-semibold leading-tight text-ink">
+            <h1 class="font-heading text-2xl font-semibold leading-tight text-ink">
                 {{ t(copy, 'form.title') }}
             </h1>
         </header>
 
-        <section class="mt-4 border border-ink/15 bg-surface p-3">
-            <p class="font-heading text-base font-semibold text-ink [overflow-wrap:anywhere]">
+        <!-- Selected trip: highlighted ink card with light text (mockup 1c). -->
+        <section class="mt-4 bg-ink px-4 py-3.5">
+            <p class="font-heading text-sm font-semibold text-gading [overflow-wrap:anywhere]">
                 {{ trip.name }}
             </p>
-            <p class="mt-0.5 text-sm text-secondary [overflow-wrap:anywhere]">
+            <p class="mt-0.5 text-xs text-[#d8c9b6] [overflow-wrap:anywhere]">
                 {{ [dates, meetingText].filter(Boolean).join(' · ') }}
             </p>
         </section>
@@ -141,14 +142,14 @@ function submit() {
         <form
             v-else
             id="booking-form"
-            class="mt-6 flex flex-col gap-5"
+            class="mt-5 flex flex-col gap-4"
             novalidate
             @submit.prevent="submit"
         >
             <div>
                 <label
                     for="name"
-                    class="font-heading text-sm font-semibold text-ink"
+                    class="font-heading text-xs font-semibold text-ink"
                 >{{ t(copy, 'form.name') }}</label>
                 <input
                     id="name"
@@ -170,7 +171,7 @@ function submit() {
             <div>
                 <label
                     for="phone"
-                    class="font-heading text-sm font-semibold text-ink"
+                    class="font-heading text-xs font-semibold text-ink"
                 >{{ t(copy, 'form.phone') }}</label>
                 <div
                     class="mt-1 flex min-h-12 items-stretch overflow-hidden border bg-surface focus-within:shadow-[inset_0_0_0_2px_#6e4527]"
@@ -208,7 +209,7 @@ function submit() {
             <div>
                 <label
                     for="participants"
-                    class="font-heading text-sm font-semibold text-ink"
+                    class="font-heading text-xs font-semibold text-ink"
                 >{{ t(copy, 'form.participants') }}</label>
                 <div class="mt-1 flex items-center gap-3">
                     <Stepper
@@ -237,7 +238,7 @@ function submit() {
             <div>
                 <label
                     for="notes"
-                    class="font-heading text-sm font-semibold text-ink"
+                    class="font-heading text-xs font-semibold text-ink"
                 >{{ t(copy, 'form.notes') }}</label>
                 <textarea
                     id="notes"
@@ -298,7 +299,7 @@ function submit() {
             >
                 {{ form.processing ? t(copy, 'form.sending') : t(copy, 'form.submit') }}
             </button>
-            <p class="mt-2 text-center text-xs text-secondary">
+            <p class="mt-2 text-xs text-secondary">
                 {{ t(copy, 'form.privacy', { name: organization.name }) }}
                 <a
                     :href="urls.privacy"
