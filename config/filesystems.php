@@ -30,10 +30,14 @@ return [
 
     'disks' => [
 
+        // Payment evidence and QRIS images (F-006, ADR-0030 §3). F-009 R2 /
+        // F-006 AC-31: `serve => false` so the framework registers no public
+        // signed GET/PUT /storage/{path} route; private media is streamed only
+        // from an authorised controller (App\Media\PrivateMedia::response).
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

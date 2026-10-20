@@ -14,9 +14,9 @@ enum AuditAction: string
     case BookingCancelled = 'booking.cancelled';
 
     case PaymentEvidenceUploaded = 'payment.evidence_uploaded';
-    case PaymentVerified = 'payment.verified';
+    // F-006 AC-17/AC-18: the seller verifies a payment.
+    case PaymentConfirmed = 'payment.confirmed';
     case PaymentRejected = 'payment.rejected';
-    case PaymentRecordAmountChanged = 'payment_record.amount_changed';
 
     case DepartureCreated = 'departure.created';
     case DeparturePriceChanged = 'departure.price_changed';

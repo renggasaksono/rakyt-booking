@@ -162,6 +162,9 @@ return [
         'private_disk' => env('MEDIA_PRIVATE_DISK', 'local'),
         // Signed URL lifetime for private media, in minutes (A20: ≤ 5).
         'private_url_ttl' => 5,
+        // ADR-0018 / F-006 AC-25: payment-instruction changes are blocked for
+        // this many hours after a password reset or sign-in-email change.
+        'payment_change_block_hours' => 24,
         'trip_photo' => [
             'mimetypes' => ['image/jpeg', 'image/png', 'image/webp'],
             'max_kb' => 10 * 1024,
