@@ -3,7 +3,7 @@
 What is in scope **now**, **next** and **later**. Agents only build items under **Now**.
 Dated plans live alongside this file; this page is the summary that must always be current.
 
-_Last updated: 2026-10-19_
+_Last updated: 2026-10-20_
 
 ## Now — MVP build (P0)
 
@@ -19,7 +19,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | done — built on `claude/f-005-customer-booking-9edbd4` (not merged); AC-1…AC-42 + AC-17b covered by tests (AC-42 real-device review with F-002/F-003's); closes F-009 R1, R20; ADR-0028 accepted; Q6–Q8, Q10–Q13 defaults in use |
 | [F-004](../features/F-004-request-a-date.md) Request-a-date | planned |
 | [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | done — built on `claude/f-007-seller-dashboard-654ef1` (not merged); AC-1…AC-38 covered by tests (AC-38 real-device review with the other P0 screens); Konfirmasi / Tolak come with F-006, date-request rows with F-004; ADR-0029 accepted |
-| [F-006](../features/F-006-payment-instructions-and-records.md) Payment instructions & records | planned |
+| [F-006](../features/F-006-payment-instructions-and-records.md) Payment instructions & records | ready — AC-1…AC-32 (payment screen, evidence upload, Konfirmasi / Tolak on F-007's rows, QRIS, ADR-0018 block); ADR-0030 accepted; closes F-009 A20/A21, R2, R19 and the Pilot-go payment-security gate; cash & DP → P1 |
 | [F-008](../features/F-008-whatsapp-handoff.md) WhatsApp handoff | ready — section A (Tanya via WhatsApp on the trip page, AC-A1…A11) approved 2026-10-19; section B (template set) still draft |
 | Internal admin panel — [F-010](../features/F-010-admin-access-control.md) access control, [F-011](../features/F-011-admin-overview-dashboard.md) overview, [F-012](../features/F-012-admin-seller-directory.md) seller directory, [F-013](../features/F-013-admin-booking-search.md) booking search, [F-014](../features/F-014-seller-suspension.md) suspension, [F-015](../features/F-015-admin-audit-log.md) admin audit log | planned |
 
@@ -43,7 +43,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
 | Transactional email provider (SPF/DKIM) | — | [F-001](../features/F-001-seller-onboarding.md#dependencies) | Pilot |
-| **Pre-pilot gate:** ADR-0018 24-hour block on payment-instruction changes after a password reset or email change, and the change notice to the sign-in email — not built by F-001. Two write paths now go through `PaymentMethodService::sync`: onboarding step 4 and Pengaturan → Rekening (F-001 F5); both must be covered | Build with F-006 Pengaturan → Pembayaran | [F-001 Q16](../features/F-001-seller-onboarding.md#open-questions) · [ADR-0018](../decisions/0018-account-recovery-and-payment-instruction-protection.md) | Pilot (blocks "Pilot go") |
+| **Pre-pilot gate:** ADR-0018 24-hour block on payment-instruction changes after a password reset or email change, and the change notice to the sign-in email — not built by F-001. Two write paths go through `PaymentMethodService::sync`: onboarding step 4 and Pengaturan → Rekening (F-001 F5); both must be covered | **Specced in F-006 §E (AC-24–AC-26); build in wk 4** | [F-006 §E](../features/F-006-payment-instructions-and-records.md) · [F-001 Q16](../features/F-001-seller-onboarding.md#open-questions) · [ADR-0018](../decisions/0018-account-recovery-and-payment-instruction-protection.md) | Pilot (blocks "Pilot go") |
 | Syarat & Privasi text; PDP law (UU 27/2022) | Short Bahasa notice before pilot; formal review before launch | [F-009 Q9](../features/F-009-tenancy-security-operations.md#open-questions) | Pilot |
 | Free-tier limits and pricing | Decide after pilot | [ADR-0019](../decisions/0019-defer-free-tier-limits.md) | After pilot |
 
@@ -80,7 +80,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Decision | Source |
 |---|---|
 | Accepted date request → public or private departure; price on accept | [F-004](../features/F-004-request-a-date.md#open-questions) |
-| Re-upload and hold clock after rejection; does `rejected` hold seats; DP 50% in P0 or P1 | [F-006](../features/F-006-payment-instructions-and-records.md#open-questions) |
 | Admin auth mechanism; admin UI language (Bahasa or English) | [F-010](../features/F-010-admin-access-control.md#open-questions) |
 | Admin status mapping (depends on F-006) | [F-011](../features/F-011-admin-overview-dashboard.md#open-questions) |
 | Meaning of "last activity" in the seller directory | [F-012](../features/F-012-admin-seller-directory.md#open-questions) |
