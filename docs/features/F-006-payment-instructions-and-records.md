@@ -1,11 +1,11 @@
 ---
 id: F-006
 title: Payment instructions & records
-status: ready
+status: done
 priority: P0
 roadmap: mvp-week-4
 mockups: [1d, 2e, 3e, 2f, 4e]
-decisions: ["0003", "0006", "0008", "0017", "0018", "0026", "0027", "0030"]
+decisions: ["0003", "0006", "0008", "0017", "0018", "0026", "0027", "0030", "0031"]
 updated: 2026-10-20
 ---
 
@@ -83,43 +83,43 @@ word (ADR-0008, `docs/design` status set). Money is integer rupiah with the F-00
 
 ### A. Customer payment screen (1d / 2e / 3e)
 
-- [ ] **AC-1 Instructions shown while payable.** Given a booking in `awaiting_payment` with an active hold, when its
+- [x] **AC-1 Instructions shown while payable.** Given a booking in `awaiting_payment` with an active hold, when its
   link is opened, then below the F-005 summary the page shows a **"Cara pembayaran"** block listing the organization's
   **active** payment methods in `position` order: for a bank / e-wallet, the provider label ("BCA"), the account number
   and the account holder; for QRIS, the QR image. The amount to pay is the booking's `total_amount` ("Rp2.500.000").
-- [ ] **AC-2 Account-holder helper.** Each bank / e-wallet method shows the account holder with the helper
+- [x] **AC-2 Account-holder helper.** Each bank / e-wallet method shows the account holder with the helper
   "Harus sama persis dengan buku tabungan." (`payment.account_holder_hint`). Reuses F-001's copy.
-- [ ] **AC-3 Copy buttons.** The account number and the amount each have a copy button (≥ 44 × 44 px, Bahasa
+- [x] **AC-3 Copy buttons.** The account number and the amount each have a copy button (≥ 44 × 44 px, Bahasa
   `aria-label`): tapping copies the digits-only value and shows "Nomor disalin" / "Jumlah disalin". QRIS has no copyable
   number (it is the image).
-- [ ] **AC-4 Three-step progress.** The page shows the 3 steps **Transfer → Dicek operator → Lunas** with the current
+- [x] **AC-4 Three-step progress.** The page shows the 3 steps **Transfer → Dicek operator → Lunas** with the current
   step marked by status: `awaiting_payment` → step 1 active; `needs_review` → step 2 active; `paid` → step 3 done.
   `rejected` and `cancelled` do not show the progress (AC-9, AC-10).
-- [ ] **AC-5 Gold CTA.** "Unggah bukti transfer" is the one gold button on the page (it replaces the plain F-005 page's
+- [x] **AC-5 Gold CTA.** "Unggah bukti transfer" is the one gold button on the page (it replaces the plain F-005 page's
   having none). "Kabari operator via WhatsApp" (F-005 AC-33) stays ink-outline, secondary.
-- [ ] **AC-6 No-cut copy.** The block shows "Pembayaran langsung ke :seller. Rakyt tidak memotong biaya transaksi."
+- [x] **AC-6 No-cut copy.** The block shows "Pembayaran langsung ke :seller. Rakyt tidak memotong biaya transaksi."
   (`payment.direct_notice`) with the seller's name.
-- [ ] **AC-7 Seller has no payment method.** Given the seller has no active payment method (every one removed), then
+- [x] **AC-7 Seller has no payment method.** Given the seller has no active payment method (every one removed), then
   the page shows "Operator belum memasang instruksi pembayaran. Hubungi via WhatsApp." instead of the accounts and
   hides the upload CTA; "Kabari operator via WhatsApp" stays. The hold still counts down normally.
-- [ ] **AC-8 Needs-review content.** Given a booking in `needs_review`, then the pill is "◐ Perlu dicek", the countdown
+- [x] **AC-8 Needs-review content.** Given a booking in `needs_review`, then the pill is "◐ Perlu dicek", the countdown
   is gone and replaced by "Bukti sudah dikirim. Menunggu operator mengecek." (`payment.under_review`), the uploaded
   evidence is shown as a thumbnail the customer can open (AC-19), and the upload CTA is replaced by "Ganti bukti"
   **only while still `needs_review`** — re-uploading replaces the evidence and keeps the booking `needs_review` (it does
   not restart any clock; the hold is already stopped). The instructions stay visible for reference.
-- [ ] **AC-9 Paid content.** Given a booking in `paid`, then the pill is "✓ Lunas", step 3 is done, and the page shows
+- [x] **AC-9 Paid content.** Given a booking in `paid`, then the pill is "✓ Lunas", step 3 is done, and the page shows
   "Pembayaran lunas. Sampai jumpa di :trip." (`payment.paid`) with the summary; no countdown, no upload, no
   instructions block.
-- [ ] **AC-10 Rejected content.** Given a booking in `rejected`, then the pill is "✕ Ditolak", the page shows
+- [x] **AC-10 Rejected content.** Given a booking in `rejected`, then the pill is "✕ Ditolak", the page shows
   "Bukti transfer ditolak." and, when present, "Alasan: :reason" (the seller's reason), and — while the trip is still
   published — an ink link "Pesan lagi" to the trip page (as F-005 AC-31's expired state). No countdown, no upload, no
   instructions. The seats are already released (AC-15).
-- [ ] **AC-11 Cancelled / expired unchanged.** Given `cancelled` (hold expired or seller), the page is exactly F-005
+- [x] **AC-11 Cancelled / expired unchanged.** Given `cancelled` (hold expired or seller), the page is exactly F-005
   AC-31 (no payment content added).
 
 ### B. Evidence upload
 
-- [ ] **AC-12 Upload.** Given a booking in `awaiting_payment` with an active hold, when the customer submits an image
+- [x] **AC-12 Upload.** Given a booking in `awaiting_payment` with an active hold, when the customer submits an image
   (`UploadRules::paymentEvidence()`: JPEG / PNG / WebP / HEIC / HEIF, ≤ 5 MB), then in one transaction (departure lock →
   booking lock, re-reading `holdIsActive`): the file is stored on the private disk under
   `MediaPath::for($organization, 'evidence/'.$booking->public_id, …)`, a `payment_records` row is created (or its
@@ -127,43 +127,43 @@ word (ADR-0008, `docs/design` status set). Money is integer rupiah with the F-00
   `needs_review`, `hold_expires_at` is left as-is but no longer counts (the hold clock is stopped, ADR-0006), and a
   `payment.evidence_uploaded` audit event is written (actor `customer`, booking id, IP; no file bytes). The response
   redirects (303) back to the booking page showing AC-8.
-- [ ] **AC-13 Upload after expiry refused.** Given the hold has expired (`holdIsActive(now)` false — whether or not the
+- [x] **AC-13 Upload after expiry refused.** Given the hold has expired (`holdIsActive(now)` false — whether or not the
   release job has run), when the customer submits evidence, then nothing is stored, no record is created, the booking
   is unchanged, and the page shows AC-11's expired state with "Waktu pembayaran sudah habis." (ADR-0006: no upload after
   expiry). Checked at the second boundary (F-005 AC-25): at `created_at + 1:59:59` the upload succeeds, at `+ 2:00:00`
   it is refused.
-- [ ] **AC-14 Upload validation.** A missing file, a non-image, a disallowed type, or a file > 5 MB → the page keeps
+- [x] **AC-14 Upload validation.** A missing file, a non-image, a disallowed type, or a file > 5 MB → the page keeps
   its state and shows the Bahasa error ("Unggah foto/berkas gambar (JPG/PNG), maks. 5 MB.", `payment.errors.evidence`);
   nothing is stored and the booking is unchanged. Upload is rate-limited by `throttle:evidence-upload` (10 per hour per
   token, `config/rakyt.php`); over the limit shows "Terlalu banyak percobaan. Coba lagi dalam n menit." (F-009 A14).
-- [ ] **AC-15 Only `awaiting_payment` and `needs_review` accept an upload.** Uploading against a `paid`, `rejected` or
+- [x] **AC-15 Only `awaiting_payment` and `needs_review` accept an upload.** Uploading against a `paid`, `rejected` or
   `cancelled` booking is refused (the booking is unchanged); against `needs_review` it replaces the evidence (AC-8).
 
 ### C. Seller verification (on F-007's rows and detail)
 
-- [ ] **AC-16 Konfirmasi / Tolak offered.** Given a booking in `needs_review`, then its "Perlu tindakan" row (F-007
+- [x] **AC-16 Konfirmasi / Tolak offered.** Given a booking in `needs_review`, then its "Perlu tindakan" row (F-007
   AC-7) and its booking detail (F-007 AC-23) show the evidence thumbnail and two ink / ink-outline buttons
   **"Konfirmasi"** and **"Tolak"** — never gold ("+ Trip baru" stays Hari ini's one gold button, F-007 AC-5). No other
   status shows them.
-- [ ] **AC-17 Konfirmasi → paid.** Given the seller taps "Konfirmasi", then in one transaction (departure lock →
+- [x] **AC-17 Konfirmasi → paid.** Given the seller taps "Konfirmasi", then in one transaction (departure lock →
   booking lock, re-reading the status): the booking becomes `paid`, `seats_taken` is **unchanged** (it already held the
   seat), the `payment_records` row gets `verified_by = user`, `verified_at = now`, `decision = confirmed`, and a
   `payment.confirmed` audit event is written (actor seller). The response returns with the toast "Pembayaran
   dikonfirmasi." and the row/detail now shows "✓ Lunas".
-- [ ] **AC-18 Tolak → rejected, seats released.** Given the seller taps "Tolak" (optionally typing a reason ≤ 200
+- [x] **AC-18 Tolak → rejected, seats released.** Given the seller taps "Tolak" (optionally typing a reason ≤ 200
   chars), then in one transaction (departure lock → booking lock): the booking becomes `rejected`, `seats_taken` drops
   by the booking's participants (seats back on sale — ADR-0030 §2), the record gets `decision = rejected`,
   `reject_reason`, `verified_by`, `verified_at`, and a `payment.rejected` audit event is written. The response returns
   with "Bukti ditolak. n kursi dibuka lagi." and an ink-outline "Kabari pelanggan via WA" (opens `whatsapp.rejected`:
   "Halo :name, bukti transfer untuk pesanan :reference belum bisa kami terima. Silakan hubungi kami."). `rejected` is
   terminal: there is no re-confirm and no re-open (the customer re-books, AC-10).
-- [ ] **AC-19 Evidence viewing is gated.** The evidence image is served only after an authorisation check — the seller
+- [x] **AC-19 Evidence viewing is gated.** The evidence image is served only after an authorisation check — the seller
   through `PaymentRecordPolicy` (same organization), the customer through their booking access token — by streaming
   from an authorised controller or a `temporaryUrl()` with TTL ≤ 5 min (`config('rakyt.media.private_url_ttl')`). Given
   seller B, an anonymous visitor with the storage path, or an expired URL → 403/404 (F-009 A20); given the customer's
   own token → served, another booking's token → not (F-009 A21). The storage path is never in props, logs or audit
   events.
-- [ ] **AC-20 Verify races the expiry job / a second tab.** Given a `needs_review` booking Konfirmasi/Tolak'd twice, or
+- [x] **AC-20 Verify races the expiry job / a second tab.** Given a `needs_review` booking Konfirmasi/Tolak'd twice, or
   a booking whose status changed between the detail loading and the tap, then exactly one transition happens, one audit
   event is written, seats move at most once, and the second attempt returns the booking's current status with "Pesanan
   ini sudah diproses." (200 after redirect, not an error). A `needs_review` booking is never touched by the F-005
@@ -172,53 +172,53 @@ word (ADR-0008, `docs/design` status set). Money is integer rupiah with the F-00
 
 ### D. QRIS (Pengaturan → Pembayaran)
 
-- [ ] **AC-21 Add QRIS.** Given a seller in Pengaturan → Pembayaran, when they add a QRIS method and upload a QR image
+- [x] **AC-21 Add QRIS.** Given a seller in Pengaturan → Pembayaran, when they add a QRIS method and upload a QR image
   (`UploadRules::paymentEvidence()` rules — image ≤ 5 MB), then a `payment_methods` row with `type = qris` and
   `qris_image_path` (private disk) is saved; it needs no account number or holder. The publish checklist counts it as
   an active payment method (`ActivePaymentMethods`, F-003 AC-9).
-- [ ] **AC-22 QRIS shown to the customer.** A QRIS method appears on the customer payment screen as its image (gated
+- [x] **AC-22 QRIS shown to the customer.** A QRIS method appears on the customer payment screen as its image (gated
   like evidence, AC-19 — the customer with a valid booking token can view it; it is never on a guessable path). No copy
   button. Bank / e-wallet and QRIS methods can coexist and are listed in `position` order (AC-1).
-- [ ] **AC-23 QRIS validation.** A QRIS method with no image is refused ("Unggah gambar QRIS."); bank / e-wallet rows
+- [x] **AC-23 QRIS validation.** A QRIS method with no image is refused ("Unggah gambar QRIS."); bank / e-wallet rows
   keep F-001's rules (account number `^[0-9]{5,20}$`, holder 2–100 chars). The `payment_methods` type `CHECK` now
   allows `qris` and the account-number `CHECK` applies only to bank / e-wallet rows.
 
 ### E. Payment-instruction change protection (ADR-0018)
 
-- [ ] **AC-24 Change audited and notified.** Given a seller saves Pengaturan → Pembayaran with any change, then one
+- [x] **AC-24 Change audited and notified.** Given a seller saves Pengaturan → Pembayaran with any change, then one
   `organization.payment_instructions_changed` audit event is written with before/after (already built,
   `PaymentMethodService::sync`) **and** a notice email is sent to the sign-in email ("Instruksi pembayaran usaha Anda
   diubah."). No change → no audit, no email (F-001 F5 behaviour kept).
-- [ ] **AC-25 24-hour block after recovery.** Given a password reset or a sign-in-email change in the last 24 hours
+- [x] **AC-25 24-hour block after recovery.** Given a password reset or a sign-in-email change in the last 24 hours
   (ADR-0018), when the seller opens Pengaturan → Pembayaran, then the form is read-only with a notice "Demi keamanan,
   instruksi pembayaran terkunci 24 jam setelah perubahan kata sandi atau email. Coba lagi setelah :time."; a POST in
   that window is refused server-side (not only hidden). The window is computed from the stored reset/email-change time
   in the organization's zone.
-- [ ] **AC-26 Block lifts.** Past the 24 hours, the form is editable again with no notice; an ordinary password change
+- [x] **AC-26 Block lifts.** Past the 24 hours, the form is editable again with no notice; an ordinary password change
   by a signed-in seller who knows the current password does **not** trigger the block (ADR-0018).
 
 ### F. Tenancy, lifecycle, logs, design
 
-- [ ] **AC-27 Cross-tenant.** Given sellers A and B (`InteractsWithTenants`, F-009 A9): B's evidence and
+- [x] **AC-27 Cross-tenant.** Given sellers A and B (`InteractsWithTenants`, F-009 A9): B's evidence and
   `payment_records` are never visible to A on any seller page, in Perlu tindakan, the detail or search; `POST`
   Konfirmasi/Tolak on B's booking → 404 with B's booking, record and `seats_taken` unchanged and no event; A opening
   B's evidence path → 403/404 (AC-19). `PaymentRecordPolicy` extends `OrganizationOwnedPolicy`; the customer screen
   only ever shows its own booking's seller's methods and evidence.
-- [ ] **AC-28 Seat invariant across the new transitions.** After every test that confirms or rejects: for each
+- [x] **AC-28 Seat invariant across the new transitions.** After every test that confirms or rejects: for each
   departure `seats_taken` = Σ participants of its bookings in holding statuses (F-005 AC-23). Confirm keeps the seat;
   reject returns it; a `rejected` booking is not counted.
-- [ ] **AC-29 Lifecycle guards.** A booking cannot skip states: upload requires `awaiting_payment`/`needs_review`
+- [x] **AC-29 Lifecycle guards.** A booking cannot skip states: upload requires `awaiting_payment`/`needs_review`
   (AC-15); Konfirmasi/Tolak require `needs_review` (AC-16, AC-20). The transitions go through `BookingService`
   (`confirmPayment`, `rejectPayment`) under the ADR-0026 §3 lock order — never a direct `seats_taken` or `status`
   update.
-- [ ] **AC-30 Logs and redaction.** No log line, error-tracker payload or exception context contains the evidence
+- [x] **AC-30 Logs and redaction.** No log line, error-tracker payload or exception context contains the evidence
   storage path, a presigned URL, or its signature parameters: `X-Amz-Signature`, `X-Amz-Security-Token`,
   `X-Amz-Credential` and the evidence path are redacted (F-009 R19); the booking token stays redacted (F-005 AC-40).
   The upload POST sends `Cache-Control: no-store, private`.
-- [ ] **AC-31 R2 — no signed upload route.** The `private` disk is configured `serve => false` (evidence is streamed
+- [x] **AC-31 R2 — no signed upload route.** The `private` disk is configured `serve => false` (evidence is streamed
   from the authorised controller), and a guard test asserts the app registers no public signed `PUT /storage/{path}`
   upload route and that `temporaryUploadUrl()` is not used (F-009 R2).
-- [ ] **AC-32 Phone width and design rules.** The payment screen, the upload control, the QRIS settings and the verify
+- [x] **AC-32 Phone width and design rules.** The payment screen, the upload control, the QRIS settings and the verify
   buttons work at 360 px without horizontal scroll; tap targets ≥ 44 px; text ≥ 12 px (11 px only for uppercase
   kickers); exactly one gold button per screen ("Unggah bukti transfer" on the customer page; Konfirmasi/Tolak are
   never gold); every status carries its glyph; tints from `--color-status-*-tint`; all copy from `lang/id/*.php`.
@@ -361,6 +361,31 @@ reuses `media.payment_evidence` size/type rules.
 | JS (Vitest) | `tests/js/payment.test.js`: copy-button values, 3-step mapping per status, upload control states (sending/disabled/error) |
 | Manual | 360 px browser check of the payment screen, upload, QRIS settings, verify buttons; real-device review with the other P0 screens; a real HEIC upload from an iPhone |
 
+## Build notes
+
+Built 2026-10-20. All acceptance criteria (AC-1…AC-32) are covered by passing tests; `php artisan test` (668),
+`./vendor/bin/pint --test`, `npm run lint`, `npm run build` and `npm test` (117) are green. Implementation calls the
+spec left open are recorded in [ADR-0031](../decisions/0031-payment-records-implementation-choices.md).
+
+- **Data.** `payment_records` (one per booking, `BelongsToOrganization`, `PaymentRecordPolicy`) with the amount /
+  evidence / verification columns and CHECK guards; `payment_methods` gains a `qris` type + `qris_image_path` with the
+  type and account-number CHECKs relaxed (migrations `2026_10_20_000001/000002`).
+- **Lifecycle.** `BookingService::uploadEvidence` / `confirmPayment` / `rejectPayment` under the departure → booking
+  lock (ADR-0026 §3): upload re-checks `holdIsActive` and moves `awaiting_payment → needs_review` (clock stops);
+  confirm keeps the seat; reject is terminal and releases seats (ADR-0030 §2). The verify audit action is
+  `payment.confirmed` (ADR-0031 §2).
+- **Serving.** Evidence and QRIS stream from authorised controllers; the private disk is `serve => false` and
+  `PrivateMedia::response()` streams with `no-store` (closes F-009 R2 / AC-31). Log redaction adds the S3 presigned
+  parameters and private media paths (F-009 R19 / AC-30).
+- **Settings.** Pengaturan → Pembayaran (`settings.payment`, a multipart POST) supersedes F-001's Rekening; bank /
+  e-wallet + a single QRIS image are saved in one audited transaction, the sign-in email is notified, and changes are
+  blocked for 24 h after a password reset / email change (`PaymentInstructionLock` reads the audit log; ADR-0031 §3).
+- **UI.** Customer payment screen (instructions, 3-step progress, copy buttons, QRIS, gold "Unggah bukti transfer");
+  seller Konfirmasi / Tolak inline on Perlu tindakan rows and the detail (ink / ink-outline). Copy in
+  `lang/id/booking.php`, `bookings.php`, `payment.php` (ADR-0031 §5).
+- **Left for review:** AC-32 real-device review with the other P0 screens (and a real HEIC upload from an iPhone) is a
+  manual check, as for F-002/F-003/F-005/F-007.
+
 ## Open questions
 
 Resolved 2026-10-20 (Rengga) — see [ADR-0030](../decisions/0030-payment-records-and-verification.md). Defaults are in
@@ -400,3 +425,6 @@ the acceptance criteria; each can change before the pilot at the cost of test da
   released); cash and DP → P1; QRIS → P0 as an image; seller notice → dashboard only; ADR-0018 wired here. ADR-0030
   proposed. Status → `ready`
 - 2026-10-20 — ADR-0030 accepted (Rengga)
+- 2026-10-20 — Built: `payment_records`, QRIS, evidence upload, seller verification, customer payment screen,
+  Pengaturan → Pembayaran with the ADR-0018 block; closed F-009 A20/A21, R2, R19. All AC covered by tests; status →
+  `done`. Implementation choices in ADR-0031
