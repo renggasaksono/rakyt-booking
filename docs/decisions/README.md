@@ -39,3 +39,4 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0027](0027-customer-booking-routes-and-access-token.md) | Customer booking routes — URL shape, token storage, session | accepted | 2026-10-19 |
 | [0028](0028-customer-booking-implementation-choices.md) | Implementation choices for customer booking and seat hold (F-005) | accepted | 2026-10-19 |
 | [0029](0029-seller-dashboard-implementation-choices.md) | Implementation choices for the seller dashboard and booking list (F-007) | accepted | 2026-10-19 |
+| [0030](0030-payment-records-and-verification.md) | Payment records, evidence and verification lifecycle (F-006) | accepted | 2026-10-20 |

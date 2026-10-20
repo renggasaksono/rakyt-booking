@@ -49,7 +49,7 @@ Source of UI wording: [design mockup](../design/README.md).
 | payment record | pembayaran | Amount due/paid, evidence, verification for a booking. |
 | payment evidence | bukti transfer | Photo/screenshot uploaded by the customer. |
 | payment instructions | instruksi pembayaran, rekening | Seller's bank / e-wallet / QRIS details shown to customers. |
-| payment method | rekening / metode pembayaran | One bank or e-wallet account (QRIS, cash in F-006) in the payment instructions; belongs to the organization. |
+| payment method | rekening / metode pembayaran | One bank or e-wallet account, or a QRIS image (F-006), in the payment instructions; belongs to the organization. Cash / pay-on-arrival is P1 (ADR-0030). |
 | deposit | DP (uang muka) | Partial payment (P1). |
 | public page | halaman publik | `rakyt.id/<slug>` — the seller's shareable booking page. |
 | seller page / trip page | halaman usaha / halaman trip | The two public pages: `rakyt.id/<slug>` lists published trips; `rakyt.id/<slug>/<trip-slug>` shows one trip and its departures (F-002). |
@@ -73,7 +73,7 @@ Source of UI wording: [design mockup](../design/README.md).
 | `awaiting_payment` | Menunggu pembayaran | ◷ | Seat held, no proof yet |
 | `needs_review` | Perlu dicek | ◐ | Proof uploaded, seller to verify |
 | `paid` | Lunas | ✓ | Paid and confirmed |
-| `rejected` | Ditolak | ✕ | Proof rejected |
+| `rejected` | Ditolak | ✕ | Proof rejected; terminal and does not hold seats — the seats are released and the customer re-books (F-006, ADR-0030) |
 | `cancelled` | Dibatalkan | – | Cancelled or hold expired (`cancel_reason`: `hold_expired`, later `seller`) |
 | `completed` | Selesai | ☑ | Trip has happened |
 
