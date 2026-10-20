@@ -283,7 +283,7 @@ function cancel() {
                         :href="booking.payment.evidence_url"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="mt-1 inline-block"
+                        class="mt-1 inline-flex min-h-11 items-center"
                         :aria-label="t(copy, 'show.evidence_open')"
                     >
                         <img

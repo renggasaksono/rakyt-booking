@@ -127,7 +127,7 @@ function verify(url) {
                 :href="b.payment.evidence_url"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="shrink-0"
+                class="inline-flex min-h-11 shrink-0 items-center"
                 :aria-label="t(copy, 'show.evidence_open')"
             >
                 <img

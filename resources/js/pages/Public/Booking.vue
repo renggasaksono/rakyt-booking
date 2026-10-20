@@ -267,7 +267,7 @@ function submitEvidence(event) {
                 :href="evidence.thumb_url"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="mt-2 inline-block"
+                class="mt-2 inline-flex min-h-11 items-center"
             >
                 <img
                     :src="evidence.thumb_url"

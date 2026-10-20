@@ -139,7 +139,9 @@ class BookingPageTest extends TestCase
         $template = file_get_contents(resource_path('js/pages/Public/Booking.vue'));
         $this->assertStringContainsString('rel="noopener noreferrer"', $template);
         $this->assertStringContainsString('target="_blank"', $template);
-        $this->assertStringNotContainsString('bg-prada', $template, 'No gold button until F-006.');
+        // F-006 AC-5/AC-32: exactly one gold button — the "Unggah bukti transfer" CTA
+        // (the disabled:bg-prada/40 modifier on the same button is not a second button).
+        $this->assertSame(1, substr_count($template, ' bg-prada '), 'Exactly one gold button (the upload CTA).');
     }
 
     public function test_ac_34_the_page_outlives_the_trip_and_departure_state(): void
