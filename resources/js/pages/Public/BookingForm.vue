@@ -95,31 +95,32 @@ function submit() {
         class="mx-auto max-w-md px-4"
         :class="bookable ? 'pb-72' : 'pb-32'"
     >
-        <nav class="flex h-14 items-center">
+        <nav class="flex h-14 items-center justify-between gap-3">
             <Link
                 :href="urls.trip"
-                class="-ml-3 inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-xl text-ink"
+                class="-ml-3 inline-flex min-h-11 min-w-11 items-center justify-center text-xl text-ink"
                 :aria-label="t(copy, 'form.back', { trip: trip.name })"
             >
                 <span aria-hidden="true">←</span>
             </Link>
-            <span class="ml-1 truncate text-sm text-secondary">{{ organization.name }}</span>
+            <!-- Step indicator sits on the top-right edge (mockup 1c). -->
+            <span class="font-heading text-[11px] font-semibold uppercase tracking-[.14em] text-secondary">
+                {{ t(copy, 'form.kicker') }}
+            </span>
         </nav>
 
         <header>
-            <p class="font-heading text-[11px] font-semibold uppercase tracking-wide text-secondary">
-                {{ t(copy, 'form.kicker') }}
-            </p>
-            <h1 class="mt-1 font-heading text-2xl font-semibold leading-tight text-ink">
+            <h1 class="font-heading text-2xl font-semibold leading-tight text-ink">
                 {{ t(copy, 'form.title') }}
             </h1>
         </header>
 
-        <section class="mt-4 rounded-xl border border-ink/15 bg-surface p-3">
-            <p class="font-heading text-base font-semibold text-ink [overflow-wrap:anywhere]">
+        <!-- Selected trip: highlighted ink card with light text (mockup 1c). -->
+        <section class="mt-4 bg-ink px-4 py-3.5">
+            <p class="font-heading text-sm font-semibold text-gading [overflow-wrap:anywhere]">
                 {{ trip.name }}
             </p>
-            <p class="mt-0.5 text-sm text-secondary [overflow-wrap:anywhere]">
+            <p class="mt-0.5 text-xs text-[#d8c9b6] [overflow-wrap:anywhere]">
                 {{ [dates, meetingText].filter(Boolean).join(' · ') }}
             </p>
         </section>
@@ -141,14 +142,14 @@ function submit() {
         <form
             v-else
             id="booking-form"
-            class="mt-6 flex flex-col gap-5"
+            class="mt-5 flex flex-col gap-4"
             novalidate
             @submit.prevent="submit"
         >
             <div>
                 <label
                     for="name"
-                    class="font-heading text-sm font-semibold text-ink"
+                    class="font-heading text-xs font-semibold text-ink"
                 >{{ t(copy, 'form.name') }}</label>
                 <input
                     id="name"
@@ -156,7 +157,7 @@ function submit() {
                     type="text"
                     autocomplete="name"
                     maxlength="80"
-                    class="mt-1 min-h-12 w-full rounded-lg border bg-surface px-3 text-base text-ink"
+                    class="mt-1 min-h-12 w-full border bg-surface px-3 text-base text-ink focus:outline-none focus:shadow-[inset_0_0_0_2px_#6e4527]"
                     :class="form.errors.name ? 'border-status-rejected' : 'border-ink/20'"
                     :aria-invalid="Boolean(form.errors.name) || undefined"
                     aria-describedby="name-error"
@@ -170,10 +171,10 @@ function submit() {
             <div>
                 <label
                     for="phone"
-                    class="font-heading text-sm font-semibold text-ink"
+                    class="font-heading text-xs font-semibold text-ink"
                 >{{ t(copy, 'form.phone') }}</label>
                 <div
-                    class="mt-1 flex min-h-12 items-stretch overflow-hidden rounded-lg border bg-surface"
+                    class="mt-1 flex min-h-12 items-stretch overflow-hidden border bg-surface focus-within:shadow-[inset_0_0_0_2px_#6e4527]"
                     :class="form.errors.phone ? 'border-status-rejected' : 'border-ink/20'"
                 >
                     <span
@@ -208,7 +209,7 @@ function submit() {
             <div>
                 <label
                     for="participants"
-                    class="font-heading text-sm font-semibold text-ink"
+                    class="font-heading text-xs font-semibold text-ink"
                 >{{ t(copy, 'form.participants') }}</label>
                 <div class="mt-1 flex items-center gap-3">
                     <Stepper
@@ -237,14 +238,14 @@ function submit() {
             <div>
                 <label
                     for="notes"
-                    class="font-heading text-sm font-semibold text-ink"
+                    class="font-heading text-xs font-semibold text-ink"
                 >{{ t(copy, 'form.notes') }}</label>
                 <textarea
                     id="notes"
                     v-model="form.notes"
                     rows="3"
                     :maxlength="notesMax"
-                    class="mt-1 w-full rounded-lg border bg-surface px-3 py-2 text-base text-ink"
+                    class="mt-1 w-full border bg-surface px-3 py-2 text-base text-ink focus:outline-none focus:shadow-[inset_0_0_0_2px_#6e4527]"
                     :class="form.errors.notes ? 'border-status-rejected' : 'border-ink/20'"
                     :aria-invalid="Boolean(form.errors.notes) || undefined"
                     aria-describedby="notes-counter notes-error"
@@ -292,13 +293,13 @@ function submit() {
             <button
                 type="submit"
                 form="booking-form"
-                class="mt-2 min-h-12 w-full rounded-lg bg-prada px-4 font-heading text-base font-semibold text-ink disabled:bg-prada/40"
+                class="mt-2 min-h-12 w-full bg-prada px-4 font-heading text-base font-semibold text-ink disabled:bg-prada/40"
                 :disabled="form.processing"
                 :aria-busy="form.processing"
             >
                 {{ form.processing ? t(copy, 'form.sending') : t(copy, 'form.submit') }}
             </button>
-            <p class="mt-2 text-center text-xs text-secondary">
+            <p class="mt-2 text-xs text-secondary">
                 {{ t(copy, 'form.privacy', { name: organization.name }) }}
                 <a
                     :href="urls.privacy"
@@ -309,7 +310,7 @@ function submit() {
         <a
             v-else
             :href="urls.trip"
-            class="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-prada px-4 font-heading text-base font-semibold text-ink"
+            class="inline-flex min-h-12 w-full items-center justify-center bg-prada px-4 font-heading text-base font-semibold text-ink"
         >
             {{ t(copy, 'form.other_date') }}
         </a>

@@ -32,8 +32,8 @@ return [
         'notes_counter' => ':n/:max',
         'line' => ':n × :price',
         'total' => 'Total',
-        // Q11: the mockup wording; the hours come from config('rakyt.booking.hold_minutes') (AC-7).
-        'hold' => 'Kursi ditahan :hours jam sambil menunggu pembayaran. Lewat dari itu, kursi dilepas otomatis.',
+        // Q11: shortened to one line on mobile; the hours come from config('rakyt.booking.hold_minutes') (AC-7).
+        'hold' => 'Kursi ditahan :hours jam sampai dibayar, lalu dilepas.',
         'submit' => 'Kirim pesanan',
         'sending' => 'Mengirim…',
         'network_error' => 'Belum terkirim. Periksa koneksi lalu coba lagi.',

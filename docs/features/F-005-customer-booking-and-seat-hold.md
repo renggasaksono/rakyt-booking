@@ -94,8 +94,8 @@ Test names: `test_ac_<n>_…`.
 - [x] **AC-6 Live total.** Below the fields the form shows "2 × Rp1.250.000" and the total "Rp2.500.000"
   (participants × the departure's effective price, integer rupiah, the F-003 formatter), updated on every stepper
   change without a request.
-- [x] **AC-7 Hold policy before submit.** Directly above "Kirim pesanan" the form says "Kursi ditahan 2 jam sambil
-  menunggu pembayaran. Lewat dari itu, kursi dilepas otomatis." The number of hours comes from the same constant the
+- [x] **AC-7 Hold policy before submit.** Directly above "Kirim pesanan" the form says "Kursi ditahan 2 jam sampai
+  dibayar, lalu dilepas." (shortened to one line on mobile, Q11). The number of hours comes from the same constant the
   server uses (`config('rakyt.booking.hold_minutes')` = 120, ADR-0006; not settable per seller).
 - [x] **AC-8 Privacy line.** Under the button: "Data Anda hanya diteruskan ke :name untuk mengurus pesanan ini." with a
   "Privasi" link to `/privasi` (Q13).
@@ -470,8 +470,8 @@ change before the pilot at the cost of test data only.
 - [ ] **Q10 Booking page before F-006.** *Recommended:* F-005 ships the page without payment instructions or upload;
   F-006 (week 4) adds them before any pilot customer books. Alternative: show the seller's accounts read-only now.
   — Rengga · *not blocking*
-- [ ] **Q11 Seat-hold wording on the form.** The mockup text is kept: "Kursi ditahan 2 jam sambil menunggu
-  pembayaran. Lewat dari itu, kursi dilepas otomatis." *Recommended:* keep. — Rengga · *not blocking*
+- [x] **Q11 Seat-hold wording on the form.** Decided 2026-10-20: shortened to one line on mobile — "Kursi ditahan 2 jam
+  sampai dibayar, lalu dilepas." (was the longer mockup text). — Rengga
 - [ ] **Q12 Holds that outlast the departure.** A booking just before a same-day deadline is held 2 h, possibly past the
   meeting time. *Recommended:* keep ADR-0006's exact 2 h; the seller confirms or cancels by hand. Alternative (needs a
   new ADR): cap the hold at the meeting time. — Rengga · *not blocking*

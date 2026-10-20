@@ -9,6 +9,18 @@
     --font-sans: Arial, 'Helvetica Neue', Helvetica, sans-serif;
     --font-heading: 'Poppins', Arial, sans-serif;
 
+    /* Rakyt Sogan is square: every surface has sharp corners (see docs/design/README.md
+       → Shape & outlines). Zeroing the scale flattens all rounded-* utilities; `rounded-full`
+       is not token-driven and stays a pill for the few intentional cases (toasts, status pills). */
+    --radius-xs: 0;
+    --radius-sm: 0;
+    --radius-md: 0;
+    --radius-lg: 0;
+    --radius-xl: 0;
+    --radius-2xl: 0;
+    --radius-3xl: 0;
+    --radius-4xl: 0;
+
     --color-sogan: #6e4527;
     --color-ink: #211710;
     --color-gading: #f4efe6;
@@ -28,4 +40,18 @@
     --color-status-paid-tint: #e6f0e7;
     --color-status-rejected-tint: #f6e3e1;
     --color-status-cancelled-tint: #eceae8;
+}
+
+/* Section header: the uppercase kicker with a 2px ink underline used for every
+   section title on the public pages ("Trip tersedia", "Pilih keberangkatan",
+   "Termasuk", …). See docs/design/README.md → Shape & outlines. */
+@utility section-header {
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+    border-bottom: 2px solid #211710;
+    padding-bottom: 8px;
 }

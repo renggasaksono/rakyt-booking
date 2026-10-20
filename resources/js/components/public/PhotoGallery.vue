@@ -90,5 +90,7 @@ function go(step) {
         >
             {{ t(copy, 'trip.gallery.counter', { current: current + 1, total: photos.length }) }}
         </p>
+        <!-- Controls overlaid on the full-bleed photo (e.g. the back button), mockup 1b/3b. -->
+        <slot name="overlay" />
     </section>
 </template>

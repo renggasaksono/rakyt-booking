@@ -92,10 +92,30 @@ function onKey(event, departure) {
 <template>
     <Head :title="title" />
     <main class="mx-auto max-w-md px-4 pb-36">
-        <nav class="flex h-14 items-center">
+        <!-- Full-bleed photo banner running to the top edge, back button overlaid (mockup 1b/3b). -->
+        <PhotoGallery
+            v-if="trip.photos.length"
+            :photos="trip.photos"
+            :name="trip.name"
+            :copy="copy"
+        >
+            <template #overlay>
+                <Link
+                    :href="urls.seller"
+                    class="absolute left-3 top-3 z-10 inline-flex h-11 w-11 items-center justify-center bg-gading text-xl text-ink shadow"
+                    :aria-label="t(copy, 'trip.back', { name: organization.name })"
+                >
+                    <span aria-hidden="true">←</span>
+                </Link>
+            </template>
+        </PhotoGallery>
+        <nav
+            v-else
+            class="flex h-14 items-center"
+        >
             <Link
                 :href="urls.seller"
-                class="-ml-3 inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-xl text-ink"
+                class="-ml-3 inline-flex min-h-11 min-w-11 items-center justify-center text-xl text-ink"
                 :aria-label="t(copy, 'trip.back', { name: organization.name })"
             >
                 <span aria-hidden="true">←</span>
@@ -103,14 +123,8 @@ function onKey(event, departure) {
             <span class="ml-1 truncate text-sm text-secondary">{{ organization.name }}</span>
         </nav>
 
-        <PhotoGallery
-            :photos="trip.photos"
-            :name="trip.name"
-            :copy="copy"
-        />
-
         <header class="mt-4">
-            <p class="font-heading text-[11px] font-semibold uppercase tracking-wide text-secondary">
+            <p class="font-heading text-[11px] font-semibold uppercase tracking-[.14em] text-sogan">
                 {{ kicker }}
             </p>
             <h1 class="mt-1 font-heading text-2xl font-semibold leading-tight text-ink [overflow-wrap:anywhere]">
@@ -131,7 +145,7 @@ function onKey(event, departure) {
         >
             <h2
                 id="keberangkatan-judul"
-                class="font-heading text-base font-semibold text-ink"
+                class="section-header"
             >
                 {{ t(copy, 'trip.departures_title') }}
             </h2>
@@ -156,8 +170,8 @@ function onKey(event, departure) {
                     :aria-checked="departure.public_id === selectedId ? 'true' : 'false'"
                     :aria-disabled="departure.state === 'bookable' ? undefined : 'true'"
                     :tabindex="departure.public_id === selectedId || (!selectedId && departure.state === 'bookable') ? 0 : -1"
-                    class="flex min-h-14 w-full items-center gap-3 rounded-xl bg-surface px-3 py-2 text-left"
-                    :class="departure.public_id === selectedId ? 'border-2 border-ink' : 'border border-ink/15'"
+                    class="flex min-h-14 w-full items-center gap-3 bg-surface px-3 py-2 text-left"
+                    :class="departure.public_id === selectedId ? 'shadow-[inset_0_0_0_2px_#211710]' : 'shadow-[inset_0_0_0_1px_rgba(33,23,16,0.16)]'"
                     @click="select(departure)"
                     @keydown="onKey($event, departure)"
                 >
@@ -212,7 +226,7 @@ function onKey(event, departure) {
             v-if="trip.inclusions.length"
             class="mt-6"
         >
-            <h2 class="font-heading text-base font-semibold text-ink">
+            <h2 class="section-header">
                 {{ t(copy, 'trip.sections.inclusions') }}
             </h2>
             <ul class="mt-2 space-y-1 text-sm text-ink">
@@ -230,7 +244,7 @@ function onKey(event, departure) {
             v-if="trip.exclusions.length"
             class="mt-6"
         >
-            <h2 class="font-heading text-base font-semibold text-ink">
+            <h2 class="section-header">
                 {{ t(copy, 'trip.sections.exclusions') }}
             </h2>
             <ul class="mt-2 space-y-1 text-sm text-ink">
@@ -248,7 +262,7 @@ function onKey(event, departure) {
             v-if="hasMeeting"
             class="mt-6"
         >
-            <h2 class="font-heading text-base font-semibold text-ink">
+            <h2 class="section-header">
                 {{ t(copy, 'trip.sections.meeting') }}
             </h2>
             <p
@@ -284,7 +298,7 @@ function onKey(event, departure) {
             v-if="trip.terms"
             class="mt-6"
         >
-            <h2 class="font-heading text-base font-semibold text-ink">
+            <h2 class="section-header">
                 {{ t(copy, 'trip.sections.terms') }}
             </h2>
             <p class="mt-2 whitespace-pre-line text-sm text-ink [overflow-wrap:anywhere]">
@@ -325,14 +339,14 @@ function onKey(event, departure) {
             <a
                 v-if="scheduled && selected"
                 :href="bookUrl(urls.book, selected.public_id)"
-                class="inline-flex min-h-12 flex-none items-center rounded-lg bg-prada px-5 font-heading text-base font-semibold text-ink"
+                class="inline-flex min-h-12 flex-none items-center bg-prada px-5 font-heading text-base font-semibold text-ink"
             >
                 {{ t(copy, 'trip.book') }}
             </a>
             <a
                 v-else
                 :href="urls.request_date"
-                class="inline-flex min-h-12 flex-none items-center rounded-lg bg-prada px-5 font-heading text-base font-semibold text-ink"
+                class="inline-flex min-h-12 flex-none items-center bg-prada px-5 font-heading text-base font-semibold text-ink"
             >
                 {{ t(copy, 'trip.request_date') }}
             </a>

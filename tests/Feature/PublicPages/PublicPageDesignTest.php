@@ -113,8 +113,9 @@ class PublicPageDesignTest extends TestCase
         $this->assertMatchesRegularExpression('/<a\s+v-if="scheduled && selected"\s+:href="bookUrl\(urls\.book, selected\.public_id\)"\s+class="[^"]*bg-prada/', $bar);
         $this->assertMatchesRegularExpression('/<a\s+v-else\s+:href="urls\.request_date"\s+class="[^"]*bg-prada/', $bar);
 
-        // Chat WhatsApp and Bagikan are ink outline.
-        $this->assertStringContainsString('border-2 border-ink', $this->vue('pages/Public/Seller'));
+        // Chat WhatsApp and Bagikan are ink outline — drawn with a box-shadow inset,
+        // not gold and not a heavy border (docs/design README → Shape & outlines).
+        $this->assertStringContainsString('shadow-[inset_0_0_0_1.5px_#211710]', $this->vue('pages/Public/Seller'));
     }
 
     public function test_ac_38_every_public_page_ends_with_the_rakyt_footer(): void

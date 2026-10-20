@@ -20,7 +20,12 @@ const props = defineProps({
     urls: { type: Object, required: true },
 });
 
-const outline = 'inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg border-2 border-ink px-4 font-heading text-sm font-semibold text-ink';
+// Two ink-outline buttons, drawn with box-shadow insets, not borders (docs/design
+// README → Shape & outlines). They are not equal width: Chat WhatsApp fills the row
+// with a 1.5px ink outline (primary); Share is content-width with a lighter 1px outline.
+const buttonBase = 'inline-flex min-h-12 items-center justify-center gap-2 px-4 font-heading text-sm font-semibold text-ink';
+const chatOutline = `${buttonBase} flex-1 shadow-[inset_0_0_0_1.5px_#211710]`;
+const shareOutline = `${buttonBase} shadow-[inset_0_0_0_1px_rgba(33,23,16,0.25)]`;
 const toast = ref(null);
 const sellerInitials = computed(() => initials(props.organization.name));
 let timer = null;
@@ -81,11 +86,11 @@ onBeforeUnmount(() => clearTimeout(timer));
                     :alt="t(copy, 'seller.logo_alt', { name: organization.name })"
                     width="64"
                     height="64"
-                    class="h-16 w-16 flex-none rounded-xl bg-surface object-cover"
+                    class="h-16 w-16 flex-none bg-surface object-cover"
                 >
                 <div
                     v-else
-                    class="flex h-16 w-16 flex-none items-center justify-center rounded-xl bg-sogan font-heading text-xl font-semibold text-surface"
+                    class="flex h-16 w-16 flex-none items-center justify-center bg-sogan font-heading text-xl font-semibold text-surface"
                     aria-hidden="true"
                 >
                     {{ sellerInitials }}
@@ -110,13 +115,13 @@ onBeforeUnmount(() => clearTimeout(timer));
                     :href="organization.whatsapp_url"
                     target="_blank"
                     rel="noopener noreferrer"
-                    :class="outline"
+                    :class="chatOutline"
                 >
                     {{ t(copy, 'seller.chat_whatsapp') }}
                 </a>
                 <button
                     type="button"
-                    :class="outline"
+                    :class="shareOutline"
                     @click="share"
                 >
                     <span aria-hidden="true">↗</span>
@@ -126,11 +131,11 @@ onBeforeUnmount(() => clearTimeout(timer));
         </header>
 
         <section class="mt-8">
-            <h2 class="font-heading text-base font-semibold text-ink">
+            <h2 class="section-header">
                 {{ t(copy, 'seller.trips_title') }}
                 <span
                     v-if="trips.length"
-                    class="font-sans text-sm font-normal text-secondary"
+                    class="font-sans text-xs font-normal normal-case tracking-normal text-secondary"
                 > · {{ t(copy, 'seller.trips_count', { n: trips.length }) }}</span>
             </h2>
             <ul
