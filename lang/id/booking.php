@@ -90,6 +90,7 @@ return [
         'account_holder_hint' => 'Harus sama persis dengan buku tabungan.',
         'qris_label' => 'Scan QRIS',
         'qris_alt' => 'Kode QRIS',
+        'copy' => 'Salin',
         'copy_number' => 'Salin nomor rekening',
         'copy_amount' => 'Salin jumlah',
         'copied_number' => 'Nomor disalin',

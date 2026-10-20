@@ -58,6 +58,45 @@ const confirmOpen = ref(false);
 const cancelling = ref(false);
 const cancelFailed = ref(false);
 
+// F-006: inline payment verification (AC-16–AC-18).
+const confirmPayOpen = ref(false);
+const rejectOpen = ref(false);
+const verifying = ref(false);
+const verifyFailed = ref(false);
+const rejectReason = ref('');
+
+function verify(url, data, onOk) {
+    if (verifying.value) {
+        return;
+    }
+
+    verifying.value = true;
+    verifyFailed.value = false;
+    router.post(url, data, {
+        preserveScroll: true,
+        onSuccess: onOk,
+        onNetworkError: () => {
+            verifyFailed.value = true;
+
+            return false;
+        },
+        onHttpException: () => {
+            verifyFailed.value = true;
+
+            return false;
+        },
+        onFinish: () => (verifying.value = false),
+    });
+}
+
+function confirmPayment() {
+    verify(props.urls.confirm, {}, () => (confirmPayOpen.value = false));
+}
+
+function rejectPayment() {
+    verify(props.urls.reject, { alasan: rejectReason.value }, () => (rejectOpen.value = false));
+}
+
 // AC-29/AC-30/AC-38: the response goes back to this page; a failed request keeps the sheet open.
 function cancel() {
     if (cancelling.value) {
@@ -231,6 +270,65 @@ function cancel() {
                 <p class="mt-1 font-heading text-lg font-semibold text-ink">
                     {{ t(copy, 'show.total', { amount: rupiah(booking.total_amount) }) }}
                 </p>
+
+                <!-- F-006: uploaded evidence (AC-16). -->
+                <div
+                    v-if="booking.payment.has_evidence"
+                    class="mt-3"
+                >
+                    <p class="text-xs text-secondary">
+                        {{ t(copy, 'show.evidence') }}
+                    </p>
+                    <a
+                        :href="booking.payment.evidence_url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="mt-1 inline-block"
+                        :aria-label="t(copy, 'show.evidence_open')"
+                    >
+                        <img
+                            :src="booking.payment.evidence_url"
+                            :alt="t(copy, 'show.evidence')"
+                            class="h-32 w-32 rounded-lg border border-ink/10 object-cover"
+                        >
+                    </a>
+                </div>
+                <p
+                    v-if="booking.status === 'rejected' && booking.payment.reject_reason"
+                    class="mt-2 text-sm text-secondary [overflow-wrap:anywhere]"
+                >
+                    {{ t(copy, 'show.rejected_reason', { reason: booking.payment.reject_reason }) }}
+                </p>
+
+                <!-- AC-16–AC-18: Konfirmasi / Tolak inline (ink / ink-outline, never gold). -->
+                <div
+                    v-if="booking.can_verify"
+                    class="mt-4 flex gap-2"
+                >
+                    <button
+                        type="button"
+                        class="min-h-11 flex-1 rounded-lg bg-ink px-4 font-heading text-sm font-semibold text-surface"
+                        @click="confirmPayOpen = true"
+                    >
+                        {{ t(copy, 'show.confirm') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="min-h-11 flex-1 rounded-lg border-2 border-ink px-4 font-heading text-sm font-semibold text-ink"
+                        @click="rejectOpen = true"
+                    >
+                        {{ t(copy, 'show.reject') }}
+                    </button>
+                </div>
+                <a
+                    v-if="whatsapp.rejected_url"
+                    :href="whatsapp.rejected_url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="mt-3 inline-flex min-h-11 items-center justify-center rounded-lg border-2 border-ink px-4 font-heading text-sm font-semibold text-ink"
+                >
+                    {{ t(copy, 'show.notify_rejected') }}
+                </a>
             </section>
 
             <button
@@ -282,6 +380,90 @@ function cancel() {
                     @click="confirmOpen = false"
                 >
                     {{ t(copy, 'cancel.back') }}
+                </button>
+            </div>
+        </BottomSheet>
+
+        <!-- AC-17: confirm payment. -->
+        <BottomSheet
+            v-if="confirmPayOpen"
+            :title="t(copy, 'show.confirm_title', { reference: booking.reference })"
+            :close-label="t(copy, 'cancel.close')"
+            @close="confirmPayOpen = false"
+        >
+            <div class="flex flex-col gap-2 text-sm text-ink">
+                <p>{{ t(copy, 'show.confirm_body') }}</p>
+                <p
+                    v-if="verifyFailed"
+                    class="text-status-rejected"
+                    role="alert"
+                >
+                    {{ t(copy, 'show.verify_failed') }}
+                </p>
+            </div>
+            <div class="mt-4 flex flex-col gap-2">
+                <button
+                    type="button"
+                    class="min-h-12 w-full rounded-lg bg-ink px-4 font-heading text-base font-semibold text-surface disabled:bg-ink/60"
+                    :disabled="verifying"
+                    :aria-busy="verifying ? 'true' : 'false'"
+                    @click="confirmPayment"
+                >
+                    {{ verifying ? t(copy, 'show.sending') : t(copy, 'show.confirm_action') }}
+                </button>
+                <button
+                    type="button"
+                    class="min-h-12 w-full rounded-lg border-2 border-ink px-4 font-heading text-base font-semibold text-ink"
+                    @click="confirmPayOpen = false"
+                >
+                    {{ t(copy, 'show.cancel_dialog') }}
+                </button>
+            </div>
+        </BottomSheet>
+
+        <!-- AC-18: reject payment with an optional reason. -->
+        <BottomSheet
+            v-if="rejectOpen"
+            :title="t(copy, 'show.reject_title', { reference: booking.reference })"
+            :close-label="t(copy, 'cancel.close')"
+            @close="rejectOpen = false"
+        >
+            <div class="flex flex-col gap-2 text-sm text-ink">
+                <p>{{ t(copy, 'show.reject_body', { n: booking.participants }) }}</p>
+                <label class="mt-1 block">
+                    <span class="text-xs text-secondary">{{ t(copy, 'show.reject_reason') }}</span>
+                    <textarea
+                        v-model="rejectReason"
+                        maxlength="200"
+                        rows="2"
+                        class="mt-1 w-full rounded-lg border border-ink/20 p-2 text-sm text-ink"
+                        :placeholder="t(copy, 'show.reject_reason_placeholder')"
+                    />
+                </label>
+                <p
+                    v-if="verifyFailed"
+                    class="text-status-rejected"
+                    role="alert"
+                >
+                    {{ t(copy, 'show.verify_failed') }}
+                </p>
+            </div>
+            <div class="mt-4 flex flex-col gap-2">
+                <button
+                    type="button"
+                    class="min-h-12 w-full rounded-lg bg-status-rejected px-4 font-heading text-base font-semibold text-surface disabled:bg-status-rejected/60"
+                    :disabled="verifying"
+                    :aria-busy="verifying ? 'true' : 'false'"
+                    @click="rejectPayment"
+                >
+                    {{ verifying ? t(copy, 'show.sending') : t(copy, 'show.reject_action') }}
+                </button>
+                <button
+                    type="button"
+                    class="min-h-12 w-full rounded-lg border-2 border-ink px-4 font-heading text-base font-semibold text-ink"
+                    @click="rejectOpen = false"
+                >
+                    {{ t(copy, 'show.cancel_dialog') }}
                 </button>
             </div>
         </BottomSheet>
