@@ -37,8 +37,16 @@ class RedactSensitiveData implements ProcessorInterface
     /**
      * `cari` is the seller's booking search — a customer name or phone (F-007 AC-37); `text` is a
      * prefilled WhatsApp message, which carries names and the customer link with its token (F-007 AC-25).
+     * The `x-amz-*` parameters are S3 presigned-URL credentials (F-009 R19, F-006 AC-30).
      */
-    private const URL_SECRET_PARAM_PATTERN = '/([?&](?:signature|token|access_token|cari|text)=)[^&\s"\']+/i';
+    private const URL_SECRET_PARAM_PATTERN = '/([?&](?:signature|token|access_token|cari|text|x-amz-signature|x-amz-security-token|x-amz-credential)=)[^&\s"\']+/i';
+
+    /**
+     * Private media paths — payment evidence and QRIS images (F-009 R19, F-006
+     * AC-30, AC-19). Never belongs in a log, whatever carries it. Slashes may be
+     * JSON-escaped (\/). Public trip photos (org/<id>/trips/…) are not private.
+     */
+    private const PRIVATE_MEDIA_PATH_PATTERN = '~org(?:\\\\?/)[\w.-]+(?:\\\\?/)(?:evidence|payments)(?:\\\\?/)[^\s"\'\\\\]+~i';
 
     /** The customer booking token is a path segment: /<slug>/pesanan/<token> (F-005 AC-40, F-009 R20, ADR-0027 §5). Also JSON-escaped. */
     private const BOOKING_TOKEN_PATH_PATTERN = '~(\\\\?/pesanan\\\\?/)[^/?#\s"\'\\\\]+~';
@@ -158,6 +166,7 @@ class RedactSensitiveData implements ProcessorInterface
     private function scrubString(string $value): string
     {
         $value = preg_replace(self::URL_SECRET_PARAM_PATTERN, '$1'.self::REDACTED, $value) ?? $value;
+        $value = preg_replace(self::PRIVATE_MEDIA_PATH_PATTERN, self::REDACTED, $value) ?? $value;
         $value = preg_replace(self::BOOKING_TOKEN_PATH_PATTERN, '$1'.self::REDACTED, $value) ?? $value;
         $value = preg_replace(self::ENCODED_BOOKING_TOKEN_PATTERN, '$1'.self::REDACTED, $value) ?? $value;
 

@@ -5,9 +5,14 @@ namespace App\Http\Controllers\PublicPages;
 use App\Bookings\BookingPresenter;
 use App\Bookings\BookingService;
 use App\Http\Controllers\Controller;
+use App\Media\PrivateMedia;
+use App\Media\UploadRules;
 use App\Models\Booking;
+use App\Models\PaymentMethod;
+use App\Models\PaymentRecord;
 use App\Models\Trip;
 use App\Models\TripDeparture;
+use App\Payments\PaymentMethodType;
 use App\PublicPages\PublicVisibility;
 use App\Security\PhoneNumber;
 use App\Tenancy\CurrentOrganization;
@@ -90,12 +95,7 @@ class BookingController extends Controller
      */
     public function show(Request $request, string $organization, string $token): Response
     {
-        $booking = Booking::query()
-            ->where('access_token_hash', Booking::hashToken($token))
-            ->with('departure.trip')
-            ->first();
-
-        abort_if($booking === null, 404);
+        $booking = $this->bookingByToken($token);
 
         $props = $this->presenter->page($this->current->get(), $booking);
 
@@ -109,9 +109,91 @@ class BookingController extends Controller
         return $response;
     }
 
+    /**
+     * AC-12–AC-15: the customer uploads payment evidence. The file is validated
+     * (AC-14), then BookingService stores it and moves the booking to
+     * needs_review under the lock, re-checking the hold (AC-12, AC-13). A refusal
+     * (expired hold or wrong status) redirects back to the booking page, which
+     * then shows the expired / current state (AC-13, AC-15). The upload POST is
+     * no-store via the public.booking.* middleware (AC-30).
+     */
+    public function uploadEvidence(Request $request, string $organization, string $token): RedirectResponse
+    {
+        $booking = $this->bookingByToken($token);
+        $url = self::bookingUrl($this->current->get()->slug, $booking);
+
+        try {
+            $data = Validator::make(
+                ['bukti' => $request->file('bukti')],
+                ['bukti' => UploadRules::paymentEvidence()],
+                ['bukti' => __('booking.payment.errors.evidence')],
+            )->validate();
+        } catch (ValidationException $e) {
+            throw $e->redirectTo($url);
+        }
+
+        $record = $this->bookings->uploadEvidence($booking, $data['bukti']);
+
+        if ($record === null) {
+            return redirect()->to($url, 303)->with('notice', __('booking.payment.errors.expired'));
+        }
+
+        return redirect()->to($url, 303);
+    }
+
+    /**
+     * AC-19 / F-009 A21: the customer streams their own evidence through the
+     * booking token. Another booking's token resolves a different booking, so
+     * its evidence is never reached.
+     */
+    public function showEvidence(Request $request, string $organization, string $token): Response
+    {
+        $booking = $this->bookingByToken($token);
+        $record = PaymentRecord::query()->where('booking_id', $booking->getKey())->first();
+
+        abort_if($record === null || ! $record->hasEvidence(), 404);
+
+        return PrivateMedia::response($record->evidence_path);
+    }
+
+    /**
+     * AC-22: the seller's active QRIS image, reachable only through a valid
+     * booking token (never a guessable path).
+     */
+    public function showQris(Request $request, string $organization, string $token): Response
+    {
+        $this->bookingByToken($token);
+
+        $qris = PaymentMethod::query()
+            ->where('active', true)
+            ->where('type', PaymentMethodType::Qris->value)
+            ->orderBy('position')->orderBy('id')
+            ->first();
+
+        abort_if($qris === null || $qris->qris_image_path === null, 404);
+
+        return PrivateMedia::response($qris->qris_image_path);
+    }
+
     public static function bookingUrl(string $slug, Booking $booking): string
     {
         return route('public.booking.show', ['organization' => $slug, 'token' => $booking->access_token]);
+    }
+
+    /**
+     * The booking for this access token within the current (slug-resolved)
+     * organization, or a 404 (ADR-0027 §1–2).
+     */
+    private function bookingByToken(string $token): Booking
+    {
+        $booking = Booking::query()
+            ->where('access_token_hash', Booking::hashToken($token))
+            ->with('departure.trip')
+            ->first();
+
+        abort_if($booking === null, 404);
+
+        return $booking;
     }
 
     /**

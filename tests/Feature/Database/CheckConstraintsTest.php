@@ -94,8 +94,33 @@ class CheckConstraintsTest extends TestCase
             ...$overrides,
         ];
 
-        $this->assertRejected(fn () => DB::table('payment_methods')->insert($row(['type' => 'qris'])), 'payment_methods_type_check');
+        $this->assertRejected(fn () => DB::table('payment_methods')->insert($row(['type' => 'cash'])), 'payment_methods_type_check');
         $this->assertRejected(fn () => DB::table('payment_methods')->insert($row(['account_number' => '12 34'])), 'payment_methods_account_number_check');
+    }
+
+    public function test_f006_qris_rows_carry_an_image_and_no_account(): void
+    {
+        $organizationId = DB::table('organizations')->insertGetId($this->organizationRow());
+        $row = fn (array $overrides) => [
+            'public_id' => Str::lower((string) Str::ulid()),
+            'organization_id' => $organizationId,
+            'type' => 'qris',
+            'provider' => 'qris',
+            'account_number' => null,
+            'account_holder' => null,
+            'qris_image_path' => 'org/x/payments/qris/'.Str::uuid().'.png',
+            ...$overrides,
+        ];
+
+        // A qris row needs an image.
+        $this->assertRejected(fn () => DB::table('payment_methods')->insert($row(['qris_image_path' => null])), 'payment_methods_qris_check');
+        // A bank / e-wallet row must not carry a qris image, and needs a holder.
+        $this->assertRejected(fn () => DB::table('payment_methods')->insert($row(['type' => 'bank', 'provider' => 'bca', 'account_number' => '1234567890', 'account_holder' => 'Agus'])), 'payment_methods_qris_check');
+        $this->assertRejected(fn () => DB::table('payment_methods')->insert($row(['type' => 'bank', 'provider' => 'bca', 'account_number' => '1234567890', 'account_holder' => null, 'qris_image_path' => null])), 'payment_methods_bank_fields_check');
+
+        // A well-formed qris row is accepted.
+        DB::table('payment_methods')->insert($row([]));
+        $this->assertDatabaseHas('payment_methods', ['organization_id' => $organizationId, 'type' => 'qris']);
     }
 
     /**

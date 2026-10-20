@@ -251,8 +251,8 @@ final class TripPresenter
             'index' => route('trips.index'),
             'store' => route('trips.store'),
             'settings' => route('settings.booking.edit'),
-            // Pengaturan → Rekening (F-001 F5, F-003 Q9).
-            'payment_setup' => route('payment-methods.index'),
+            // Pengaturan → Pembayaran (F-006, F-003 Q9).
+            'payment_setup' => route('settings.payment'),
             'edit' => $trip ? route('trips.edit', $trip) : null,
             'autosave' => $trip ? route('trips.autosave', $trip) : null,
             'update' => $trip ? route('trips.update', $trip) : null,

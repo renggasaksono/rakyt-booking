@@ -1,6 +1,6 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Link, router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 import { formatRupiah } from '../lib/money.js';
 import { formatDates } from '../lib/publicPage.js';
 import { createdLabel, dayMonth, holdActive, holdUntil } from '../lib/dashboard.js';
@@ -36,6 +36,22 @@ const hold = computed(() => {
 
     return t(props.copy, `index.${until.key}`, { time: until.time });
 });
+
+// F-006 AC-16: verify needs_review rows inline (reason is on the detail, optional).
+const needsReview = computed(() => b.value.status === 'needs_review' && b.value.payment);
+const verifying = ref(false);
+
+function verify(url) {
+    if (verifying.value || !url) {
+        return;
+    }
+
+    verifying.value = true;
+    router.post(url, {}, {
+        preserveScroll: true,
+        onFinish: () => (verifying.value = false),
+    });
+}
 </script>
 
 <template>
@@ -99,6 +115,45 @@ const hold = computed(() => {
             >
                 {{ t(copy, 'show.remind') }}
             </a>
+        </div>
+
+        <!-- AC-16: needs_review rows show the evidence and Konfirmasi / Tolak inline. -->
+        <div
+            v-if="variant === 'action' && needsReview"
+            class="flex items-center gap-3 border-t border-ink/10 px-4 py-2"
+        >
+            <a
+                v-if="b.payment.evidence_url"
+                :href="b.payment.evidence_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex min-h-11 shrink-0 items-center"
+                :aria-label="t(copy, 'show.evidence_open')"
+            >
+                <img
+                    :src="b.payment.evidence_url"
+                    :alt="t(copy, 'show.evidence')"
+                    class="h-12 w-12 rounded-lg border border-ink/10 object-cover"
+                >
+            </a>
+            <div class="flex flex-1 gap-2">
+                <button
+                    type="button"
+                    class="min-h-11 flex-1 rounded-lg bg-ink px-3 font-heading text-sm font-semibold text-surface disabled:bg-ink/60"
+                    :disabled="verifying"
+                    @click="verify(b.urls.confirm)"
+                >
+                    {{ t(copy, 'show.confirm') }}
+                </button>
+                <button
+                    type="button"
+                    class="min-h-11 flex-1 rounded-lg border-2 border-ink px-3 font-heading text-sm font-semibold text-ink"
+                    :disabled="verifying"
+                    @click="verify(b.urls.reject)"
+                >
+                    {{ t(copy, 'show.reject') }}
+                </button>
+            </div>
         </div>
     </div>
 </template>

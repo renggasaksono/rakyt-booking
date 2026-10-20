@@ -247,9 +247,9 @@ class PublishTest extends TestCase
         $this->actingAsTenant($this->seller)->get(route('onboarding.payment'))->assertRedirect(route('dashboard'));
         $this->actingAsTenant($this->seller)->post(route('trips.publish', $this->trip()))->assertSessionHasErrors('publish');
         $this->actingAsTenant($this->seller)->get(route('trips.edit', $this->trip()))
-            ->assertInertia(fn (AssertableInertia $page) => $page->where('urls.payment_setup', route('payment-methods.index')));
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('urls.payment_setup', route('settings.payment')));
 
-        $this->actingAsTenant($this->seller)->put(route('payment-methods.update'), ['methods' => [$this->bankBlock()]])
+        $this->actingAsTenant($this->seller)->post(route('settings.payment.update'), ['methods' => [$this->bankBlock()]])
             ->assertSessionHasNoErrors();
         $this->actingAsTenant($this->seller)->post(route('trips.publish', $this->trip()))->assertSessionHasNoErrors();
 

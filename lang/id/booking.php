@@ -79,6 +79,42 @@ return [
         'whatsapp' => 'Kabari operator via WhatsApp',
     ],
 
+    // F-006 customer payment screen (mockups 1d/2e/3e bottom half).
+    'payment' => [
+        'title' => 'Cara pembayaran',
+        'direct_notice' => 'Pembayaran langsung ke :seller. Rakyt tidak memotong biaya transaksi.',
+        'no_methods' => 'Operator belum memasang instruksi pembayaran. Hubungi via WhatsApp.',
+        'amount_label' => 'Jumlah transfer',
+        'account_number_label' => 'Nomor rekening',
+        'account_holder_label' => 'Atas nama',
+        'account_holder_hint' => 'Harus sama persis dengan buku tabungan.',
+        'qris_label' => 'Scan QRIS',
+        'qris_alt' => 'Kode QRIS',
+        'copy' => 'Salin',
+        'copy_number' => 'Salin nomor rekening',
+        'copy_amount' => 'Salin jumlah',
+        'copied_number' => 'Nomor disalin',
+        'copied_amount' => 'Jumlah disalin',
+        'steps' => [
+            'transfer' => 'Transfer',
+            'review' => 'Dicek operator',
+            'done' => 'Lunas',
+        ],
+        'upload_cta' => 'Unggah bukti transfer',
+        'replace_cta' => 'Ganti bukti',
+        'uploading' => 'Mengunggah…',
+        'evidence_label' => 'Bukti transfer',
+        'evidence_open' => 'Lihat bukti',
+        'under_review' => 'Bukti sudah dikirim. Menunggu operator mengecek.',
+        'paid' => 'Pembayaran lunas. Sampai jumpa di :trip.',
+        'rejected' => 'Bukti transfer ditolak.',
+        'rejected_reason' => 'Alasan: :reason',
+        'errors' => [
+            'evidence' => 'Unggah foto/berkas gambar (JPG/PNG), maks. 5 MB.',
+            'expired' => 'Waktu pembayaran sudah habis.',
+        ],
+    ],
+
     // Glossary status set; the page adds the glyph (ADR-0008).
     'status' => [
         'awaiting_payment' => 'Menunggu pembayaran',

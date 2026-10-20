@@ -105,21 +105,24 @@ class MediaTest extends TestCase
         $this->assertStringNotContainsString('Exif', $clean);
     }
 
-    public function test_ac_a20_private_media_is_only_reachable_through_a_short_lived_signed_url(): void
+    public function test_ac_a20_private_media_is_never_web_served_and_streams_from_the_app(): void
     {
+        // F-006 AC-31 / F-009 R2: the private disk is `serve => false`, so the
+        // framework registers no /storage/{path} route. Evidence is reached only
+        // through an authorised controller that streams PrivateMedia::response().
         $disk = Storage::disk(PrivateMedia::disk());
         $path = 'org/test-media/'.Str::uuid().'.txt';
         $disk->put($path, 'bukti transfer');
 
-        $url = PrivateMedia::temporaryUrl($path);
-        $relative = Str::after($url, config('app.url'));
-
-        $this->get($relative)->assertOk();
-        $this->get('/storage/'.$path)->assertForbidden();
+        $this->assertFalse(app('router')->has('storage.'.PrivateMedia::disk()), 'The private disk must not register a public serve route.');
+        $this->get('/storage/'.$path)->assertNotFound();
         $this->get('/'.$path)->assertNotFound();
 
-        $this->travel(config('rakyt.media.private_url_ttl') + 1)->minutes();
-        $this->get($relative)->assertForbidden();
+        $response = PrivateMedia::response($path);
+        ob_start();
+        $response->sendContent();
+        $this->assertSame('bukti transfer', ob_get_clean());
+        $this->assertSame('no-store, private', $response->headers->get('Cache-Control'));
     }
 
     private function registerUploadRoute(): void

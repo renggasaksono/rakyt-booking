@@ -80,6 +80,30 @@ return [
         'remind' => 'Ingatkan via WA',
         'notify_cancelled' => 'Kabari pelanggan via WA',
         'inactive' => 'Pesanan ini sudah tidak aktif.',
+        // F-006 AC-16–AC-18: inline verification.
+        'evidence' => 'Bukti transfer',
+        'evidence_open' => 'Lihat bukti transfer',
+        'evidence_uploaded' => 'Diunggah :date',
+        'amount_due' => 'Jumlah transfer',
+        'confirm' => 'Konfirmasi',
+        'reject' => 'Tolak',
+        'confirm_title' => 'Konfirmasi pembayaran :reference?',
+        'confirm_body' => 'Pesanan ini jadi Lunas dan kursi tetap dipakai.',
+        'confirm_action' => 'Ya, konfirmasi',
+        'reject_title' => 'Tolak bukti transfer :reference?',
+        'reject_body' => ':n kursi akan dibuka lagi. Pelanggan harus memesan ulang.',
+        'reject_reason' => 'Alasan (opsional)',
+        'reject_reason_placeholder' => 'Mis. nominal tidak sesuai',
+        'reject_reason_max' => 'Alasan maksimal 200 karakter.',
+        'reject_action' => 'Tolak bukti',
+        'cancel_dialog' => 'Batal',
+        'sending' => 'Menyimpan…',
+        'verify_failed' => 'Belum tersimpan. Periksa koneksi lalu coba lagi.',
+        'confirmed' => 'Pembayaran dikonfirmasi.',
+        'rejected' => 'Bukti ditolak. :n kursi dibuka lagi.',
+        'rejected_reason' => 'Alasan penolakan: :reason',
+        'already_processed' => 'Pesanan ini sudah diproses.',
+        'notify_rejected' => 'Kabari pelanggan via WA',
     ],
 
     'cancel' => [
@@ -100,6 +124,7 @@ return [
         // F-008 moves these into its template set.
         'reminder' => 'Halo :name, pesanan :reference untuk :trip tanggal :date (:n orang) menunggu pembayaran :total. Kursi ditahan sampai :time. Detail pesanan: :url',
         'cancelled' => 'Halo :name, pesanan :reference untuk :trip tanggal :date dibatalkan. Hubungi kami jika ada pertanyaan.',
+        'rejected' => 'Halo :name, bukti transfer untuk pesanan :reference belum bisa kami terima. Silakan hubungi kami.',
         'tomorrow' => 'besok :time',
     ],
 

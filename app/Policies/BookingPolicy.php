@@ -30,4 +30,14 @@ class BookingPolicy extends OrganizationOwnedPolicy
     {
         return $this->owns($user, $booking);
     }
+
+    /**
+     * F-006 AC-16–AC-18: the seller confirms or rejects their own booking's
+     * payment. Whether it is still needs_review is decided under the locks
+     * (BookingService::confirmPayment / rejectPayment).
+     */
+    public function verify(User $user, Booking $booking): Response
+    {
+        return $this->owns($user, $booking);
+    }
 }

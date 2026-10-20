@@ -4,8 +4,11 @@ namespace App\Bookings;
 
 use App\Models\Booking;
 use App\Models\Organization;
+use App\Models\PaymentMethod;
+use App\Models\PaymentRecord;
 use App\Models\Trip;
 use App\Models\TripDeparture;
+use App\Payments\PaymentMethodType;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 
@@ -114,10 +117,90 @@ final class BookingPresenter
                 'now' => self::iso($now),
                 'timezone' => $organization->timezone,
             ],
+            // F-006: payment instructions, the amount, the evidence and the 3-step progress.
+            'payment' => ['methods' => self::methods($organization, $booking)],
+            'amount_due' => $booking->total_amount,
+            'evidence' => self::evidence($organization, $booking),
+            'reject_reason' => $booking->status === BookingStatus::Rejected ? self::record($booking)?->reject_reason : null,
+            'progress' => self::progress($booking->status),
             'copy' => __('booking'),
             'calendar' => __('trips.calendar'),
-            'urls' => ['home' => route('home')],
+            'urls' => [
+                'home' => route('home'),
+                'evidence_upload' => route('public.booking.evidence', ['organization' => $organization->slug, 'token' => $booking->access_token]),
+                'evidence_show' => route('public.booking.evidence.show', ['organization' => $organization->slug, 'token' => $booking->access_token]),
+            ],
         ];
+    }
+
+    /**
+     * The organization's active payment methods in position order (AC-1, AC-22).
+     * A bank / e-wallet carries its number and holder; QRIS carries only the
+     * gated image URL (AC-22) — never a storage path.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private static function methods(Organization $organization, Booking $booking): array
+    {
+        return PaymentMethod::query()
+            ->where('active', true)
+            ->orderBy('position')->orderBy('id')
+            ->get()
+            ->map(fn (PaymentMethod $method) => $method->type === PaymentMethodType::Qris
+                ? [
+                    'type' => 'qris',
+                    'provider_label' => null,
+                    'account_number' => null,
+                    'account_holder' => null,
+                    'qris_image_url' => route('public.booking.qris', ['organization' => $organization->slug, 'token' => $booking->access_token]),
+                ]
+                : [
+                    'type' => $method->type->value,
+                    'provider_label' => $method->providerLabel(),
+                    'account_number' => $method->account_number,
+                    'account_holder' => $method->account_holder,
+                    'qris_image_url' => null,
+                ])
+            ->values()->all();
+    }
+
+    /**
+     * The uploaded evidence as a gated URL (AC-8), or null until uploaded. The
+     * storage path never leaves the server (AC-19, AC-30).
+     *
+     * @return ?array{thumb_url: string, uploaded_at: string}
+     */
+    private static function evidence(Organization $organization, Booking $booking): ?array
+    {
+        $record = self::record($booking);
+
+        if ($record === null || ! $record->hasEvidence()) {
+            return null;
+        }
+
+        return [
+            'thumb_url' => route('public.booking.evidence.show', ['organization' => $organization->slug, 'token' => $booking->access_token]),
+            'uploaded_at' => self::iso($record->evidence_uploaded_at),
+        ];
+    }
+
+    private static function record(Booking $booking): ?PaymentRecord
+    {
+        return PaymentRecord::query()->where('booking_id', $booking->getKey())->first();
+    }
+
+    /**
+     * The 3-step progress (AC-4): awaiting_payment → step 1, needs_review →
+     * step 2, paid → step 3. rejected / cancelled show no progress.
+     */
+    private static function progress(BookingStatus $status): ?int
+    {
+        return match ($status) {
+            BookingStatus::AwaitingPayment => 1,
+            BookingStatus::NeedsReview => 2,
+            BookingStatus::Paid, BookingStatus::Completed => 3,
+            default => null,
+        };
     }
 
     /**

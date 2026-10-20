@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import PublicFooter from '../../components/public/PublicFooter.vue';
 import {
     BOOKING_STATUS_STYLES,
@@ -14,12 +14,13 @@ import {
     remainingMs,
 } from '../../lib/booking.js';
 import { formatRupiah } from '../../lib/money.js';
+import { copyText, digitsOnly, progressSteps } from '../../lib/payment.js';
 import { t } from '../../lib/text.js';
 
 /**
- * Customer booking page rakyt.id/<slug>/pesanan/<token> (F-005 section E,
- * top half of mockups 1d/2e). No gold button until F-006 adds "Unggah bukti
- * transfer" (AC-33); F-006 also adds payment instructions and the steps.
+ * Customer booking page rakyt.id/<slug>/pesanan/<token> (F-005 section E +
+ * F-006 payment screen, mockups 1d/2e/3e). The gold CTA is "Unggah bukti
+ * transfer"; WhatsApp stays secondary.
  */
 const props = defineProps({
     title: { type: String, required: true },
@@ -32,6 +33,13 @@ const props = defineProps({
     copy: { type: Object, required: true },
     calendar: { type: Object, required: true },
     urls: { type: Object, required: true },
+    payment: { type: Object, default: () => ({ methods: [] }) },
+    // eslint-disable-next-line vue/prop-name-casing
+    amount_due: { type: Number, default: 0 },
+    evidence: { type: Object, default: null },
+    // eslint-disable-next-line vue/prop-name-casing
+    reject_reason: { type: String, default: null },
+    progress: { type: Number, default: null },
     errors: { type: Object, default: () => ({}) },
 });
 
@@ -73,6 +81,46 @@ const releaseText = computed(() => {
 
     return t(props.copy, `page.${release.key}`, { time: release.time });
 });
+
+// F-006 payment screen.
+const paymentCopy = computed(() => props.copy.payment ?? {});
+const payable = computed(() => counting.value);
+const hasMethods = computed(() => (props.payment.methods ?? []).length > 0);
+const showInstructions = computed(() => ['awaiting_payment', 'needs_review'].includes(status.value));
+const canUpload = computed(() => hasMethods.value && (payable.value || status.value === 'needs_review'));
+const steps = computed(() => progressSteps(props.progress, paymentCopy.value));
+const showProgress = computed(() => props.progress != null);
+const copied = ref(null);
+
+async function copyValue(kind, value) {
+    if (await copyText(digitsOnly(value))) {
+        copied.value = kind;
+        window.setTimeout(() => (copied.value = copied.value === kind ? null : copied.value), 2000);
+    }
+}
+
+const form = useForm({ bukti: null });
+const fileInput = ref(null);
+
+function submitEvidence(event) {
+    const file = event.target.files?.[0] ?? null;
+
+    if (!file || form.processing) {
+        return;
+    }
+
+    form.bukti = file;
+    form.post(props.urls.evidence_upload, {
+        preserveScroll: true,
+        forceFormData: true,
+        onFinish: () => {
+            form.reset('bukti');
+            if (fileInput.value) {
+                fileInput.value.value = '';
+            }
+        },
+    });
+}
 </script>
 
 <template>
@@ -178,6 +226,211 @@ const releaseText = computed(() => {
                     </p>
                 </div>
             </div>
+        </section>
+
+        <!-- F-006: 3-step progress (AC-4). -->
+        <section
+            v-if="showProgress"
+            class="mt-6"
+            :aria-label="t(copy, 'payment.title')"
+        >
+            <ol class="flex gap-2">
+                <li
+                    v-for="step in steps"
+                    :key="step.key"
+                    class="flex-1 text-center"
+                >
+                    <span
+                        class="block h-1.5 rounded-full"
+                        :class="step.state === 'idle' ? 'bg-ink/15' : 'bg-status-paid'"
+                        aria-hidden="true"
+                    />
+                    <span
+                        class="mt-1 block text-xs"
+                        :class="step.state === 'active' ? 'font-semibold text-ink' : 'text-secondary'"
+                    >{{ step.label }}</span>
+                </li>
+            </ol>
+        </section>
+
+        <!-- AC-8: evidence under review. -->
+        <section
+            v-if="booking.status === 'needs_review'"
+            class="mt-6 rounded-xl border border-ink/15 bg-surface p-3"
+            role="status"
+        >
+            <p class="text-sm text-ink">
+                {{ t(copy, 'payment.under_review') }}
+            </p>
+            <a
+                v-if="evidence"
+                :href="evidence.thumb_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-2 inline-flex min-h-11 items-center"
+            >
+                <img
+                    :src="evidence.thumb_url"
+                    :alt="t(copy, 'payment.evidence_label')"
+                    class="h-28 w-28 rounded-lg border border-ink/10 object-cover"
+                >
+            </a>
+        </section>
+
+        <!-- AC-9: paid. -->
+        <section
+            v-else-if="booking.status === 'paid'"
+            class="mt-6 rounded-xl border border-status-paid/30 bg-status-paid-tint p-3"
+            role="status"
+        >
+            <p class="text-sm font-semibold text-status-paid">
+                {{ t(copy, 'payment.paid', { trip: trip.name }) }}
+            </p>
+        </section>
+
+        <!-- AC-10: rejected. -->
+        <section
+            v-else-if="booking.status === 'rejected'"
+            class="mt-6 rounded-xl border border-ink/15 bg-surface p-3"
+            role="status"
+        >
+            <p class="text-sm text-ink">
+                {{ t(copy, 'payment.rejected') }}
+            </p>
+            <p
+                v-if="reject_reason"
+                class="mt-1 text-sm text-secondary [overflow-wrap:anywhere]"
+            >
+                {{ t(copy, 'payment.rejected_reason', { reason: reject_reason }) }}
+            </p>
+            <a
+                v-if="trip.url"
+                :href="trip.url"
+                class="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-ink underline underline-offset-2"
+            >
+                {{ t(copy, 'page.book_again') }}
+            </a>
+        </section>
+
+        <!-- AC-1–AC-7: payment instructions while payable or under review. -->
+        <section
+            v-if="showInstructions"
+            class="mt-6"
+        >
+            <h2 class="font-heading text-base font-semibold text-ink">
+                {{ t(copy, 'payment.title') }}
+            </h2>
+            <p class="mt-1 text-sm text-secondary [overflow-wrap:anywhere]">
+                {{ t(copy, 'payment.direct_notice', { seller: organization.name }) }}
+            </p>
+
+            <template v-if="hasMethods">
+                <div class="mt-3 rounded-xl border border-ink/15 bg-surface p-3">
+                    <p class="text-xs text-secondary">
+                        {{ t(copy, 'payment.amount_label') }}
+                    </p>
+                    <div class="flex items-center justify-between gap-3">
+                        <p class="font-heading text-xl font-semibold text-ink">
+                            {{ rupiah(amount_due) }}
+                        </p>
+                        <button
+                            type="button"
+                            class="min-h-11 min-w-11 rounded-lg border-2 border-ink px-3 font-heading text-sm font-semibold text-ink"
+                            :aria-label="t(copy, 'payment.copy_amount')"
+                            @click="copyValue('amount', amount_due)"
+                        >
+                            {{ t(copy, 'payment.copy') }}
+                        </button>
+                    </div>
+                    <p
+                        v-if="copied === 'amount'"
+                        class="mt-1 text-xs font-semibold text-status-paid"
+                        aria-live="polite"
+                    >
+                        {{ t(copy, 'payment.copied_amount') }}
+                    </p>
+                </div>
+
+                <div
+                    v-for="(method, i) in payment.methods"
+                    :key="i"
+                    class="mt-3 rounded-xl border border-ink/15 bg-surface p-3"
+                >
+                    <template v-if="method.type === 'qris'">
+                        <p class="text-xs text-secondary">
+                            {{ t(copy, 'payment.qris_label') }}
+                        </p>
+                        <img
+                            :src="method.qris_image_url"
+                            :alt="t(copy, 'payment.qris_alt')"
+                            class="mt-2 h-48 w-48 max-w-full rounded-lg border border-ink/10 object-contain"
+                        >
+                    </template>
+                    <template v-else>
+                        <p class="font-heading font-semibold text-ink">
+                            {{ method.provider_label }}
+                        </p>
+                        <div class="mt-1 flex items-center justify-between gap-3">
+                            <p class="font-heading text-lg tracking-wide text-ink [overflow-wrap:anywhere]">
+                                {{ method.account_number }}
+                            </p>
+                            <button
+                                type="button"
+                                class="min-h-11 min-w-11 shrink-0 rounded-lg border-2 border-ink px-3 font-heading text-sm font-semibold text-ink"
+                                :aria-label="t(copy, 'payment.copy_number')"
+                                @click="copyValue('number-' + i, method.account_number)"
+                            >
+                                {{ t(copy, 'payment.copy') }}
+                            </button>
+                        </div>
+                        <p
+                            v-if="copied === 'number-' + i"
+                            class="mt-1 text-xs font-semibold text-status-paid"
+                            aria-live="polite"
+                        >
+                            {{ t(copy, 'payment.copied_number') }}
+                        </p>
+                        <p class="mt-2 text-sm text-ink [overflow-wrap:anywhere]">
+                            {{ method.account_holder }}
+                        </p>
+                        <p class="text-xs text-secondary">
+                            {{ t(copy, 'payment.account_holder_hint') }}
+                        </p>
+                    </template>
+                </div>
+            </template>
+
+            <p
+                v-else
+                class="mt-3 rounded-lg bg-status-waiting-tint px-3 py-2 text-sm text-status-waiting"
+            >
+                {{ t(copy, 'payment.no_methods') }}
+            </p>
+
+            <template v-if="canUpload">
+                <input
+                    ref="fileInput"
+                    type="file"
+                    accept="image/*"
+                    class="sr-only"
+                    @change="submitEvidence"
+                >
+                <button
+                    type="button"
+                    class="mt-4 min-h-12 w-full rounded-lg bg-prada px-4 font-heading text-base font-semibold text-ink disabled:bg-prada/40"
+                    :disabled="form.processing"
+                    :aria-busy="form.processing"
+                    @click="fileInput?.click()"
+                >
+                    {{ form.processing ? t(copy, 'payment.uploading') : (booking.status === 'needs_review' ? t(copy, 'payment.replace_cta') : t(copy, 'payment.upload_cta')) }}
+                </button>
+                <p
+                    v-if="errors.bukti"
+                    class="mt-1 text-sm text-status-rejected"
+                >
+                    {{ errors.bukti }}
+                </p>
+            </template>
         </section>
 
         <a

@@ -98,9 +98,9 @@ final class PaymentMethodRules
      *
      * @throws ValidationException
      */
-    public static function validate(mixed $methods): array
+    public static function validate(mixed $methods, bool $requireOne = true): array
     {
-        $validator = Validator::make(['methods' => $methods], self::rules(requireOne: true), self::messages(), self::attributes());
+        $validator = Validator::make(['methods' => $methods], self::rules($requireOne), self::messages(), self::attributes());
         $validator->after(function ($validator) use ($methods) {
             foreach (is_array($methods) ? self::missingProviderNames($methods) : [] as $key => $message) {
                 $validator->errors()->add($key, $message);

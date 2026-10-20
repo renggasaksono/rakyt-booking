@@ -139,7 +139,9 @@ class BookingPageTest extends TestCase
         $template = file_get_contents(resource_path('js/pages/Public/Booking.vue'));
         $this->assertStringContainsString('rel="noopener noreferrer"', $template);
         $this->assertStringContainsString('target="_blank"', $template);
-        $this->assertStringNotContainsString('bg-prada', $template, 'No gold button until F-006.');
+        // F-006 AC-5/AC-32: exactly one gold button — the "Unggah bukti transfer" CTA
+        // (the disabled:bg-prada/40 modifier on the same button is not a second button).
+        $this->assertSame(1, substr_count($template, ' bg-prada '), 'Exactly one gold button (the upload CTA).');
     }
 
     public function test_ac_34_the_page_outlives_the_trip_and_departure_state(): void
@@ -233,8 +235,9 @@ class BookingPageTest extends TestCase
 
         $props = $this->pageOf($booking);
 
+        // F-006 extends the page props with the payment screen fields.
         $this->assertEqualsCanonicalizing(
-            ['title', 'organization', 'booking', 'trip', 'departure', 'meeting', 'context', 'copy', 'calendar', 'urls', 'errors'],
+            ['title', 'organization', 'booking', 'trip', 'departure', 'meeting', 'context', 'copy', 'calendar', 'urls', 'errors', 'payment', 'amount_due', 'evidence', 'reject_reason', 'progress'],
             array_keys($props),
         );
         $this->assertSame(['name', 'slug', 'whatsapp_url'], array_keys($props['organization']));
@@ -242,10 +245,13 @@ class BookingPageTest extends TestCase
         $this->assertSame(['name', 'url'], array_keys($props['trip']));
         $this->assertSame(['start_date', 'end_date'], array_keys($props['departure']));
         $this->assertSame(['now', 'timezone'], array_keys($props['context']));
-        $this->assertSame(['home'], array_keys($props['urls']));
+        $this->assertSame(['home', 'evidence_upload', 'evidence_show'], array_keys($props['urls']));
+        $this->assertSame(['methods'], array_keys($props['payment']));
 
+        // The evidence/upload URLs legitimately carry this booking's own token (the
+        // page itself sits at the token URL); nothing else leaks ids or another booking.
         $json = json_encode($props);
-        foreach (['"id"', 'organization_id', 'access_token', 'submission_key', 'seats_taken', 'Pemesan Lain', $booking->access_token, (string) $booking->public_id] as $secret) {
+        foreach (['"id"', 'organization_id', 'submission_key', 'seats_taken', 'Pemesan Lain', (string) $booking->public_id, 'evidence_path'] as $secret) {
             $this->assertStringNotContainsString($secret, $json);
         }
     }
