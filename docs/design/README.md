@@ -59,6 +59,25 @@ Departure statuses (F-003 AC-27) follow the same rule with their own glyphs: Buk
 (`#4F4741`), Penuh ◼ (nila), Sudah lewat ◁ (`#4F4741`). Tints are tokens in `resources/css/app.css`
 (`--color-status-*-tint`); never hard-code them.
 
+### Shape & outlines
+
+"Rakyt Sogan" is a **square** system — the mockup has no rounded corners on any UI element (the only radii
+in it are the phone-frame bezel and dev-tooling chips). Keep it that way:
+
+- **No border-radius.** Cards, buttons, inputs, departures, pills, the gold CTA — all sharp corners. The radius
+  scale is zeroed at the token level (`--radius-*: 0` in `resources/css/app.css`), so existing `rounded-*`
+  utilities render square; prefer not to add new ones. `rounded-full` is not token-driven — use it only for the
+  few deliberate pills (toasts, status pills), never to soften a rectangle.
+- **Outlines are thin, drawn with `box-shadow` insets, not heavy borders.** Weights: **1px** `rgba(33,23,16,.16–.25)`
+  for a secondary/resting outline (e.g. the Share button, unselected departures), **1.5px** `#211710` (ink) for a
+  primary outline (e.g. Chat WhatsApp), **2px** ink for the selected state (e.g. the chosen departure, a focused
+  input uses 2px Sogan). Avoid `border-2` as the default outline — it reads too bold.
+- **Section headers** are an uppercase kicker, not a sentence-case heading: Poppins 11px, `font-weight:600`,
+  `letter-spacing:.16em`, uppercase, with a **2px `#211710` bottom border** (`padding-bottom:8px`). Used for
+  "Trip tersedia", "Pilih keberangkatan", "Termasuk", "Tidak termasuk", "Kumpul & jadwal", "Ketentuan".
+- **Kickers/subtitles** above a title (e.g. "Open trip · 3 hari 2 malam") are Poppins 11px, `font-weight:600`,
+  uppercase, `letter-spacing:.14em`, in **Sogan `#6E4527`** — not `secondary`, and not the tight `tracking-wide`.
+
 ## Rules
 
 - **One gold button per screen**, for the step that moves the booking forward. Everything else is ink outline.

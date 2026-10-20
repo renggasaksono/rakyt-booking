@@ -31,7 +31,7 @@ const status = computed(() => {
 <template>
     <Link
         :href="trip.url"
-        class="block overflow-hidden rounded-xl border border-ink/10 bg-surface focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sogan"
+        class="block overflow-hidden bg-surface shadow-[0_1px_0_rgba(33,23,16,0.14)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sogan"
     >
         <div class="aspect-[4/3] bg-gading">
             <img

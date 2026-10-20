@@ -107,7 +107,7 @@ function submit() {
         </nav>
 
         <header>
-            <p class="font-heading text-[11px] font-semibold uppercase tracking-wide text-secondary">
+            <p class="font-heading text-[11px] font-semibold uppercase tracking-[.14em] text-sogan">
                 {{ t(copy, 'form.kicker') }}
             </p>
             <h1 class="mt-1 font-heading text-2xl font-semibold leading-tight text-ink">
@@ -115,7 +115,7 @@ function submit() {
             </h1>
         </header>
 
-        <section class="mt-4 rounded-xl border border-ink/15 bg-surface p-3">
+        <section class="mt-4 border border-ink/15 bg-surface p-3">
             <p class="font-heading text-base font-semibold text-ink [overflow-wrap:anywhere]">
                 {{ trip.name }}
             </p>
@@ -156,7 +156,7 @@ function submit() {
                     type="text"
                     autocomplete="name"
                     maxlength="80"
-                    class="mt-1 min-h-12 w-full rounded-lg border bg-surface px-3 text-base text-ink"
+                    class="mt-1 min-h-12 w-full border bg-surface px-3 text-base text-ink focus:outline-none focus:shadow-[inset_0_0_0_2px_#6e4527]"
                     :class="form.errors.name ? 'border-status-rejected' : 'border-ink/20'"
                     :aria-invalid="Boolean(form.errors.name) || undefined"
                     aria-describedby="name-error"
@@ -173,7 +173,7 @@ function submit() {
                     class="font-heading text-sm font-semibold text-ink"
                 >{{ t(copy, 'form.phone') }}</label>
                 <div
-                    class="mt-1 flex min-h-12 items-stretch overflow-hidden rounded-lg border bg-surface"
+                    class="mt-1 flex min-h-12 items-stretch overflow-hidden border bg-surface focus-within:shadow-[inset_0_0_0_2px_#6e4527]"
                     :class="form.errors.phone ? 'border-status-rejected' : 'border-ink/20'"
                 >
                     <span
@@ -244,7 +244,7 @@ function submit() {
                     v-model="form.notes"
                     rows="3"
                     :maxlength="notesMax"
-                    class="mt-1 w-full rounded-lg border bg-surface px-3 py-2 text-base text-ink"
+                    class="mt-1 w-full border bg-surface px-3 py-2 text-base text-ink focus:outline-none focus:shadow-[inset_0_0_0_2px_#6e4527]"
                     :class="form.errors.notes ? 'border-status-rejected' : 'border-ink/20'"
                     :aria-invalid="Boolean(form.errors.notes) || undefined"
                     aria-describedby="notes-counter notes-error"
@@ -292,7 +292,7 @@ function submit() {
             <button
                 type="submit"
                 form="booking-form"
-                class="mt-2 min-h-12 w-full rounded-lg bg-prada px-4 font-heading text-base font-semibold text-ink disabled:bg-prada/40"
+                class="mt-2 min-h-12 w-full bg-prada px-4 font-heading text-base font-semibold text-ink disabled:bg-prada/40"
                 :disabled="form.processing"
                 :aria-busy="form.processing"
             >
@@ -309,7 +309,7 @@ function submit() {
         <a
             v-else
             :href="urls.trip"
-            class="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-prada px-4 font-heading text-base font-semibold text-ink"
+            class="inline-flex min-h-12 w-full items-center justify-center bg-prada px-4 font-heading text-base font-semibold text-ink"
         >
             {{ t(copy, 'form.other_date') }}
         </a>
