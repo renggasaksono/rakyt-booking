@@ -100,6 +100,10 @@ Route::middleware(['auth', 'organization', 'onboarded'])->group(function () {
     Route::get('/pesanan', [SellerBookingController::class, 'index'])->name('bookings.index');
     Route::get('/pesanan/{booking}', [SellerBookingController::class, 'show'])->name('bookings.show');
     Route::post('/pesanan/{booking}/batalkan', [SellerBookingController::class, 'cancel'])->name('bookings.cancel');
+    // F-006: the seller verifies a payment inline (AC-16–AC-18) and views the gated evidence (AC-19).
+    Route::post('/pesanan/{booking}/konfirmasi', [SellerBookingController::class, 'confirm'])->name('bookings.confirm');
+    Route::post('/pesanan/{booking}/tolak', [SellerBookingController::class, 'reject'])->name('bookings.reject');
+    Route::get('/pesanan/{booking}/bukti', [SellerBookingController::class, 'evidence'])->middleware('no-referrer')->name('bookings.evidence');
     // Hari ini's "Ingatkan via WA": redirects to WhatsApp so the token stays out of its props (ADR-0029 §1).
     Route::get('/pesanan/{booking}/ingatkan', [SellerBookingController::class, 'remind'])->middleware('no-referrer')->name('bookings.remind');
 
@@ -163,6 +167,24 @@ Route::middleware('public-organization')->withoutMiddleware([
         ->middleware(['throttle:public-page', 'no-referrer'])
         ->fallback()
         ->name('public.booking.show');
+    // F-006: the customer uploads payment evidence (AC-12) and views their own evidence (AC-19).
+    // throttle:evidence-upload keys off the {token} segment (F-009 R1).
+    Route::post('/{organization}/pesanan/{token}/bukti', [BookingController::class, 'uploadEvidence'])
+        ->where(['organization' => '[^/]+', 'token' => '[A-Za-z0-9]{32}'])
+        ->middleware(['throttle:evidence-upload', 'no-referrer'])
+        ->fallback()
+        ->name('public.booking.evidence');
+    Route::get('/{organization}/pesanan/{token}/bukti', [BookingController::class, 'showEvidence'])
+        ->where(['organization' => '[^/]+', 'token' => '[A-Za-z0-9]{32}'])
+        ->middleware(['throttle:public-page', 'no-referrer'])
+        ->fallback()
+        ->name('public.booking.evidence.show');
+    // F-006 AC-22: the seller's active QRIS image, gated by the booking token.
+    Route::get('/{organization}/pesanan/{token}/qris', [BookingController::class, 'showQris'])
+        ->where(['organization' => '[^/]+', 'token' => '[A-Za-z0-9]{32}'])
+        ->middleware(['throttle:public-page', 'no-referrer'])
+        ->fallback()
+        ->name('public.booking.qris');
     Route::get('/{organization}/{trip}/pesan', [BookingController::class, 'create'])
         ->where(['organization' => '[^/]+', 'trip' => '[^/]+'])
         ->middleware('throttle:public-page')

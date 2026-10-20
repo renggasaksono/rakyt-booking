@@ -233,8 +233,9 @@ class BookingPageTest extends TestCase
 
         $props = $this->pageOf($booking);
 
+        // F-006 extends the page props with the payment screen fields.
         $this->assertEqualsCanonicalizing(
-            ['title', 'organization', 'booking', 'trip', 'departure', 'meeting', 'context', 'copy', 'calendar', 'urls', 'errors'],
+            ['title', 'organization', 'booking', 'trip', 'departure', 'meeting', 'context', 'copy', 'calendar', 'urls', 'errors', 'payment', 'amount_due', 'evidence', 'reject_reason', 'progress'],
             array_keys($props),
         );
         $this->assertSame(['name', 'slug', 'whatsapp_url'], array_keys($props['organization']));
@@ -242,10 +243,13 @@ class BookingPageTest extends TestCase
         $this->assertSame(['name', 'url'], array_keys($props['trip']));
         $this->assertSame(['start_date', 'end_date'], array_keys($props['departure']));
         $this->assertSame(['now', 'timezone'], array_keys($props['context']));
-        $this->assertSame(['home'], array_keys($props['urls']));
+        $this->assertSame(['home', 'evidence_upload', 'evidence_show'], array_keys($props['urls']));
+        $this->assertSame(['methods'], array_keys($props['payment']));
 
+        // The evidence/upload URLs legitimately carry this booking's own token (the
+        // page itself sits at the token URL); nothing else leaks ids or another booking.
         $json = json_encode($props);
-        foreach (['"id"', 'organization_id', 'access_token', 'submission_key', 'seats_taken', 'Pemesan Lain', $booking->access_token, (string) $booking->public_id] as $secret) {
+        foreach (['"id"', 'organization_id', 'submission_key', 'seats_taken', 'Pemesan Lain', (string) $booking->public_id, 'evidence_path'] as $secret) {
             $this->assertStringNotContainsString($secret, $json);
         }
     }

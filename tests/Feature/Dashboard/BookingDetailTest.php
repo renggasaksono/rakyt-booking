@@ -75,6 +75,17 @@ class BookingDetailTest extends TestCase
             'cancel_reason' => null,
             'customer_url' => 'https://rakyt.id/kencana/pesanan/'.$booking->access_token,
             'can_cancel' => true,
+            // F-006: verification state behind the detail.
+            'can_verify' => false,
+            'payment' => [
+                'amount_due' => 2_500_000,
+                'has_evidence' => false,
+                'evidence_url' => null,
+                'uploaded_at' => null,
+                'decision' => null,
+                'reject_reason' => null,
+                'verified_at' => null,
+            ],
         ], $props['booking']);
         $this->assertSame(['name' => 'Karimunjawa 3H2M', 'edit_url' => url('/trip/'.$this->trip->public_id)], $props['trip']);
         $this->assertSame(['point' => 'Pelabuhan Jepara', 'time' => '06:00'], $props['meeting']);

@@ -194,16 +194,17 @@ class DashboardTenancyTest extends TestCase
         $this->assertSame([
             'public_id', 'reference', 'customer_name', 'participants', 'total_amount', 'status', 'hold_expires_at',
             'created_at', 'trip', 'departure', 'urls', 'customer_phone', 'notes', 'unit_price', 'cancel_reason',
-            'customer_url', 'can_cancel',
+            'customer_url', 'can_cancel', 'can_verify', 'payment',
         ], array_keys($detail['booking']));
         $this->assertSame(['name'], array_keys($detail['booking']['trip']));
         $this->assertSame(['start_date', 'end_date'], array_keys($detail['booking']['departure']));
         $this->assertSame(['show'], array_keys($detail['booking']['urls']));
+        $this->assertSame(['amount_due', 'has_evidence', 'evidence_url', 'uploaded_at', 'decision', 'reject_reason', 'verified_at'], array_keys($detail['booking']['payment']));
         $this->assertSame(['name', 'edit_url'], array_keys($detail['trip']));
         $this->assertSame(['point', 'time'], array_keys($detail['meeting']));
-        $this->assertSame(['chat_url', 'reminder_url', 'cancelled_url'], array_keys($detail['whatsapp']));
+        $this->assertSame(['chat_url', 'reminder_url', 'cancelled_url', 'rejected_url'], array_keys($detail['whatsapp']));
         $this->assertSame(['now', 'timezone', 'today'], array_keys($detail['context']));
-        $this->assertSame(['back', 'cancel'], array_keys($detail['urls']));
+        $this->assertSame(['back', 'cancel', 'confirm', 'reject'], array_keys($detail['urls']));
         $this->assertNoSecrets($detail, withToken: true);
         $this->assertStringContainsString($this->aBooking->access_token, json_encode($detail, JSON_UNESCAPED_SLASHES));
     }

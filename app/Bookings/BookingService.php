@@ -6,15 +6,21 @@ use App\Audit\Actor;
 use App\Audit\AuditAction;
 use App\Audit\AuditLog;
 use App\Bookings\Jobs\ReleaseExpiredHolds;
+use App\Media\MediaPath;
+use App\Media\PrivateMedia;
 use App\Models\Booking;
 use App\Models\Organization;
+use App\Models\PaymentRecord;
 use App\Models\Trip;
 use App\Models\TripDeparture;
 use App\Models\User;
+use App\Payments\PaymentDecision;
 use App\Tenancy\CurrentOrganization;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use LogicException;
 
@@ -139,6 +145,153 @@ final class BookingService
                 after: ['status' => BookingStatus::Cancelled->value, 'cancel_reason' => CancelReason::Seller->value],
                 actor: Actor::user($seller),
             );
+
+            $booking->setRawAttributes($fresh->getAttributes(), true);
+
+            return true;
+        });
+    }
+
+    /**
+     * The customer uploads payment evidence (F-006 AC-12, AC-13, AC-15). The
+     * file is written to the private disk first (outside the lock), then under
+     * the departure → booking lock the hold is re-checked against
+     * Booking::holdIsActive(now): an awaiting_payment booking with an active
+     * hold moves to needs_review (the hold clock stops, ADR-0006); a
+     * needs_review booking keeps its status and its evidence is replaced. Any
+     * other status, or an expired hold, is refused — nothing is stored and the
+     * booking is unchanged (the freshly written file is deleted).
+     *
+     * @return ?PaymentRecord the record, or null when the upload is refused
+     */
+    public function uploadEvidence(Booking $booking, UploadedFile $file, ?CarbonImmutable $now = null): ?PaymentRecord
+    {
+        $now ??= CarbonImmutable::now();
+        $organization = $this->current->get() ?? throw new LogicException('Evidence upload needs a current organization.');
+
+        $extension = $file->extension() ?: 'jpg';
+        $path = MediaPath::for($organization, 'evidence/'.$booking->public_id, $extension);
+        Storage::disk(PrivateMedia::disk())->put($path, $file->get());
+
+        $result = DB::transaction(function () use ($booking, $path, $now) {
+            $locked = TripDeparture::query()->whereKey($booking->trip_departure_id)->lockForUpdate()->firstOrFail();
+            $fresh = Booking::query()->whereKey($booking->getKey())->lockForUpdate()->first();
+
+            // AC-13 / AC-15: only an active awaiting_payment hold or a needs_review booking.
+            if ($fresh === null || ! $this->acceptsEvidence($fresh, $now)) {
+                return null;
+            }
+
+            $record = PaymentRecord::query()->where('booking_id', $fresh->getKey())->lockForUpdate()->first() ?? new PaymentRecord;
+            $previous = $record->evidence_path;
+            $record->forceFill([
+                'booking_id' => $fresh->getKey(),
+                'amount_due' => $fresh->total_amount,
+                'evidence_path' => $path,
+                'evidence_uploaded_at' => $now,
+            ]);
+            $record->save();
+
+            if ($fresh->status === BookingStatus::AwaitingPayment) {
+                $fresh->status = BookingStatus::NeedsReview;
+                $fresh->save();
+            }
+
+            // No file bytes, no path (AC-12, AC-30); the path never enters audit.
+            $this->audit->record(AuditAction::PaymentEvidenceUploaded, $fresh,
+                after: ['status' => $fresh->status->value],
+                actor: Actor::customer($fresh->getKey()),
+            );
+
+            $booking->setRawAttributes($fresh->getAttributes(), true);
+
+            return ['record' => $record, 'previous' => $previous];
+        });
+
+        if ($result === null) {
+            Storage::disk(PrivateMedia::disk())->delete($path);
+
+            return null;
+        }
+
+        if ($result['previous'] !== null && $result['previous'] !== $path) {
+            Storage::disk(PrivateMedia::disk())->delete($result['previous']);
+        }
+
+        return $result['record'];
+    }
+
+    /**
+     * The seller confirms a payment (F-006 AC-17): needs_review → paid under the
+     * departure → booking lock, re-reading the status. Seats are unchanged (the
+     * seat was already held). Idempotent: a booking that is no longer
+     * needs_review (confirmed/rejected in another tab, cancelled) is left alone
+     * and false is returned (AC-20).
+     */
+    public function confirmPayment(Booking $booking, User $seller): bool
+    {
+        return $this->verify($booking, $seller, BookingStatus::Paid, PaymentDecision::Confirmed, null);
+    }
+
+    /**
+     * The seller rejects a payment (F-006 AC-18): needs_review → rejected under
+     * the lock. `rejected` is terminal and non-holding (ADR-0030 §2), so the
+     * booking's participants are returned to the departure (seats back on sale).
+     * Idempotent like confirmPayment (AC-20).
+     */
+    public function rejectPayment(Booking $booking, User $seller, ?string $reason = null): bool
+    {
+        return $this->verify($booking, $seller, BookingStatus::Rejected, PaymentDecision::Rejected, $reason);
+    }
+
+    /**
+     * Whether an upload is accepted now (AC-12, AC-13, AC-15).
+     */
+    private function acceptsEvidence(Booking $booking, CarbonImmutable $now): bool
+    {
+        return ($booking->status === BookingStatus::AwaitingPayment && $booking->holdIsActive($now))
+            || $booking->status === BookingStatus::NeedsReview;
+    }
+
+    /**
+     * The shared confirm / reject transition (AC-17, AC-18, AC-20). Exactly one
+     * transition happens per booking; the record carries the verdict.
+     */
+    private function verify(Booking $booking, User $seller, BookingStatus $to, PaymentDecision $decision, ?string $reason): bool
+    {
+        return DB::transaction(function () use ($booking, $seller, $to, $decision, $reason) {
+            $locked = TripDeparture::query()->whereKey($booking->trip_departure_id)->lockForUpdate()->firstOrFail();
+            $fresh = Booking::query()->whereKey($booking->getKey())->lockForUpdate()->first();
+
+            if ($fresh === null || $fresh->status !== BookingStatus::NeedsReview) {
+                return false;
+            }
+
+            $record = PaymentRecord::query()->where('booking_id', $fresh->getKey())->lockForUpdate()->firstOrFail();
+            $before = $fresh->status;
+
+            $fresh->status = $to;
+            $fresh->save();
+
+            // rejected leaves the holding set: its seats go back on sale (ADR-0030 §2).
+            if (! $to->holdsSeats()) {
+                $this->changeSeats($locked, -$fresh->participants);
+            }
+
+            $record->forceFill([
+                'verified_by' => $seller->getKey(),
+                'verified_at' => CarbonImmutable::now(),
+                'decision' => $decision,
+                'reject_reason' => $decision === PaymentDecision::Rejected ? $reason : null,
+            ]);
+            $record->save();
+
+            $action = $decision === PaymentDecision::Confirmed ? AuditAction::PaymentConfirmed : AuditAction::PaymentRejected;
+            $after = ['status' => $to->value];
+            if ($decision === PaymentDecision::Rejected && $reason !== null) {
+                $after['reject_reason'] = $reason;
+            }
+            $this->audit->record($action, $fresh, before: ['status' => $before->value], after: $after, actor: Actor::user($seller));
 
             $booking->setRawAttributes($fresh->getAttributes(), true);
 

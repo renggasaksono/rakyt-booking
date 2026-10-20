@@ -4,6 +4,7 @@ namespace App\Bookings;
 
 use App\Models\Booking;
 use App\Models\Organization;
+use App\Models\PaymentRecord;
 use App\Models\TripDeparture;
 use App\Organizations\BookingSlug;
 use Carbon\CarbonImmutable;
@@ -53,6 +54,15 @@ final class SellerBookingPresenter
             $item['whatsapp_reminder_url'] = $booking->holdIsActive($now) ? route('bookings.remind', $booking) : null;
         }
 
+        // F-006 AC-16: needs_review rows carry the gated evidence thumbnail and
+        // the inline Konfirmasi / Tolak targets. All use the public id, so the
+        // customer token never enters Hari ini's props (ADR-0029 §1).
+        if ($booking->status === BookingStatus::NeedsReview) {
+            $item['payment'] = ['evidence_url' => route('bookings.evidence', $booking)];
+            $item['urls']['confirm'] = route('bookings.confirm', [$booking, ...$listQuery]);
+            $item['urls']['reject'] = route('bookings.reject', [$booking, ...$listQuery]);
+        }
+
         return $item;
     }
 
@@ -66,6 +76,7 @@ final class SellerBookingPresenter
     {
         $now = CarbonImmutable::now();
         $trip = $booking->departure->trip;
+        $record = PaymentRecord::query()->where('booking_id', $booking->getKey())->first();
 
         return [
             'booking' => [
@@ -76,6 +87,9 @@ final class SellerBookingPresenter
                 'cancel_reason' => $booking->cancel_reason?->value,
                 'customer_url' => $this->customerUrl($organization, $booking),
                 'can_cancel' => $booking->status->holdsSeats(),
+                // F-006: verify inline from the detail (AC-16–AC-18).
+                'can_verify' => $booking->status === BookingStatus::NeedsReview,
+                'payment' => self::payment($booking, $record),
             ],
             'trip' => [
                 'name' => $trip->name,
@@ -86,6 +100,8 @@ final class SellerBookingPresenter
                 'chat_url' => self::whatsappBase($booking),
                 'reminder_url' => $booking->holdIsActive($now) ? $this->reminderUrl($organization, $booking, $now) : null,
                 'cancelled_url' => $booking->cancel_reason === CancelReason::Seller ? $this->cancelledUrl($organization, $booking, $now) : null,
+                // AC-18: "Kabari pelanggan via WA" after a rejection.
+                'rejected_url' => $booking->status === BookingStatus::Rejected ? $this->rejectedUrl($organization, $booking, $now) : null,
             ],
             'context' => [
                 'now' => self::iso($now),
@@ -100,8 +116,40 @@ final class SellerBookingPresenter
             'urls' => [
                 'back' => route('bookings.index', $listQuery),
                 'cancel' => route('bookings.cancel', [$booking, ...$listQuery]),
+                'confirm' => route('bookings.confirm', [$booking, ...$listQuery]),
+                'reject' => route('bookings.reject', [$booking, ...$listQuery]),
             ],
         ];
+    }
+
+    /**
+     * The payment record behind the booking for the detail (AC-16, AC-18). The
+     * evidence is a gated seller URL (public id, no token, no storage path).
+     *
+     * @return array<string, mixed>
+     */
+    private static function payment(Booking $booking, ?PaymentRecord $record): array
+    {
+        return [
+            'amount_due' => $record?->amount_due ?? $booking->total_amount,
+            'has_evidence' => $record?->hasEvidence() ?? false,
+            'evidence_url' => ($record !== null && $record->hasEvidence()) ? route('bookings.evidence', $booking) : null,
+            'uploaded_at' => self::iso($record?->evidence_uploaded_at),
+            'decision' => $record?->decision?->value,
+            'reject_reason' => $record?->reject_reason,
+            'verified_at' => self::iso($record?->verified_at),
+        ];
+    }
+
+    /**
+     * AC-18: wa.me/<customer digits>?text=<bookings.whatsapp.rejected>.
+     */
+    public function rejectedUrl(Organization $organization, Booking $booking, CarbonInterface $now): string
+    {
+        return self::whatsappBase($booking).'?text='.rawurlencode(__('bookings.whatsapp.rejected', [
+            'name' => $booking->customer_name,
+            'reference' => $booking->reference,
+        ]));
     }
 
     /**

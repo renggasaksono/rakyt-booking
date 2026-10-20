@@ -7,7 +7,9 @@ use App\Bookings\BookingService;
 use App\Bookings\BookingStatus;
 use App\Bookings\SellerBookingPresenter;
 use App\Http\Controllers\Controller;
+use App\Media\PrivateMedia;
 use App\Models\Booking;
+use App\Models\PaymentRecord;
 use App\Models\Trip;
 use App\Organizations\BookingSlug;
 use App\Tenancy\CurrentOrganization;
@@ -134,6 +136,64 @@ class SellerBookingController extends Controller
     }
 
     /**
+     * F-006 AC-17: the seller confirms a payment (needs_review → paid). A
+     * booking already processed in another tab is reported, not errored (AC-20).
+     */
+    public function confirm(Request $request, Booking $booking): RedirectResponse
+    {
+        Gate::authorize('verify', $booking);
+        $back = route('bookings.show', [$booking, ...BookingFilters::fromRequest($request)->query()]);
+
+        if ($this->service->confirmPayment($booking, $request->user())) {
+            return redirect($back)->with('toast', __('bookings.show.confirmed'));
+        }
+
+        return redirect($back)->with('notice', __('bookings.show.already_processed'));
+    }
+
+    /**
+     * F-006 AC-18: the seller rejects a payment (needs_review → rejected, seats
+     * released) with an optional reason (≤ 200 chars).
+     */
+    public function reject(Request $request, Booking $booking): RedirectResponse
+    {
+        Gate::authorize('verify', $booking);
+
+        $data = $request->validate(
+            ['alasan' => ['nullable', 'string', 'max:200']],
+            ['alasan.max' => __('bookings.show.reject_reason_max')],
+            ['alasan' => __('bookings.show.reject_reason')],
+        );
+
+        $participants = $booking->participants;
+        $back = route('bookings.show', [$booking, ...BookingFilters::fromRequest($request)->query()]);
+
+        if ($this->service->rejectPayment($booking, $request->user(), self::cleanReason($data['alasan'] ?? null))) {
+            return redirect($back)->with('toast', __('bookings.show.rejected', ['n' => $participants]));
+        }
+
+        return redirect($back)->with('notice', __('bookings.show.already_processed'));
+    }
+
+    /**
+     * F-006 AC-19 / F-009 A20: the seller streams a booking's evidence after the
+     * PaymentRecordPolicy check (same organization). The storage path never
+     * leaves the server.
+     */
+    public function evidence(Request $request, Booking $booking): Response
+    {
+        Gate::authorize('view', $booking);
+
+        $record = PaymentRecord::query()->where('booking_id', $booking->getKey())->first();
+
+        abort_if($record === null || ! $record->hasEvidence(), 404);
+
+        Gate::authorize('view', $record);
+
+        return PrivateMedia::response($record->evidence_path);
+    }
+
+    /**
      * AC-25 on Hari ini rows: "Ingatkan via WA" goes through here, so the
      * customer link — and its token — never sits in Hari ini's props
      * (ADR-0029 §1). Without an active hold it goes to the detail instead.
@@ -153,6 +213,20 @@ class SellerBookingController extends Controller
         $response->headers->set('Referrer-Policy', 'no-referrer');
 
         return $response;
+    }
+
+    /**
+     * Trimmed, inner whitespace collapsed; null when empty (AC-18).
+     */
+    private static function cleanReason(mixed $reason): ?string
+    {
+        if (! is_string($reason)) {
+            return null;
+        }
+
+        $reason = trim(preg_replace('/\s+/u', ' ', $reason) ?? '');
+
+        return $reason === '' ? null : $reason;
     }
 
     private static function private(Response $response): Response
