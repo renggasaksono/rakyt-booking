@@ -106,7 +106,7 @@ class HandleInertiaRequests extends Middleware
                 $item('trips', __('dashboard.nav.trips'), route('trips.index'), $request->routeIs('trips.*', 'departures.*'), ['phone' => true, 'phone_label' => __('dashboard.nav.trips_short')]),
                 $item('payments', __('dashboard.nav.payments'), route('bookings.index', ['status' => BookingFilters::ACTION_NEEDED]), $payments, ['badge' => $badge]),
                 $item('public_page', __('dashboard.nav.public_page'), route('public.seller', ['organization' => $organization->slug]), false, ['external' => true]),
-                $item('settings', __('dashboard.nav.settings'), route('settings.index'), $request->routeIs('settings.*', 'payment-methods.*'), ['phone' => true]),
+                $item('settings', __('dashboard.nav.settings'), route('settings.index'), $request->routeIs('settings.*'), ['phone' => true]),
             ],
             'brand' => __('trips.nav.brand'),
             'menu_label' => __('trips.nav.menu'),

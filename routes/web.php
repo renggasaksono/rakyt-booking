@@ -112,9 +112,11 @@ Route::middleware(['auth', 'organization', 'onboarded'])->group(function () {
     Route::put('/pengaturan/profil', [ProfileController::class, 'update']);
     Route::post('/pengaturan/profil/logo', [ProfileController::class, 'storeLogo'])->name('settings.profile.logo');
     Route::delete('/pengaturan/profil/logo', [ProfileController::class, 'destroyLogo']);
-    // Bank / e-wallet accounts (F-001 F5, the F-006 subset). The trip editor's checklist links here.
-    Route::get('/pengaturan/rekening', [PaymentMethodController::class, 'index'])->name('payment-methods.index');
-    Route::put('/pengaturan/rekening', [PaymentMethodController::class, 'update'])->middleware('throttle:payment-change')->name('payment-methods.update');
+    // Payment instructions: bank / e-wallet + QRIS (F-006, supersedes F-001's Rekening).
+    // The trip editor's checklist links here. POST carries the QRIS image (multipart).
+    Route::get('/pengaturan/pembayaran', [PaymentMethodController::class, 'index'])->name('settings.payment');
+    Route::post('/pengaturan/pembayaran', [PaymentMethodController::class, 'update'])->middleware('throttle:payment-change')->name('settings.payment.update');
+    Route::get('/pengaturan/pembayaran/qris', [PaymentMethodController::class, 'qris'])->middleware('no-referrer')->name('settings.payment.qris');
 
     Route::get('/trip', [TripController::class, 'index'])->name('trips.index');
     Route::get('/trip/baru', [TripController::class, 'create'])->name('trips.create');

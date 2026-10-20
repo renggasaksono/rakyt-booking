@@ -81,7 +81,7 @@ class PublishTest extends TestCase
 
         $this->actingAsTenant($a)->get(route('trips.edit', $trip))
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('urls.payment_setup', route('payment-methods.index'))
+                ->where('urls.payment_setup', route('settings.payment'))
                 ->where('copy.checklist.payment_link', 'atur rekening'));
     }
 

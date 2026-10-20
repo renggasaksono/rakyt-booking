@@ -19,7 +19,7 @@ class SettingsController extends Controller
                 ['key' => 'profile', 'url' => route('settings.profile')],
                 ['key' => 'account', 'url' => route('settings.account')],
                 ['key' => 'booking', 'url' => route('settings.booking.edit')],
-                ['key' => 'payment_methods', 'url' => route('payment-methods.index')],
+                ['key' => 'payment_methods', 'url' => route('settings.payment')],
             ],
             'urls' => ['logout' => route('logout')],
             'logoutLabel' => __('account.settings.logout'),

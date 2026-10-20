@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * (F-001 C10–C11). Money goes straight to the seller (ADR-0003). F-006 adds
  * QRIS and cash, and the payment-instruction audit.
  */
-#[Fillable(['type', 'provider', 'provider_name', 'account_number', 'account_holder', 'position', 'active'])]
+#[Fillable(['type', 'provider', 'provider_name', 'account_number', 'account_holder', 'qris_image_path', 'position', 'active'])]
 class PaymentMethod extends Model
 {
     /** @use HasFactory<PaymentMethodFactory> */

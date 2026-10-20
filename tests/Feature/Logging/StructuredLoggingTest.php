@@ -71,6 +71,25 @@ class StructuredLoggingTest extends TestCase
         $this->assertSame(1250000, $record->context['amount']);
     }
 
+    public function test_r19_presigned_params_and_private_media_paths_are_redacted(): void
+    {
+        $record = $this->redact(
+            'GET org/01h/evidence/01k/bukti.jpg via https://s3/bucket/org/01h/evidence/01k/bukti.jpg?X-Amz-Credential=AKIA%2F20261020&X-Amz-Signature=deadbeef&X-Amz-Security-Token=tok123',
+            [
+                'url' => 'https://s3/org/01h/payments/qris/img.png?X-Amz-Signature=cafe',
+                'path' => 'org/01h/evidence/01k/bukti.jpg',
+                'photo' => 'org/01h/trips/01t/foto.jpg',
+            ],
+        );
+
+        $json = json_encode([$record->message, $record->context]);
+        foreach (['deadbeef', 'tok123', 'AKIA', 'bukti.jpg', 'qris/img.png'] as $secret) {
+            $this->assertStringNotContainsString($secret, $json, "[{$secret}] leaked into the log.");
+        }
+        // Public trip photos are not private media.
+        $this->assertSame('org/01h/trips/01t/foto.jpg', $record->context['photo']);
+    }
+
     public function test_ac_a24_exceptions_in_context_are_scrubbed(): void
     {
         $e = new RuntimeException('Gagal kirim WA ke 081234567890');
