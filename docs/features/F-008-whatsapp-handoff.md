@@ -127,8 +127,10 @@ seller → customer messages that ride on the booking's own customer number.
   `App\WhatsApp\WhatsAppLink::toNumber(?string $e164, string $text): ?string` builds
   `https://wa.me/<customer digits>?text={rawurlencode(text) once}` from the **booking's own customer number** (E.164,
   captured and validated at booking time, F-005), returning `null` when the number fails `PhoneNumber::isMobile()`
-  (same guard as `to()`). The reminder, cancelled, rejected and date-reply links all build through it; the "Chat
-  WhatsApp" button on the seller booking detail (F-007 AC-25, no text) uses the same customer number.
+  (same guard as `to()`). The reminder, cancelled, rejected and date-reply links all build through it; the text-free
+  "Chat WhatsApp" button on the seller booking detail (F-007 AC-25, no `?text=`) uses a sibling `chatNumber(?string
+  $e164): ?string` on the same customer number, with the same `PhoneNumber::isMobile()` guard — so that button is now
+  hidden (not a broken `https://wa.me/` link) when the booking's number is invalid or a backfilled `'-'`.
 - [x] **AC-B6 Seller → customer, payment reminder.** "Ingatkan via WA" (F-007 AC-25, only `awaiting_payment` with an
   active hold) builds via `toNumber(customer number, trans('whatsapp.reminder', […]))` with placeholders `:name`,
   `:reference`, `:trip`, `:date`, `:n`, `:total`, `:time`, `:url` (`:url` = the customer's booking link; `:time` uses
@@ -233,8 +235,10 @@ seller → customer messages that ride on the booking's own customer number.
 
 ### Edge cases (section B)
 
-- Customer number invalid or backfilled `'-'` on an old booking → `toNumber()` returns `null`; the seller → customer
-  button is hidden rather than linking to `https://wa.me/?text=…` (same guard as D3).
+- Customer number invalid or backfilled `'-'` on an old booking → `toNumber()` (and the text-free `chatNumber()`)
+  returns `null`; the seller → customer button — including the detail's "Chat WhatsApp" — is hidden rather than linking
+  to a broken `https://wa.me/` or `https://wa.me/?text=…` (same guard as D3; D9). Normal bookings always have a valid
+  number (validated at booking time, F-005 Q6), so this path only affects backfilled/imported rows.
 - A booking whose hold releases after midnight → the reminder's `:time` uses the `tomorrow` fragment ("besok :time").
 - `date_reply` is reserved but has no body until F-004; nothing renders it before then.
 - "Booking confirmed" seller → customer message is not shipped in P0 (D8); no key, no button.
@@ -259,6 +263,10 @@ seller → customer messages that ride on the booking's own customer number.
   2026-10-21
 - **D8** — No seller → customer "booking confirmed" message in P0: no key, no button; deferred to P1 notifications or a
   later F-006 follow-up. Resolves QB2 (no). — Rengga · 2026-10-21
+- **D9** — The text-free "Chat WhatsApp" link (F-007 AC-25) builds through a third builder method
+  `WhatsAppLink::chatNumber(?string $e164): ?string`, guarded like `to()`/`toNumber()`. So the seller booking detail's
+  "Chat WhatsApp" button is hidden for an invalid / backfilled customer number instead of rendering a broken
+  `https://wa.me/` link — a small behaviour change for those rows, consistent with D3. — Builder · 2026-10-21
 
 ## Open questions
 
@@ -285,3 +293,5 @@ none blocking):
   `lang/id/whatsapp.php` template home (bodies moved out of `public.php`/`booking.php`/`bookings.php`), "Tanya via
   WhatsApp" on the trip page, and the `whatsappUrl` link-choice helper. 21/23 ACs covered by passing tests (AC-A11 and
   AC-B12 are manual real-device reviews); `php artisan test`, Pint, ESLint and Vitest green
+- 2026-10-21 — Planner: recorded the builder's third method `chatNumber()` in AC-B5, the section-B edge cases and D9
+  (hides the detail's "Chat WhatsApp" button for an invalid / backfilled customer number)
