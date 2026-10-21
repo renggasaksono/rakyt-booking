@@ -2,6 +2,7 @@
 
 namespace App\PublicPages;
 
+use App\Bookings\BookingPresenter;
 use App\Models\Organization;
 use App\Models\Trip;
 use App\Models\TripDeparture;
@@ -9,6 +10,7 @@ use App\Models\TripPhoto;
 use App\Organizations\BookingSlug;
 use App\Trips\LocalTime;
 use App\Trips\TripPricing;
+use App\WhatsApp\WhatsAppLink;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\URL;
@@ -110,6 +112,11 @@ final class PublicPagePresenter
                 'organization' => [
                     'name' => $organization->name,
                     'slug' => $organization->slug,
+                    // AC-A3: the trip-only message; null when the number is invalid (AC-A6).
+                    'whatsapp_url' => WhatsAppLink::to($organization, __('whatsapp.trip', [
+                        'name' => $organization->name,
+                        'trip' => $trip->name,
+                    ])),
                 ],
                 'trip' => [
                     'slug' => $trip->slug,
@@ -129,7 +136,7 @@ final class PublicPagePresenter
                     'itinerary' => self::itinerary($trip->itinerary ?? []),
                     'terms' => $trip->terms,
                 ],
-                'departures' => $departures->map(fn (TripDeparture $departure) => self::departure($departure, $now))->values()->all(),
+                'departures' => $departures->map(fn (TripDeparture $departure) => self::departure($organization, $departure, $now, $today))->values()->all(),
                 'context' => [
                     'today' => $today,
                     'now_local' => $now->setTimezone($organization->timezone)->format('Y-m-d H:i'),
@@ -226,7 +233,7 @@ final class PublicPagePresenter
      *
      * @return array<string, mixed>
      */
-    private static function departure(TripDeparture $departure, CarbonImmutable $now): array
+    private static function departure(Organization $organization, TripDeparture $departure, CarbonImmutable $now, string $today): array
     {
         $bookable = $departure->isBookable($now);
 
@@ -242,8 +249,15 @@ final class PublicPagePresenter
             'seats_left' => $bookable ? $departure->seatsLeft() : null,
             'capacity' => $bookable ? $departure->capacity : null,
             'price' => $bookable ? $departure->effectivePrice() : null,
-            'deadline' => $bookable ? LocalTime::input($departure->booking_deadline_at, $departure->trip->organization->timezone) : null,
+            'deadline' => $bookable ? LocalTime::input($departure->booking_deadline_at, $organization->timezone) : null,
             'deadline_preset' => $bookable ? $departure->booking_deadline_preset->value : null,
+            // AC-A4: the dated message on bookable rows; null on full/closed rows
+            // and when the number is invalid (AC-A6), like the other bookable-only fields.
+            'whatsapp_url' => $bookable ? WhatsAppLink::to($organization, __('whatsapp.trip_dated', [
+                'name' => $organization->name,
+                'trip' => $departure->trip->name,
+                'date' => BookingPresenter::dates($departure->start_date->toDateString(), $departure->end_date->toDateString(), $today),
+            ])) : null,
         ];
     }
 
@@ -298,13 +312,12 @@ final class PublicPagePresenter
     }
 
     /**
-     * AC-11: https://wa.me/<E.164 digits>?text=<encoded>.
+     * F-002 AC-11 / F-008 AC-B3: the seller-page "Chat WhatsApp" link, built by
+     * the shared helper; null when the number is invalid (AC-A6/D3).
      */
-    private static function whatsappUrl(Organization $organization): string
+    private static function whatsappUrl(Organization $organization): ?string
     {
-        $digits = preg_replace('/\D+/', '', (string) $organization->whatsapp);
-
-        return 'https://wa.me/'.$digits.'?text='.rawurlencode(__('public.whatsapp.seller', ['name' => $organization->name]));
+        return WhatsAppLink::to($organization, __('whatsapp.seller', ['name' => $organization->name]));
     }
 
     /**

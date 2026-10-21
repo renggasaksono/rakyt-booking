@@ -179,12 +179,12 @@ class PublicTenancyTest extends TestCase
         $this->assertSame(['home'], $this->sortedKeys($seller['urls']));
 
         $this->assertSame(['calendar', 'context', 'copy', 'departures', 'errors', 'organization', 'rules', 'title', 'trip', 'urls'], $this->sortedKeys($page));
-        $this->assertSame(['name', 'slug'], $this->sortedKeys($page['organization']));
+        $this->assertSame(['name', 'slug', 'whatsapp_url'], $this->sortedKeys($page['organization']));
         $this->assertSame([
             'booking_mode', 'duration', 'exclusions', 'from_price', 'inclusions', 'itinerary', 'map_url', 'meeting_point',
             'meeting_time', 'name', 'photos', 'short_description', 'slug', 'terms', 'type', 'type_label',
         ], $this->sortedKeys($page['trip']));
-        $this->assertSame(['capacity', 'deadline', 'deadline_preset', 'end_date', 'price', 'public_id', 'seats_left', 'start_date', 'state'], $this->sortedKeys($page['departures'][0]));
+        $this->assertSame(['capacity', 'deadline', 'deadline_preset', 'end_date', 'price', 'public_id', 'seats_left', 'start_date', 'state', 'whatsapp_url'], $this->sortedKeys($page['departures'][0]));
         $this->assertSame(['now_local', 'today'], $this->sortedKeys($page['context']));
         $this->assertSame(['low_seats', 'shown', 'urgent_days'], $this->sortedKeys($page['rules']));
         $this->assertSame(['book', 'home', 'request_date', 'seller'], $this->sortedKeys($page['urls']));

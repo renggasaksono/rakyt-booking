@@ -66,6 +66,8 @@ return [
         'bar_per_person' => '/ orang',
         'book' => 'Pesan →',
         'request_date' => 'Ajukan tanggal →',
+        // F-008 AC-A1/A2 button label; the message bodies live in lang/id/whatsapp.php.
+        'ask_whatsapp' => 'Tanya via WhatsApp',
         'sections' => [
             'inclusions' => 'Termasuk',
             'exclusions' => 'Tidak termasuk',
@@ -74,11 +76,6 @@ return [
             'day' => 'Hari :n',
             'terms' => 'Ketentuan',
         ],
-    ],
-
-    // F-008 later moves WhatsApp templates to one place (Data & rules).
-    'whatsapp' => [
-        'seller' => 'Halo :name, saya lihat halaman booking Anda di Rakyt. Mau tanya…',
     ],
 
     'footer' => 'Dibuat dengan Rakyt',

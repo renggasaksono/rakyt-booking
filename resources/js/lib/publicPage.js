@@ -119,6 +119,15 @@ export function initialSelection(departures) {
 }
 
 /**
+ * F-008 AC-A5: the "Tanya via WhatsApp" link for the current selection — the
+ * selected departure's dated message, else the trip-only message on the
+ * organization. Null (invalid number, AC-A6) hides the button.
+ */
+export function whatsappUrl(selected, organization) {
+    return selected?.whatsapp_url ?? organization?.whatsapp_url ?? null;
+}
+
+/**
  * AC-22: "Pesan →" target for the selected departure (route owned by F-005).
  */
 export function bookUrl(base, publicId) {

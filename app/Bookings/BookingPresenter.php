@@ -9,6 +9,7 @@ use App\Models\PaymentRecord;
 use App\Models\Trip;
 use App\Models\TripDeparture;
 use App\Payments\PaymentMethodType;
+use App\WhatsApp\WhatsAppLink;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 
@@ -233,11 +234,12 @@ final class BookingPresenter
     }
 
     /**
-     * AC-33: https://wa.me/<seller digits>?text=<booking.whatsapp.customer>.
+     * F-005 AC-33 / F-008 AC-B4: the booking-page "Kabari operator" link, built
+     * by the shared helper; null when the org number is invalid (AC-A6/D3).
      */
-    private static function whatsappUrl(Organization $organization, Booking $booking, Trip $trip, TripDeparture $departure, CarbonImmutable $now): string
+    private static function whatsappUrl(Organization $organization, Booking $booking, Trip $trip, TripDeparture $departure, CarbonImmutable $now): ?string
     {
-        $text = __('booking.whatsapp.customer', [
+        return WhatsAppLink::to($organization, __('whatsapp.customer', [
             'seller' => $organization->name,
             'trip' => $trip->name,
             'date' => self::dates(
@@ -247,9 +249,7 @@ final class BookingPresenter
             ),
             'n' => $booking->participants,
             'reference' => $booking->reference,
-        ]);
-
-        return 'https://wa.me/'.preg_replace('/\D+/', '', (string) $organization->whatsapp).'?text='.rawurlencode($text);
+        ]));
     }
 
     private static function iso(CarbonImmutable $time): string

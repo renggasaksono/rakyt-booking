@@ -125,9 +125,4 @@ return [
         'completed' => 'Selesai',
     ],
 
-    'whatsapp' => [
-        // F-008 moves this into its template set.
-        'customer' => 'Halo :seller, saya sudah pesan :trip tanggal :date untuk :n orang. Kode pesanan :reference.',
-    ],
-
 ];

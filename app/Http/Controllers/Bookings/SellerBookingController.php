@@ -208,7 +208,15 @@ class SellerBookingController extends Controller
             return redirect()->route('bookings.show', $booking)->with('notice', __('bookings.show.inactive'));
         }
 
-        $response = redirect()->away($this->presenter->reminderUrl($this->current->get(), $booking, $now));
+        // The customer number may be invalid or backfilled ('-'): reminderUrl() is
+        // then null (F-008 AC-B5), so send the seller to the detail, never away(null).
+        $reminderUrl = $this->presenter->reminderUrl($this->current->get(), $booking, $now);
+
+        if ($reminderUrl === null) {
+            return redirect()->route('bookings.show', $booking)->with('notice', __('bookings.show.no_whatsapp'));
+        }
+
+        $response = redirect()->away($reminderUrl);
         $response->headers->set('Cache-Control', 'no-store, private');
         $response->headers->set('Referrer-Policy', 'no-referrer');
 

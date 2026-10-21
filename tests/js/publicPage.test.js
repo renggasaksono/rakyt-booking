@@ -8,6 +8,7 @@ import {
     initials,
     seatsLine,
     shareOrCopy,
+    whatsappUrl,
 } from '../../resources/js/lib/publicPage.js';
 
 const calendar = {
@@ -113,6 +114,28 @@ describe('F-002 AC-21/AC-22 selection and booking link', () => {
 
     it('links to the F-005 form with the departure public id', () => {
         expect(bookUrl('/kencana/karimunjawa/pesan', '01jabc')).toBe('/kencana/karimunjawa/pesan?keberangkatan=01jabc');
+    });
+});
+
+describe('F-008 AC-A5 WhatsApp link choice', () => {
+    const organization = { whatsapp_url: 'https://wa.me/62?text=trip' };
+
+    it('uses the selected departure dated link when a departure is selected', () => {
+        const selected = { whatsapp_url: 'https://wa.me/62?text=dated' };
+
+        expect(whatsappUrl(selected, organization)).toBe('https://wa.me/62?text=dated');
+    });
+
+    it('falls back to the trip-only organization link with no selection', () => {
+        expect(whatsappUrl(null, organization)).toBe('https://wa.me/62?text=trip');
+    });
+
+    it('falls back to the organization link when the selection has no url (full/closed never selectable)', () => {
+        expect(whatsappUrl({ whatsapp_url: null }, organization)).toBe('https://wa.me/62?text=trip');
+    });
+
+    it('is null when the number is invalid, so the button is hidden', () => {
+        expect(whatsappUrl(null, { whatsapp_url: null })).toBeNull();
     });
 });
 

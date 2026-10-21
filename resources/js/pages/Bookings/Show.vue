@@ -182,6 +182,7 @@ function cancel() {
                     {{ t(copy, 'show.notify_cancelled') }}
                 </a>
                 <a
+                    v-if="whatsapp.chat_url"
                     :href="whatsapp.chat_url"
                     target="_blank"
                     rel="noopener noreferrer"

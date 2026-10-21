@@ -80,6 +80,8 @@ return [
         'remind' => 'Ingatkan via WA',
         'notify_cancelled' => 'Kabari pelanggan via WA',
         'inactive' => 'Pesanan ini sudah tidak aktif.',
+        // F-008 §B edge case: no valid customer WhatsApp number, so no reminder can be sent.
+        'no_whatsapp' => 'Nomor WhatsApp pelanggan tidak valid, pesan tidak bisa dikirim.',
         // F-006 AC-16–AC-18: inline verification.
         'evidence' => 'Bukti transfer',
         'evidence_open' => 'Lihat bukti transfer',
@@ -118,14 +120,6 @@ return [
         'sending' => 'Membatalkan…',
         'failed' => 'Belum tersimpan. Periksa koneksi lalu coba lagi.',
         'done' => 'Pesanan dibatalkan. :n kursi dibuka lagi.',
-    ],
-
-    'whatsapp' => [
-        // F-008 moves these into its template set.
-        'reminder' => 'Halo :name, pesanan :reference untuk :trip tanggal :date (:n orang) menunggu pembayaran :total. Kursi ditahan sampai :time. Detail pesanan: :url',
-        'cancelled' => 'Halo :name, pesanan :reference untuk :trip tanggal :date dibatalkan. Hubungi kami jika ada pertanyaan.',
-        'rejected' => 'Halo :name, bukti transfer untuk pesanan :reference belum bisa kami terima. Silakan hubungi kami.',
-        'tomorrow' => 'besok :time',
     ],
 
 ];
