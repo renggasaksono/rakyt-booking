@@ -3,7 +3,7 @@
 What is in scope **now**, **next** and **later**. Agents only build items under **Now**.
 Dated plans live alongside this file; this page is the summary that must always be current.
 
-_Last updated: 2026-10-20_
+_Last updated: 2026-10-21_
 
 ## Now — MVP build (P0)
 
@@ -21,6 +21,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | done — built on `claude/f-007-seller-dashboard-654ef1` (not merged); AC-1…AC-38 covered by tests (AC-38 real-device review with the other P0 screens); Konfirmasi / Tolak come with F-006, date-request rows with F-004; ADR-0029 accepted |
 | [F-006](../features/F-006-payment-instructions-and-records.md) Payment instructions & records | done — AC-1…AC-32 covered by tests (payment screen, evidence upload, Konfirmasi / Tolak inline, QRIS, ADR-0018 block); supersedes F-001's Rekening with Pengaturan → Pembayaran; closes F-009 A20/A21, R2, R19 and the Pilot-go payment-security gate; AC-32 real-device review pending; cash & DP → P1; ADR-0030 + ADR-0031 accepted |
 | [F-008](../features/F-008-whatsapp-handoff.md) WhatsApp handoff | ready — section A (Tanya via WhatsApp on the trip page, AC-A1…A11) approved 2026-10-19; section B (template set) still draft |
+| [F-016](../features/F-016-booking-confirmation-retrieval.md) Booking confirmation — copy link & print proof | ready — thin delta over F-005/F-006: customer "Salin tautan pesanan" + browser-native "Simpan bukti pesanan" print snapshot; token retrieval, confirmation content and WhatsApp CTA already built (regressions); token revoke/regenerate deferred to P1 (Q1) |
 | Internal admin panel — [F-010](../features/F-010-admin-access-control.md) access control, [F-011](../features/F-011-admin-overview-dashboard.md) overview, [F-012](../features/F-012-admin-seller-directory.md) seller directory, [F-013](../features/F-013-admin-booking-search.md) booking search, [F-014](../features/F-014-seller-suspension.md) suspension, [F-015](../features/F-015-admin-audit-log.md) admin audit log | planned |
 
 The admin panel is an internal tool for the sole platform admin (product owner) to onboard pilot sellers, inspect
@@ -74,6 +75,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Seat-hold wording on the booking form | Keep the mockup text | [F-005 Q11](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
 | Hold that outlasts the departure's meeting time | Keep exactly 2 h (ADR-0006); seller handles it | [F-005 Q12](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
 | Privacy line on the booking form | One-line notice linking `/privasi` now | [F-005 Q13](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
+| Booking access-token revoke / regenerate | Defer to P1; seller-owned rotation when built (needs ADR extending ADR-0017/0027) | [F-016 Q1](../features/F-016-booking-confirmation-retrieval.md#open-questions) |
 
 ### Draft specs — to resolve when the spec is made `ready`
 
@@ -95,8 +97,8 @@ mobile dashboard (F-007 Q1 decided: build phone-first, device review instead).
 
 Recurring departure templates · CSV export · automated notifications/reminders · deposits & remaining balance ·
 promo codes, add-ons, packages · staff accounts & permissions · seller-owned payment-provider integrations ·
-custom domains & branding removal on paid plans · subscription billing · admin system-health view (failed jobs, recent errors;
-link to hosting/error-tracking tools until then).
+custom domains & branding removal on paid plans · subscription billing · booking access-token revoke / regenerate
+(seller-owned, F-016 Q1) · admin system-health view (failed jobs, recent errors; link to hosting/error-tracking tools until then).
 
 Promote an item only with pilot evidence; give it an F-number when it moves to **Now**.
 
