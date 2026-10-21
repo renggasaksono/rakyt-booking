@@ -5,7 +5,7 @@ import PhotoGallery from '../../components/public/PhotoGallery.vue';
 import PublicFooter from '../../components/public/PublicFooter.vue';
 import StickyAction from '../../components/StickyAction.vue';
 import { formatRupiah } from '../../lib/money.js';
-import { bookUrl, closingInfo, formatDates, formatDay, initialSelection, seatsLine } from '../../lib/publicPage.js';
+import { bookUrl, closingInfo, formatDates, formatDay, initialSelection, seatsLine, whatsappUrl } from '../../lib/publicPage.js';
 import { t } from '../../lib/text.js';
 
 /**
@@ -32,6 +32,12 @@ const closing = computed(() => closingInfo(props.departures, props.context.now_l
 const selectedId = ref(initialSelection(props.departures));
 const selected = computed(() => props.departures.find((departure) => departure.public_id === selectedId.value) ?? null);
 const kicker = computed(() => [props.trip.type_label, props.trip.duration].filter(Boolean).join(' · '));
+// AC-A5: follows the selection — the dated message when a departure is picked,
+// else the trip-only message; null (invalid number, AC-A6) hides the button.
+const whatsappLink = computed(() => whatsappUrl(selected.value, props.organization));
+// AC-A2: an ink-outline button (box-shadow inset, not a border), full width,
+// min 48 px tall; never gold, never in the sticky bar.
+const askWhatsappClass = 'mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-surface px-4 font-heading text-sm font-semibold text-ink shadow-[inset_0_0_0_1.5px_#211710]';
 const hasMeeting = computed(() => props.trip.meeting_point || props.trip.meeting_time || props.trip.map_url || props.trip.itinerary.length);
 const rupiah = (amount) => `${t(props.copy, 'currency')}${formatRupiah(amount)}`;
 
@@ -138,6 +144,17 @@ function onKey(event, departure) {
             </p>
         </header>
 
+        <!-- AC-A2: request-a-date trips have no departures section, so the link follows the header. -->
+        <a
+            v-if="!scheduled && whatsappLink"
+            :href="whatsappLink"
+            target="_blank"
+            rel="noopener noreferrer"
+            :class="askWhatsappClass"
+        >
+            {{ t(copy, 'trip.ask_whatsapp') }}
+        </a>
+
         <section
             v-if="scheduled"
             class="mt-6"
@@ -221,6 +238,17 @@ function onKey(event, departure) {
                 {{ t(copy, 'trip.other_date') }}
             </a>
         </section>
+
+        <!-- AC-A2: directly after the departures section on scheduled trips. -->
+        <a
+            v-if="scheduled && whatsappLink"
+            :href="whatsappLink"
+            target="_blank"
+            rel="noopener noreferrer"
+            :class="askWhatsappClass"
+        >
+            {{ t(copy, 'trip.ask_whatsapp') }}
+        </a>
 
         <section
             v-if="trip.inclusions.length"
