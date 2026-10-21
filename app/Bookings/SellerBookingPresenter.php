@@ -7,6 +7,7 @@ use App\Models\Organization;
 use App\Models\PaymentRecord;
 use App\Models\TripDeparture;
 use App\Organizations\BookingSlug;
+use App\Security\PhoneNumber;
 use App\WhatsApp\WhatsAppLink;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -52,7 +53,11 @@ final class SellerBookingPresenter
         ];
 
         if ($withReminder) {
-            $item['whatsapp_reminder_url'] = $booking->holdIsActive($now) ? route('bookings.remind', $booking) : null;
+            // Only when the hold is active and the customer number is a valid mobile:
+            // otherwise the reminder link would be dead (F-008 AC-B5 / edge case).
+            $item['whatsapp_reminder_url'] = $booking->holdIsActive($now) && PhoneNumber::isMobile($booking->customer_phone)
+                ? route('bookings.remind', $booking)
+                : null;
         }
 
         // F-006 AC-16: needs_review rows carry the gated evidence thumbnail and

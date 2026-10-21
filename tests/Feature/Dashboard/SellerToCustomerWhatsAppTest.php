@@ -74,6 +74,22 @@ class SellerToCustomerWhatsAppTest extends TestCase
         $this->assertNull($whatsapp['reminder_url']);
     }
 
+    public function test_ac_b5_the_remind_route_does_not_500_for_a_backfilled_number(): void
+    {
+        // Active hold but an invalid/backfilled customer number: reminderUrl() is
+        // null, so remind() must redirect to the detail, never redirect()->away(null).
+        $booking = $this->booking(attributes: ['customer_phone' => '-']);
+
+        $this->assertTrue($booking->holdIsActive(now()));
+        // The Hari ini list no longer offers the button for such a row.
+        $items = collect($this->todayProps($this->a)['action_needed']['items'])->keyBy('reference');
+        $this->assertNull($items['RKB-KCN-1024-0142']['whatsapp_reminder_url']);
+
+        $this->actingAsTenant($this->a)->get('/pesanan/'.$booking->public_id.'/ingatkan')
+            ->assertRedirect('/pesanan/'.$booking->public_id)
+            ->assertSessionHas('notice', __('bookings.show.no_whatsapp'));
+    }
+
     public function test_ac_b11_links_carry_the_bookings_own_customer_number_not_the_org_number(): void
     {
         $booking = $this->booking();

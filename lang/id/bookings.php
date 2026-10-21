@@ -80,6 +80,8 @@ return [
         'remind' => 'Ingatkan via WA',
         'notify_cancelled' => 'Kabari pelanggan via WA',
         'inactive' => 'Pesanan ini sudah tidak aktif.',
+        // F-008 §B edge case: no valid customer WhatsApp number, so no reminder can be sent.
+        'no_whatsapp' => 'Nomor WhatsApp pelanggan tidak valid, pesan tidak bisa dikirim.',
         // F-006 AC-16–AC-18: inline verification.
         'evidence' => 'Bukti transfer',
         'evidence_open' => 'Lihat bukti transfer',

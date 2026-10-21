@@ -136,7 +136,7 @@ final class PublicPagePresenter
                     'itinerary' => self::itinerary($trip->itinerary ?? []),
                     'terms' => $trip->terms,
                 ],
-                'departures' => $departures->map(fn (TripDeparture $departure) => self::departure($departure, $now, $today))->values()->all(),
+                'departures' => $departures->map(fn (TripDeparture $departure) => self::departure($organization, $departure, $now, $today))->values()->all(),
                 'context' => [
                     'today' => $today,
                     'now_local' => $now->setTimezone($organization->timezone)->format('Y-m-d H:i'),
@@ -233,10 +233,9 @@ final class PublicPagePresenter
      *
      * @return array<string, mixed>
      */
-    private static function departure(TripDeparture $departure, CarbonImmutable $now, string $today): array
+    private static function departure(Organization $organization, TripDeparture $departure, CarbonImmutable $now, string $today): array
     {
         $bookable = $departure->isBookable($now);
-        $organization = $departure->trip->organization;
 
         return [
             'public_id' => $departure->public_id,
