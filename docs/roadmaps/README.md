@@ -3,7 +3,7 @@
 What is in scope **now**, **next** and **later**. Agents only build items under **Now**.
 Dated plans live alongside this file; this page is the summary that must always be current.
 
-_Last updated: 2026-10-20_
+_Last updated: 2026-10-21_
 
 ## Now — MVP build (P0)
 
@@ -20,7 +20,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | [F-004](../features/F-004-request-a-date.md) Request-a-date | planned |
 | [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | done — built on `claude/f-007-seller-dashboard-654ef1` (not merged); AC-1…AC-38 covered by tests (AC-38 real-device review with the other P0 screens); Konfirmasi / Tolak come with F-006, date-request rows with F-004; ADR-0029 accepted |
 | [F-006](../features/F-006-payment-instructions-and-records.md) Payment instructions & records | done — AC-1…AC-32 covered by tests (payment screen, evidence upload, Konfirmasi / Tolak inline, QRIS, ADR-0018 block); supersedes F-001's Rekening with Pengaturan → Pembayaran; closes F-009 A20/A21, R2, R19 and the Pilot-go payment-security gate; AC-32 real-device review pending; cash & DP → P1; ADR-0030 + ADR-0031 accepted |
-| [F-008](../features/F-008-whatsapp-handoff.md) WhatsApp handoff | ready — section A (Tanya via WhatsApp on the trip page, AC-A1…A11) approved 2026-10-19; section B (template set) still draft |
+| [F-008](../features/F-008-whatsapp-handoff.md) WhatsApp handoff | ready — section A (AC-A1…A11) approved 2026-10-19; section B (template set, AC-B1…B12) made ready 2026-10-21; QB1 (one home — all bodies move) and QB2 ("booking confirmed" out of P0) decided by Rengga 2026-10-21 (D7, D8); no open question |
 | Internal admin panel — [F-010](../features/F-010-admin-access-control.md) access control, [F-011](../features/F-011-admin-overview-dashboard.md) overview, [F-012](../features/F-012-admin-seller-directory.md) seller directory, [F-013](../features/F-013-admin-booking-search.md) booking search, [F-014](../features/F-014-seller-suspension.md) suspension, [F-015](../features/F-015-admin-audit-log.md) admin audit log | planned |
 
 The admin panel is an internal tool for the sole platform admin (product owner) to onboard pilot sellers, inspect
