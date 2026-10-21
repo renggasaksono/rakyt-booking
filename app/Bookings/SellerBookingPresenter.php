@@ -7,6 +7,7 @@ use App\Models\Organization;
 use App\Models\PaymentRecord;
 use App\Models\TripDeparture;
 use App\Organizations\BookingSlug;
+use App\WhatsApp\WhatsAppLink;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 
@@ -142,30 +143,32 @@ final class SellerBookingPresenter
     }
 
     /**
-     * AC-18: wa.me/<customer digits>?text=<bookings.whatsapp.rejected>.
+     * F-006 AC-18 / F-008 AC-B8: wa.me/<customer digits>?text=<whatsapp.rejected>;
+     * null when the customer number is invalid (AC-B5, section-B edge case).
      */
-    public function rejectedUrl(Organization $organization, Booking $booking, CarbonInterface $now): string
+    public function rejectedUrl(Organization $organization, Booking $booking, CarbonInterface $now): ?string
     {
-        return self::whatsappBase($booking).'?text='.rawurlencode(__('bookings.whatsapp.rejected', [
+        return WhatsAppLink::toNumber($booking->customer_phone, __('whatsapp.rejected', [
             'name' => $booking->customer_name,
             'reference' => $booking->reference,
         ]));
     }
 
     /**
-     * AC-25: wa.me/<customer digits>?text=<bookings.whatsapp.reminder>, with the customer link.
+     * F-007 AC-25 / F-008 AC-B6: wa.me/<customer digits>?text=<whatsapp.reminder>,
+     * with the customer link; null when the customer number is invalid (AC-B5).
      */
-    public function reminderUrl(Organization $organization, Booking $booking, CarbonInterface $now): string
+    public function reminderUrl(Organization $organization, Booking $booking, CarbonInterface $now): ?string
     {
         $timezone = $organization->timezone;
         $release = CarbonImmutable::instance($booking->hold_expires_at)->setTimezone($timezone);
         $time = $release->format('H.i');
 
         if ($release->toDateString() > TripDeparture::today($organization, $now)) {
-            $time = __('bookings.whatsapp.tomorrow', ['time' => $time]);
+            $time = __('whatsapp.tomorrow', ['time' => $time]);
         }
 
-        return self::whatsappBase($booking).'?text='.rawurlencode(__('bookings.whatsapp.reminder', [
+        return WhatsAppLink::toNumber($booking->customer_phone, __('whatsapp.reminder', [
             'name' => $booking->customer_name,
             'reference' => $booking->reference,
             'trip' => $booking->departure->trip->name,
@@ -178,11 +181,12 @@ final class SellerBookingPresenter
     }
 
     /**
-     * AC-29: "Kabari pelanggan via WA" after the seller cancelled.
+     * F-007 AC-29 / F-008 AC-B7: "Kabari pelanggan via WA" after the seller
+     * cancelled; null when the customer number is invalid (AC-B5).
      */
-    public function cancelledUrl(Organization $organization, Booking $booking, CarbonInterface $now): string
+    public function cancelledUrl(Organization $organization, Booking $booking, CarbonInterface $now): ?string
     {
-        return self::whatsappBase($booking).'?text='.rawurlencode(__('bookings.whatsapp.cancelled', [
+        return WhatsAppLink::toNumber($booking->customer_phone, __('whatsapp.cancelled', [
             'name' => $booking->customer_name,
             'reference' => $booking->reference,
             'trip' => $booking->departure->trip->name,
@@ -218,11 +222,12 @@ final class SellerBookingPresenter
     }
 
     /**
-     * AC-25: "Chat WhatsApp" — https://wa.me/<customer digits>, no text.
+     * AC-25: "Chat WhatsApp" — https://wa.me/<customer digits>, no text; null
+     * when the customer number is invalid (AC-B5, section-B edge case).
      */
-    private static function whatsappBase(Booking $booking): string
+    private static function whatsappBase(Booking $booking): ?string
     {
-        return 'https://wa.me/'.preg_replace('/\D+/', '', (string) $booking->customer_phone);
+        return WhatsAppLink::chatNumber($booking->customer_phone);
     }
 
     private static function iso(?CarbonInterface $time): ?string

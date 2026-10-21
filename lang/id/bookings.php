@@ -120,12 +120,4 @@ return [
         'done' => 'Pesanan dibatalkan. :n kursi dibuka lagi.',
     ],
 
-    'whatsapp' => [
-        // F-008 moves these into its template set.
-        'reminder' => 'Halo :name, pesanan :reference untuk :trip tanggal :date (:n orang) menunggu pembayaran :total. Kursi ditahan sampai :time. Detail pesanan: :url',
-        'cancelled' => 'Halo :name, pesanan :reference untuk :trip tanggal :date dibatalkan. Hubungi kami jika ada pertanyaan.',
-        'rejected' => 'Halo :name, bukti transfer untuk pesanan :reference belum bisa kami terima. Silakan hubungi kami.',
-        'tomorrow' => 'besok :time',
-    ],
-
 ];

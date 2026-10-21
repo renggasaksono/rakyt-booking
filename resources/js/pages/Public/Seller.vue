@@ -112,6 +112,7 @@ onBeforeUnmount(() => clearTimeout(timer));
             </p>
             <div class="mt-4 flex gap-3">
                 <a
+                    v-if="organization.whatsapp_url"
                     :href="organization.whatsapp_url"
                     target="_blank"
                     rel="noopener noreferrer"

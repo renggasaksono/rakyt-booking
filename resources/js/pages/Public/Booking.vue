@@ -434,6 +434,7 @@ function submitEvidence(event) {
         </section>
 
         <a
+            v-if="organization.whatsapp_url"
             :href="organization.whatsapp_url"
             target="_blank"
             rel="noopener noreferrer"
