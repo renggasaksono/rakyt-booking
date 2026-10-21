@@ -67,10 +67,10 @@ booking must go back, open WhatsApp, and explain which trip they mean.
   header. It is never gold and never in the sticky bar: the page keeps exactly one gold button, "Pesan →" or
   "Ajukan tanggal →" (F-002 AC-37, ADR-0008).
 - [x] **AC-A3 Trip-only message.** Given no departure is selected — request-a-date trip, scheduled trip with no
-  bookable departure, or no departure listed — then the text is `whatsapp.trip` (moved from `public.whatsapp.trip`, D7):
+  bookable departure, or no departure listed — then the text is `whatsapp.trip` (new in `whatsapp.php`, §A, D7):
   "Halo :name, saya tertarik dengan :trip. Saya mau tanya beberapa detail sebelum memesan." with the seller's Nama
   usaha and the trip name. No placeholder, empty brackets or stray spaces remain.
-- [x] **AC-A4 Dated message.** Given a departure is selected, then the text is `whatsapp.trip_dated` (moved from `public.whatsapp.trip_dated`, D7):
+- [x] **AC-A4 Dated message.** Given a departure is selected, then the text is `whatsapp.trip_dated` (new in `whatsapp.php`, §A, D7):
   "Halo :name, saya tertarik dengan :trip keberangkatan :date. Saya mau tanya beberapa detail sebelum memesan."
   where `:date` is that departure's dates formatted by `BookingPresenter::dates()` (the same text as the F-005
   booking page).
@@ -204,16 +204,17 @@ seller → customer messages that ride on the booking's own customer number.
   |---|---|---|---|---|---|
   | Chat WhatsApp (seller page) | `public.whatsapp.seller` | `seller` | org | F-002 AC-11 via `to()` | `:name` |
   | Kabari operator (booking page) | `booking.whatsapp.customer` | `customer` | org | F-005 AC-33 via `to()` | `:seller :trip :date :n :reference` |
-  | Tanya via WhatsApp (trip-only) | `public.whatsapp.trip` | `trip` | org | F-008 §A AC-A3 via `to()` | `:name :trip` |
-  | Tanya via WhatsApp (dated) | `public.whatsapp.trip_dated` | `trip_dated` | org | F-008 §A AC-A4 via `to()` | `:name :trip :date` |
+  | Tanya via WhatsApp (trip-only) | — (new, §A) | `trip` | org | F-008 §A AC-A3 via `to()` | `:name :trip` |
+  | Tanya via WhatsApp (dated) | — (new, §A) | `trip_dated` | org | F-008 §A AC-A4 via `to()` | `:name :trip :date` |
   | Ingatkan via WA (reminder) | `bookings.whatsapp.reminder` | `reminder` | customer | F-007 AC-25 via `toNumber()` | `:name :reference :trip :date :n :total :time :url` |
   | Reminder time fragment | `bookings.whatsapp.tomorrow` | `tomorrow` | — | F-007 AC-25 | `:time` |
   | Kabari pelanggan (cancelled) | `bookings.whatsapp.cancelled` | `cancelled` | customer | F-007 AC-29 via `toNumber()` | `:name :reference :trip :date` |
   | Kabari pelanggan (rejected) | `bookings.whatsapp.rejected` | `rejected` | customer | F-006 AC-18 via `toNumber()` | `:name :reference` |
   | Balas permintaan tanggal | — (new) | `date_reply` (reserved) | customer | F-004 via `toNumber()` | owned by F-004 (QB3) |
 
-  The section-A public bodies (`seller`, `trip`, `trip_dated`) move too (D7, decided by Rengga 2026-10-21): one real
-  home for every body. Section A's AC-A3/A4 key references are updated accordingly (above).
+  The section-A seller-page body (`seller`) moves here too (D7, decided by Rengga 2026-10-21): one real home for every
+  body. The section-A trip bodies (`trip`, `trip_dated`) are new and created directly in `whatsapp.php`, not moved —
+  they never existed in `public.php`. Section A's AC-A3/A4 key references point here accordingly (above).
 - **Number source.** Customer → seller messages (`seller`, `customer`, `trip`, `trip_dated`) use the organization's
   number via `WhatsAppLink::to()`. Seller → customer messages (`reminder`, `cancelled`, `rejected`, `date_reply`) use
   the **booking's own customer number** via `WhatsAppLink::toNumber()`. Numbers are stored E.164; links use digits
