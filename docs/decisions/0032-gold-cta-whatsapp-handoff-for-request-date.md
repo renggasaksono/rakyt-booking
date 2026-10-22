@@ -50,6 +50,9 @@ ADR-0008 are untouched.
 - Good: no second link builder or styling special-case beyond the handoff already shared with F-008.
 - Bad / costs: one deliberate exception to F-008 AC-A2's phrasing — documented here and cross-referenced from F-004
   AC-8 and F-008 so a future reader does not read it as a regression.
+- Change to F-008 §A as built (confirmed by Rengga 2026-10-22, after previewing the page): the ink "Tanya via WhatsApp"
+  link is **removed from `request_date` trips** so the gold "Ajukan tanggal →" handoff is their only WhatsApp link.
+  F-008 AC-A2 and the "Request-date exception" note were updated to match; on scheduled trips the ink link is unchanged.
 - Follow-ups: if the P1 in-app date-request flow is built, revisit whether "Ajukan tanggal →" returns to an in-app
   (non-WhatsApp) gold CTA, which would retire this exception.
 
