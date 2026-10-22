@@ -73,16 +73,15 @@ class GuidedTripTest extends TestCase
     {
         $this->actingAsTenant($this->seller)->get(route('onboarding.trip'))
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('copy.trip.types.open_trip.hint', 'Jadwal tetap, gabung')
+                ->where('copy.trip.types.open_trip.hint', 'Jadwal tetap, gabung — 1 hari atau lebih')
                 ->where('copy.trip.types.private.hint', 'Pelanggan ajukan tanggal')
-                ->where('copy.trip.types.day_trip.hint', 'Beberapa jam / 1 hari')
+                ->missing('copy.trip.types.day_trip')
                 ->where('options.types.0', ['value' => 'open_trip', 'booking_mode' => 'scheduled', 'duration' => ['duration_label' => 'days', 'duration_days' => 3, 'duration_nights' => 2]])
                 ->where('options.types.1', ['value' => 'private', 'booking_mode' => 'request_date', 'duration' => null])
-                ->where('options.types.2', ['value' => 'day_trip', 'booking_mode' => 'scheduled', 'duration' => ['duration_label' => 'days', 'duration_days' => 1, 'duration_nights' => 0]]));
+                ->where('options.types', fn ($types) => count($types) === 2));
 
         $this->assertSame('scheduled', $this->saveTrip(['type' => 'open_trip'])->booking_mode->value);
         $this->assertSame('request_date', $this->saveTrip(['type' => 'private'])->booking_mode->value);
-        $this->assertSame('scheduled', $this->saveTrip(['type' => 'day_trip', 'duration_days' => 1, 'duration_nights' => 0])->booking_mode->value);
 
         $this->actingAsTenant($this->seller)->postJson(route('onboarding.trip'), $this->tripInput(['type' => null]))
             ->assertUnprocessable()

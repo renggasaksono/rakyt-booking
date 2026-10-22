@@ -55,9 +55,8 @@ return [
         ],
         'type' => 'Jenis trip',
         'types' => [
-            'open_trip' => ['label' => 'Open trip', 'hint' => 'Jadwal tetap, gabung'],
+            'open_trip' => ['label' => 'Open trip', 'hint' => 'Jadwal tetap, gabung — 1 hari atau lebih'],
             'private' => ['label' => 'Private', 'hint' => 'Pelanggan ajukan tanggal'],
-            'day_trip' => ['label' => 'Day trip', 'hint' => 'Beberapa jam / 1 hari'],
         ],
         'name' => 'Nama trip',
         'name_placeholder' => 'Contoh: Karimunjawa 3H2M Open Trip',

@@ -65,7 +65,7 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 
 ### Trip — create, edit, draft
 
-- [ ] **AC-1 Trip type preset.** Given a seller on "Trip baru", the picker offers **two** types: *Open trip* → booking mode = `scheduled`, duration = 3H2M prefilled; *Private* → `request_date` with **no** duration prefilled (the seller picks one if they want). There is no "Day trip" type — a single-day trip is an Open trip with a 1-day duration, chosen in the Durasi picker (AC-5). All prefilled values remain editable. Same two types as F-001 onboarding (4c). *Re-scoped 2026-10-22 (Rengga): Day Trip dropped; see Decisions and Q17.*
+- [x] **AC-1 Trip type preset.** Given a seller on "Trip baru", the picker offers **two** types: *Open trip* → booking mode = `scheduled`, duration = 3H2M prefilled; *Private* → `request_date` with **no** duration prefilled (the seller picks one if they want). There is no "Day trip" type — a single-day trip is an Open trip with a 1-day duration, chosen in the Durasi picker (AC-5). All prefilled values remain editable. Same two types as F-001 onboarding (4c). *Re-scoped 2026-10-22 (Rengga): Day Trip dropped; see Decisions and Q17.*
 - [x] **AC-2 Minimal draft.** Given a new trip, when the seller enters only a name, then the trip is saved as `draft`. No other field is required to save a draft.
 - [ ] **AC-3 Autosave.** Given a draft trip, when the seller changes a field and stops typing for 2 s (or leaves the field), then the change is saved and the header shows "Draf tersimpan HH.MM". When the save fails (offline/server error), then the form keeps the entered values, shows "Belum tersimpan · Coba lagi", and retries on reconnect; navigating away with unsaved changes asks for confirmation.
   *Partly covered:* server autosave, the time in the organization's zone, and the autosave controller (2 s debounce, save on blur, keeps values on failure, retry, one save at a time) are tested. The header copy, retry on `online` and the leave confirmation are wired in `Trips/Edit.vue` and passed a manual Chrome smoke test, but have no automated test.
@@ -271,3 +271,8 @@ None of these block building; each has a default that the builder implements unl
   reworded and **unticked** for the builder; user story, `type` enum, `trips_type_check` note and *Rules → Dropping Day
   Trip* (enum/preset removal, two UI type lists, data migration relabel to `open_trip`) added; Q17 decided with the
   Open-trip hint tweak default. Coupled change in F-001 C2/Q6. Status stays `in-progress`
+- 2026-10-22 — Builder: dropped Day Trip — removed `DayTrip` from `TripType` (enum + preset), the `day_trip` arm from
+  `lang/id/trips.php` and `lang/id/onboarding.php` (Open-trip hint now "Jadwal tetap, gabung — 1 hari atau lebih"), and
+  added migration `2026_10_22_000001_drop_day_trip_type` (relabel `day_trip` → `open_trip`, then tighten
+  `trips_type_check` to `('open_trip','private')`). Tests updated to the two-type enum (`day_trip` now 422); AC-1
+  re-ticked. All gates green
