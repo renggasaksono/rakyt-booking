@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-week-4
 mockups: [1d, 2e, 3e]
 decisions: ["0007", "0008", "0017", "0025", "0027"]
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 
 # F-016 · Booking confirmation — copy link & print-friendly proof
@@ -111,9 +111,12 @@ ink-outline secondary (ADR-0008). Test names: `test_ac_<n>_…`.
   (copy, print, WhatsApp, upload CTA), the file input, the live countdown block, the payment-instruction account/QRIS
   blocks and their copy buttons, the progress bar, the page footer, and any error messages — using Tailwind's `print:`
   variant / an `@media print` block. Only the receipt-style summary prints.
-- [ ] **AC-11 Print layout fits A4 and reads on mobile.** The printed page fits A4 without clipping, uses readable
+- [x] **AC-11 Print layout fits A4 and reads on mobile.** The printed page fits A4 without clipping, uses readable
   black-on-white type (no reliance on brand tints that may drop in print), and the two new buttons and the print output
-  render correctly on a 360 px mobile browser. *Verified in the device review with the other P0 screens.*
+  render correctly on a 360 px mobile browser. *Device review passed (Rengga, 2026-10-23): print snapshot renders
+  black-on-white (white ground forced by `@media print`), ~300 px tall — well within A4, no clipping; verified in both
+  the paid ("Lunas") and awaiting-payment ("Menunggu pembayaran") states; the whole live `<main>` is `print:hidden` so
+  only the receipt prints.*
 
 ### D. WhatsApp CTA (regression — already built by F-005 AC-33)
 
@@ -138,9 +141,13 @@ ink-outline secondary (ADR-0008). Test names: `test_ac_<n>_…`.
 
 ### F. Mobile-first & accessibility
 
-- [ ] **AC-16 Mobile & desktop.** Both new buttons work at 360 px and on desktop without horizontal scroll; tap targets
+- [x] **AC-16 Mobile & desktop.** Both new buttons work at 360 px and on desktop without horizontal scroll; tap targets
   ≥ 44 px; copy feedback is announced via `aria-live`; text ≥ 12 px (11 px only for uppercase kickers). Exactly one gold
-  button remains. *Device review with F-002/F-003/F-005 screens.*
+  button remains. *Device review passed (Rengga, 2026-10-23): at 360 px and 1024 px no horizontal scroll; "Salin tautan
+  pesanan", "Simpan bukti pesanan" and the WhatsApp CTA are all 48 px, ink-outline; copy success ("Tautan disalin",
+  green) and failure ("Gagal menyalin…", red) both announced via `aria-live="polite"` — the clipboard copy works over
+  plain-HTTP via the execCommand fallback (F-016 depends on the #25 fix); in the awaiting-payment state exactly one gold
+  button ("Unggah bukti transfer") remains and the new buttons stay secondary.*
 
 ## Data & rules
 
@@ -224,6 +231,10 @@ otherwise).
 
 ## Changelog
 
+- 2026-10-23 — device review passed (Rengga). AC-11 (A4 fit, black-on-white, 360 px) and AC-16 (360 px + desktop, no
+  horizontal scroll, 48 px tap targets, `aria-live` copy success/failure, exactly one gold button in awaiting-payment)
+  verified on the live local app in both the paid and awaiting-payment states; test booking created for the review was
+  cancelled and its seat released via `BookingService::releaseExpiredHold`. All ACs now covered; feature fully `done`.
 - 2026-10-22 — built on `claude/f-016-ready-thin-7efe0b`; status `done`. Added `urls.self` to `BookingPresenter::page()`
   (exact-keys test updated), the Bahasa `page.copy_link / link_copied / link_copy_failed / link_hint / save_proof` copy,
   the customer-side "Salin tautan pesanan" (reusing `copyLink`, with `aria-live` success/failure feedback) and
