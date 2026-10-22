@@ -83,10 +83,34 @@ export async function shareOrCopy({ url, text }, nav = globalThis.navigator) {
 
 export async function copyLink(url, nav = globalThis.navigator) {
     try {
-        await nav.clipboard.writeText(url);
+        if (nav?.clipboard?.writeText) {
+            await nav.clipboard.writeText(url);
 
-        return 'copied';
+            return 'copied';
+        }
     } catch {
-        return 'failed';
+        // Fall through to the legacy path below.
+    }
+
+    // Plain-HTTP pages (local .test dev) and older Android browsers have no
+    // async clipboard: fall back to a hidden textarea + execCommand('copy').
+    return legacyCopy(url) ? 'copied' : 'failed';
+}
+
+function legacyCopy(text) {
+    try {
+        const field = document.createElement('textarea');
+        field.value = text;
+        field.setAttribute('readonly', '');
+        field.style.position = 'fixed';
+        field.style.top = '-100vh';
+        document.body.appendChild(field);
+        field.select();
+        const copied = document.execCommand('copy');
+        field.remove();
+
+        return copied;
+    } catch {
+        return false;
     }
 }
