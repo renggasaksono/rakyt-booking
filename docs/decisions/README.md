@@ -41,3 +41,4 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0029](0029-seller-dashboard-implementation-choices.md) | Implementation choices for the seller dashboard and booking list (F-007) | accepted | 2026-10-19 |
 | [0030](0030-payment-records-and-verification.md) | Payment records, evidence and verification lifecycle (F-006) | accepted | 2026-10-20 |
 | [0031](0031-payment-records-implementation-choices.md) | Payment-records implementation choices (F-006) | accepted | 2026-10-20 |
+| [0032](0032-gold-cta-whatsapp-handoff-for-request-date.md) | The one gold CTA may be a WhatsApp handoff on request-date trips | accepted | 2026-10-22 |

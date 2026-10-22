@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-weeks-2-3
 mockups: [1f, 1g, 3a, 3b, 4c, 4d, 1e]
 decisions: ["0002", "0004", "0005", "0006", "0007", "0008", "0010", "0013", "0014", "0015", "0019", "0021", "0022"]
-updated: 2026-10-19
+updated: 2026-10-22
 ---
 
 # F-003 · Trips & departures management
@@ -49,7 +49,8 @@ Targets (blueprint §9): **first trip published in under 10 minutes**; a **price
 
 ## User stories
 
-- As a seller, I want to create a trip from a type preset (Open trip / Private / Day trip) so that I only fill what matters.
+- As a seller, I want to create a trip from a type preset (Open trip / Private) so that I only fill what matters (a day
+  trip is just an Open trip with a 1-day duration).
 - As a seller, I want to add departures with dates, seats and an optional special price so that customers can book specific dates.
 - As a seller, I want to pick durasi and tutup pesan from presets and see the real closing date so that I don't have to calculate "H-3".
 - As a seller, I want to copy my previous departure so that adding the next date takes seconds.
@@ -64,7 +65,7 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 
 ### Trip — create, edit, draft
 
-- [x] **AC-1 Trip type preset.** Given a seller on "Trip baru", when they choose *Open trip*, then booking mode = `scheduled` and duration = 3H2M is prefilled; *Day trip* → `scheduled`, duration 1 hari; *Private* → `request_date` with **no** duration prefilled (the seller picks one if they want). All prefilled values remain editable. Same presets as F-001 onboarding (4c).
+- [ ] **AC-1 Trip type preset.** Given a seller on "Trip baru", the picker offers **two** types: *Open trip* → booking mode = `scheduled`, duration = 3H2M prefilled; *Private* → `request_date` with **no** duration prefilled (the seller picks one if they want). There is no "Day trip" type — a single-day trip is an Open trip with a 1-day duration, chosen in the Durasi picker (AC-5). All prefilled values remain editable. Same two types as F-001 onboarding (4c). *Re-scoped 2026-10-22 (Rengga): Day Trip dropped; see Decisions and Q17.*
 - [x] **AC-2 Minimal draft.** Given a new trip, when the seller enters only a name, then the trip is saved as `draft`. No other field is required to save a draft.
 - [ ] **AC-3 Autosave.** Given a draft trip, when the seller changes a field and stops typing for 2 s (or leaves the field), then the change is saved and the header shows "Draf tersimpan HH.MM". When the save fails (offline/server error), then the form keeps the entered values, shows "Belum tersimpan · Coba lagi", and retries on reconnect; navigating away with unsaved changes asks for confirmation.
   *Partly covered:* server autosave, the time in the organization's zone, and the autosave controller (2 s debounce, save on blur, keeps values on failure, retry, one save at a time) are tested. The header copy, retry on `online` and the leave confirmation are wired in `Trips/Edit.vue` and passed a manual Chrome smoke test, but have no automated test.
@@ -132,7 +133,7 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 
 **trips**
 - `organization_id`, `public_id` (ULID used in URLs — no sequential IDs exposed), `slug` (unique per organization, generated from the name at creation, never changed automatically; used by F-002).
-- `type`: `open_trip` | `private` | `day_trip`. `booking_mode`: `scheduled` | `request_date`.
+- `type`: `open_trip` | `private` (Day Trip dropped 2026-10-22; a day trip is an Open trip with a 1-day duration). `booking_mode`: `scheduled` | `request_date`. All behaviour keys off `booking_mode` + `duration`, never off `type` — `type` is only a label + a creation-time preset (editable). The `trips_type_check` CHECK constraint changes from `('open_trip','private','day_trip')` to `('open_trip','private')`; see the migration note under *Rules → Dropping Day Trip*.
 - `status`: `draft` | `published`. (`published_at`.)
 - `name` (3–80 chars after trimming, required to save and to publish), `short_description` (≤ 300, optional — not required to publish).
 - Duration: `duration_days` (1–30), `duration_nights` (0–`duration_days`), `duration_label`: `hours` | `days` (`hours` = "Beberapa jam", stored as 1 day 0 nights). Nullable: *Private* trips start without one. A `scheduled` trip needs a duration before a departure can be added (the end date is derived from it); the departure form asks for it inline ("Pilih durasi dulu") if it is missing. `request_date` trips may stay without a duration.
@@ -164,6 +165,16 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 - **Authorisation:** policy = user is a member of the record's organization (any role in MVP). Lookups resolve through the current organization's scope, so foreign IDs return 404. Validate that `trip_id` in departure payloads belongs to the current organization.
 - **Audit event names:** `trip.published`, `trip.unpublished`, `trip.base_price_changed`, `departure.created`, `departure.deleted`, `departure.price_changed`, `departure.capacity_changed`, `departure.status_changed`, `departure.deadline_changed`.
 - **Scheduler:** auto-close job runs every minute, is idempotent, and its heartbeat is monitored (F-009).
+- **Dropping Day Trip (2026-10-22).** The `TripType` enum loses `DayTrip` and its preset; `open_trip` and `private`
+  remain. Builder work: remove the enum case + preset arm (`app/Trips/TripType.php`); the editor picker iterates
+  `TripType::cases()` (`TripPresenter`), so it drops automatically; `TripRules`, `TripService` and the onboarding
+  controller validate against the two-case enum (`Rule::enum`), so `day_trip` input is rejected. Remove `day_trip` from
+  `lang/id/trips.php → editor.types` and `lang/id/onboarding.php → trip.types`. A **data migration** runs
+  `UPDATE trips SET type = 'open_trip' WHERE type = 'day_trip'` **before** altering `trips_type_check` to
+  `('open_trip','private')`. Relabeling is purely cosmetic — `type` drives no behaviour (booking_mode + duration do), so
+  the former day-trip rows keep their `scheduled` mode and whatever duration they had and need no duration change. Dev
+  seed/fixtures use no `day_trip` state (`TripFactory` has `open_trip` default + `requestDate()` only); any test
+  referencing `day_trip` is updated to `open_trip`. See Q17.
 
 ### Time
 
@@ -226,6 +237,14 @@ None of these block building; each has a default that the builder implements unl
 - [x] **Q13 Published trips: photos and departures apply immediately.** AC-4's "nothing goes live until Simpan perubahan" is built for the trip's own fields. Photo and departure changes save on their own, like the quick edit. A published trip cannot drop its last photo or its base price (ADR-0022 §8). Decided 2026-10-18: keep, and confirm cover changes (AC-7a) so a wrong photo never silently becomes the cover. — Rengga
 - [x] **Q14 Default deadline excludes "Sampai hari keberangkatan".** Pengaturan → Pemesanan offers H-1, H-3 and H-7 only, because "same day" needs a meeting time (ADR-0022 §6). *Recommended:* keep. — Rengga Decided 2026-10-18: keep H-1/H-3/H-7 only.
 - [x] **Q15 Time-zone change recomputes deadlines.** ADR-0014 requires preset deadlines on future departures to move when an organization's time zone changes. The time-zone field is F-001's, so the recompute ships with that field. `DeadlineCalculator` is ready to use. — F-001 Decided 2026-10-18: ships with F-001's time-zone field (F-001 F4).
+- [x] **Q17 Drop the Day Trip trip type.** Decided 2026-10-22 (Rengga): the picker maps 1:1 to booking mode — *Open trip*
+  = Scheduled (any duration; a day trip is an Open trip with a 1-day duration), *Private* = RequestDate. Remove
+  `DayTrip` from the enum/preset, the two UI type lists and the CHECK constraint; relabel any `day_trip` rows to
+  `open_trip` (see *Rules → Dropping Day Trip*). *Open-trip hint tweak (Planner default in use):* change the Open trip
+  hint from "Jadwal tetap, gabung" to "Jadwal tetap, gabung — 1 hari atau lebih" in both `lang/id/trips.php` and
+  `lang/id/onboarding.php`, so sellers who used to pick Day trip see day trips belong here; labels stay "Open trip" /
+  "Private". Rengga may keep the original hint. This is also an F-001 change (onboarding step 4c / C2); see the coupling
+  note in that spec.
 - [ ] **Q16 Nights set by hand can contradict the days.** AC-5 lets "Atur sendiri" set Malam anywhere from 0 to Hari, so 30 hari 28 malam or 5 hari 0 malam are valid, though almost always a typo. Nights are display-only: the end date comes from the days. *Recommended:* the seller sets only Hari; Malam fills in as Hari − 1, with one toggle "+1 malam (berangkat malam)" for Malam = Hari (overnight bus or ferry); presets and "Beberapa jam" stay. Changes AC-5, Data & rules (duration), `DurationPicker`, `TripRules`, the `trips_duration_check` constraint (Malam ∈ {Hari − 1, Hari}, 1 hari → 0) and a migration for existing rows outside it. Alternative: keep AC-5 and only warn when Malam < Hari − 1. Raised by Rengga 2026-10-19.
 
 ## Changelog
@@ -248,3 +267,7 @@ None of these block building; each has a default that the builder implements unl
 - 2026-10-19 — F-002 Q7: AC-13 reworded — "Mulai Rp…" and the next departure count only departures open for booking, shared with the public card (`TripPricing`, `TripDeparture::openForBooking()`)
 - 2026-10-19 — Q16 raised: Malam derived from Hari (Hari − 1, or Hari with "+1 malam") instead of set by hand
 - 2026-10-19 — F-005 built: the real `DepartureBookings` (bookings table) replaces `SeatsTakenDepartureBookings` for AC-16, AC-29, AC-32; AC-39's race tests now book through the real `BookingService` (`tests/Support/Concurrency/book.php` replaces `take_seats.php`); `trip_departures` gets `UNIQUE (organization_id, id)` for the bookings foreign key
+- 2026-10-22 — Rengga: Day Trip trip type dropped (two types now — Open trip = Scheduled, Private = RequestDate). AC-1
+  reworded and **unticked** for the builder; user story, `type` enum, `trips_type_check` note and *Rules → Dropping Day
+  Trip* (enum/preset removal, two UI type lists, data migration relabel to `open_trip`) added; Q17 decided with the
+  Open-trip hint tweak default. Coupled change in F-001 C2/Q6. Status stays `in-progress`

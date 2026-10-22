@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-weeks-2-3
 mockups: [1a, 1b, 2c, 3b, 3c]
 decisions: ["0004", "0005", "0007", "0008", "0014", "0015", "0019", "0021", "0022", "0024", "0025"]
-updated: 2026-10-19
+updated: 2026-10-22
 ---
 
 # F-002 · Public booking page
@@ -167,9 +167,12 @@ zone (ADR-0014). *Bookable* is the single server-side rule from F-003 (`TripDepa
   "Mulai Rp… / orang" with the gold CTA "Ajukan tanggal →" (the F-004 form). There is still exactly one gold button.
 - [x] **AC-24 Request-date trip.** Given a `request_date` trip, then no departure list is shown; the sticky bar shows
   "Mulai Rp… / orang" (base price) and the gold CTA "Ajukan tanggal →" linking to `/<slug>/<trip-slug>/ajukan-tanggal`
-  (route owned by F-004).
+  (route owned by F-004). *Re-scoped 2026-10-22: F-004 ("Option B") replaces this placeholder URL with a WhatsApp
+  handoff (`WhatsAppLink::to` + `whatsapp.date_request`); the gold styling of that WhatsApp CTA is the ADR-0032
+  exception. The F-004 builder updates this AC's URL and tests.*
 - [x] **AC-25 Other date link.** Given a `scheduled` trip, then below the list an ink link "Tanggal lain? Ajukan
-  tanggal ke operator" points to the same F-004 URL (it is a link, not a second gold button).
+  tanggal ke operator" points to the same F-004 URL (it is a link, not a second gold button). *Re-scoped 2026-10-22: it
+  points to the same WhatsApp `date_request` handoff (stays an ink link, never gold) — see F-004 AC-6.*
 - [x] **AC-26 Detail sections.** Each section renders only when it has content, in this order:
   - **Termasuk** — each item prefixed "✓";
   - **Tidak termasuk** — each item prefixed "–";
@@ -238,7 +241,7 @@ zone (ADR-0014). *Bookable* is the single server-side rule from F-003 (`TripDepa
 | `GET /{organization}` | `public.seller` | A Laravel *fallback* route (matched after every other route, so it never shadows an app route) accepting any segment (`[^/]+`); `ResolvePublicOrganization` checks the slug format (F-001 B5), length, reserved slugs (also refused at sign-up, F-001 B7), UTF-8 and NUL, so every bad slug is the same 404 (ADR-0025 §1). |
 | `GET /{organization}/{trip}` | `public.trip` | Same; the controller reads the trip through `PublicVisibility::trips()` (organization scope **and** `status = published`), not by implicit binding (ADR-0025 §3). |
 | `GET /{slug}/{trip}/pesan?keberangkatan=` | — | Owned by F-005; F-002 only builds the link. |
-| `GET /{slug}/{trip}/ajukan-tanggal` | — | Owned by F-004; F-002 only builds the link. |
+| `GET /{slug}/{trip}/ajukan-tanggal` | — | ~~Owned by F-004~~ — removed 2026-10-22: F-004 ("Option B") makes "Ajukan tanggal →" a WhatsApp handoff, so `urls.request_date` holds a `wa.me` URL (or null), not this route. No in-app route exists. |
 
 Middleware for public routes: `web` **without its session middleware** (`StartSession`, `ShareErrorsFromSession`,
 CSRF, `AuthenticateSession`, `ResolveCurrentOrganization`), `throttle:public-page`, and the `public-organization`
@@ -382,3 +385,7 @@ All decided by Rengga on 2026-10-19: Q3 rejected (page live immediately), Q5 ref
 - 2026-10-19 — Rengga: ADR-0025 amendment accepted (public pages run without a session)
 - 2026-10-19 — Planner: trip page gains `organization.whatsapp_url` and per-departure `whatsapp_url` for F-008
   section A (Tanya via WhatsApp); Public fields and WhatsApp rule updated
+- 2026-10-22 — Planner: forward note for F-004's re-scope ("Option B") — AC-24/AC-25 and the routes table record that
+  `urls.request_date` now holds a WhatsApp `date_request` handoff (or null), not the removed `/ajukan-tanggal` route; the
+  gold "Ajukan tanggal →" styling is the ADR-0032 exception. The `urls.request_date` key is unchanged. F-004's builder
+  updates the AC-24/AC-25 URL and tests

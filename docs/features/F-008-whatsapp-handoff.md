@@ -5,8 +5,8 @@ status: in-progress
 priority: P0
 roadmap: mvp-week-4
 mockups: [1a, 1b, 1d, 2e, 1e]
-decisions: ["0007", "0008", "0021", "0025", "0029"]
-updated: 2026-10-21
+decisions: ["0007", "0008", "0021", "0025", "0029", "0032"]
+updated: 2026-10-22
 ---
 
 # F-008 · WhatsApp contact & prefilled messages
@@ -108,7 +108,9 @@ seller → customer messages that ride on the booking's own customer number.
   e.g. `public.seller.chat_whatsapp`, `bookings.show.remind`, `public.trip.ask_whatsapp`). A test asserts the key set
   in `whatsapp.php` and that the old body keys are gone, including the section-A public bodies (D7). Keys: `seller`,
   `customer`, `trip`,
-  `trip_dated`, `reminder`, `cancelled`, `rejected`, `tomorrow` (and `date_reply`, reserved — see AC-B9).
+  `trip_dated`, `reminder`, `cancelled`, `rejected`, `tomorrow` (and `date_reply`, reserved — see AC-B9; plus
+  `date_request`, added by F-004 — see AC-B9a and D10). When F-004 adds `date_request`, this exact-keys test is updated
+  in the same change.
 - [x] **AC-B2 Move does not change the text (regression).** Each migrated template renders byte-for-byte identical to
   its pre-move text for the same placeholders. The existing tests for F-002 AC-11 (`seller`), F-005 AC-33
   (`customer`), F-006 AC-18 (`rejected`), F-007 AC-25 (`reminder`, `tomorrow`) and F-007 AC-29 (`cancelled`) keep
@@ -149,6 +151,13 @@ seller → customer messages that ride on the booking's own customer number.
   reading its body from `lang/id/whatsapp.php → date_reply`. F-008 reserves the home and the builder path only; the
   **exact wording is owned by F-004** because it depends on F-004's accept/decline + price flow (QB3). No AC-B here
   asserts the copy; F-004's own ACs do.
+- [ ] **AC-B9a Customer → seller, date-request handoff (F-004).** F-004's "Ajukan tanggal →" CTA on the public trip
+  page builds `https://wa.me/<org digits>?text=…` via `WhatsAppLink::to($organization, trans('whatsapp.date_request',
+  ['name' => Nama usaha, 'trip' => trip name]))`, reading its body from `lang/id/whatsapp.php → date_request`:
+  "Halo :name, saya mau ajukan tanggal untuk :trip. Boleh tahu tanggal yang tersedia?" (D10). This is a **customer →
+  seller** template on the organization number — distinct from the reserved **seller → customer** `date_reply`. F-008
+  owns the home and reserves the key; **F-004 owns the copy and the CTA** and asserts it (F-004 AC-2…AC-4). The gold
+  styling of that CTA is the exception in ADR-0032, not AC-A2.
 - [x] **AC-B10 Encoding, new tab, no leak.** Every section-B link is encoded with `rawurlencode` exactly once,
   server-side; names and references containing `&`, `?`, `#`, `+`, quotes, emoji or non-Latin letters arrive intact.
   Customer → seller links open in a new tab (`target="_blank"`, `rel="noopener noreferrer"`); the seller → customer
@@ -210,6 +219,7 @@ seller → customer messages that ride on the booking's own customer number.
   | Reminder time fragment | `bookings.whatsapp.tomorrow` | `tomorrow` | — | F-007 AC-25 | `:time` |
   | Kabari pelanggan (cancelled) | `bookings.whatsapp.cancelled` | `cancelled` | customer | F-007 AC-29 via `toNumber()` | `:name :reference :trip :date` |
   | Kabari pelanggan (rejected) | `bookings.whatsapp.rejected` | `rejected` | customer | F-006 AC-18 via `toNumber()` | `:name :reference` |
+  | Ajukan tanggal (handoff) | — (new) | `date_request` | org | F-004 via `to()` (AC-B9a) | `:name :trip` |
   | Balas permintaan tanggal | — (new) | `date_reply` (reserved) | customer | F-004 via `toNumber()` | owned by F-004 (QB3) |
 
   The section-A seller-page body (`seller`) moves here too (D7, decided by Rengga 2026-10-21): one real home for every
@@ -242,6 +252,8 @@ seller → customer messages that ride on the booking's own customer number.
   number (validated at booking time, F-005 Q6), so this path only affects backfilled/imported rows.
 - A booking whose hold releases after midnight → the reminder's `:time` uses the `tomorrow` fragment ("besok :time").
 - `date_reply` is reserved but has no body until F-004; nothing renders it before then.
+- `date_request` (customer → seller, org number) is added and rendered by F-004's "Ajukan tanggal →" handoff (AC-B9a,
+  D10); its gold CTA styling is the ADR-0032 exception, not a change to AC-A2's ink "Tanya via WhatsApp".
 - "Booking confirmed" seller → customer message is not shipped in P0 (D8); no key, no button.
 
 ## Decisions
@@ -264,6 +276,11 @@ seller → customer messages that ride on the booking's own customer number.
   2026-10-21
 - **D8** — No seller → customer "booking confirmed" message in P0: no key, no button; deferred to P1 notifications or a
   later F-006 follow-up. Resolves QB2 (no). — Rengga · 2026-10-21
+- **D10** — F-004's re-scope to a WhatsApp handoff (Rengga 2026-10-22, "Option B") adds a new **customer → seller** key
+  `date_request` to this home for the "Ajukan tanggal →" CTA, built via `WhatsAppLink::to()`. The copy lives with F-004
+  (AC-B9a); F-008 reserves the key and the exact-keys test is updated when F-004 lands. The gold styling of that CTA is a
+  scoped exception to the one-gold-CTA rule recorded in ADR-0032, not a change to AC-A2 (which governs the ink "Tanya via
+  WhatsApp" link). — Planner · 2026-10-22
 - **D9** — The text-free "Chat WhatsApp" link (F-007 AC-25) builds through a third builder method
   `WhatsAppLink::chatNumber(?string $e164): ?string`, guarded like `to()`/`toNumber()`. So the seller booking detail's
   "Chat WhatsApp" button is hidden for an invalid / backfilled customer number instead of rendering a broken
@@ -296,3 +313,6 @@ none blocking):
   AC-B12 are manual real-device reviews); `php artisan test`, Pint, ESLint and Vitest green
 - 2026-10-21 — Planner: recorded the builder's third method `chatNumber()` in AC-B5, the section-B edge cases and D9
   (hides the detail's "Chat WhatsApp" button for an invalid / backfilled customer number)
+- 2026-10-22 — Planner: additive change for F-004's re-scope (Option B) — new customer → seller key `date_request`
+  (AC-B9a, D10, template table, edge case, AC-B1 key list); copy owned by F-004; gold CTA styling cross-referenced to
+  ADR-0032; `0032` added to decisions. No behaviour change to the built A/B templates

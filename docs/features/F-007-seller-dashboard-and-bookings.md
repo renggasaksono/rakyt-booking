@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-weeks-2-4
 mockups: [1e, 2f, 1g]
 decisions: ["0003", "0004", "0006", "0007", "0008", "0014", "0017", "0021", "0026", "0027", "0029"]
-updated: 2026-10-19
+updated: 2026-10-22
 ---
 
 # F-007 · Seller dashboard ("Hari ini") & booking list
@@ -41,7 +41,8 @@ details, remind an unpaid customer on WhatsApp, and cancel a booking that will n
 - Konfirmasi / Tolak, payment evidence, the `needs_review` → `paid` / `rejected` transitions and seller notification
   about evidence (**F-006**): F-006 adds its buttons to the Perlu tindakan rows and the detail page that this feature
   builds (*Hand-offs*). Until F-006 no booking is ever `needs_review`.
-- "◐ Permintaan tanggal" rows and "Balas" (**F-004** adds them to Pesanan terbaru and the list).
+- "◐ Permintaan tanggal" rows and "Balas" — **deferred to P1**: F-004 was re-scoped to a WhatsApp handoff on 2026-10-22
+  ("Option B"), so no in-app date-request rows, pill or "Balas" are built in P0 (F-004 Out). Nothing is added here.
 - The `completed` transition ("Selesai") — not built in P0 (Q5).
 - Manual booking entry by the seller (Q4), editing a booking (name, phone, participants, departure), moving a booking
   to another departure.
@@ -357,7 +358,8 @@ the F-001 time-zone change.
 - **F-009**: tenancy primitives, `AuditLog`, `InteractsWithTenants` (A9), log masking (A24).
 - **F-006** (next, wk 4): adds Konfirmasi / Tolak and evidence to Perlu tindakan rows and the detail; the
   `needs_review`/`paid`/`rejected` transitions; may give Pembayaran its own page.
-- **F-004**: adds date-request rows ("◐ Permintaan tanggal", "Balas") to Pesanan terbaru and the list.
+- **F-004**: re-scoped to a WhatsApp handoff (2026-10-22, "Option B") — the in-app date-request rows ("◐ Permintaan
+  tanggal", "Balas") are deferred to P1, so nothing is added to Pesanan terbaru or the list in P0.
 - **F-008**: moves `whatsapp.reminder` and `whatsapp.cancelled` into its template set.
 - **F-012/F-011**: the admin seat summary uses the same breakdown as AC-12 (F-012).
 
@@ -448,3 +450,6 @@ review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spe
 - 2026-10-19 — Review fixes: AC-35 redirect before binding, token/`text` redaction in logs, fuller exact-key tests,
   currency from lang. Status → `in-progress` until ADR-0029 is accepted
 - 2026-10-19 — ADR-0029 accepted (Rengga). Status → `done` (AC-38 real-device review pending with the other P0 screens)
+- 2026-10-22 — Planner: F-004 re-scoped to a WhatsApp handoff ("Option B", Rengga) — the in-app "◐ Permintaan tanggal"
+  rows / "Balas" are deferred to P1, so the Out list and the F-004 dependency note now record that nothing is added here
+  in P0. No code change; status stays `done`

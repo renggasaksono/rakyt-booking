@@ -21,7 +21,7 @@ Source of UI wording: [design mockup](../design/README.md).
 | base price | harga dasar | A trip's default price per person; used by departures without a price override. |
 | price override | harga (per keberangkatan) | Price set on one departure; empty = base price. |
 | effective price | harga / orang | `price_override ?? base_price`. Copied onto a booking when it is created (ADR-0005). |
-| trip type | jenis trip | Preset that fills defaults: `open_trip` (jadwal tetap, gabung), `private` (pelanggan ajukan tanggal), `day_trip`. |
+| trip type | jenis trip | A label + creation-time preset only (behaviour keys off booking mode + duration, never off type): `open_trip` (jadwal tetap, gabung — 1 hari atau lebih) → scheduled, `private` (pelanggan ajukan tanggal) → request_date. Day Trip was dropped 2026-10-22; a day trip is an Open trip with a 1-day duration. |
 | booking mode | cara pesan | `scheduled` (jadwal tetap) or `request_date` (pelanggan ajukan tanggal). |
 | departure | keberangkatan, jadwal | A specific bookable occurrence of a trip: dates, seats, optional price override, booking deadline, open/closed. |
 | duration | durasi | Days + nights, e.g. 3H2M = 3 hari 2 malam. End date is derived from it. |
@@ -33,7 +33,7 @@ Source of UI wording: [design mockup](../design/README.md).
 | booking deadline | tutup pemesanan / tutup pesan | When a departure stops accepting bookings, e.g. H-3 = 3 days before, 23.59. |
 | H-n | H-n | n days before departure date. |
 | booking deadline preset | tutup pesan | `same_day`, `h1`, `h3`, `h7`, `custom`. |
-| date request | permintaan tanggal / ajukan tanggal | Customer proposes a date for a request-date trip; seller replies. |
+| date request | ajukan tanggal | Customer asks about a date for a request-date trip. P0 (F-004, "Option B"): the "Ajukan tanggal →" CTA hands off to WhatsApp (`whatsapp.date_request`); there is no in-app request record or inbox — that is deferred to P1. |
 | booking | pesanan | A customer's reservation on a departure. |
 | booking form | data pemesan | The customer's form (Nama lengkap, Nomor WhatsApp, Jumlah peserta, Catatan) at `/<slug>/<trip>/pesan` (F-005). |
 | participants | peserta, jumlah peserta | Number of people on one booking; each takes one seat. |
