@@ -3,7 +3,7 @@
 What is in scope **now**, **next** and **later**. Agents only build items under **Now**.
 Dated plans live alongside this file; this page is the summary that must always be current.
 
-_Last updated: 2026-10-21_
+_Last updated: 2026-10-22_
 
 ## Now — MVP build (P0)
 
@@ -17,7 +17,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | in-progress — merged (PR #5); manual-test fixes on `fix/F-001-manual-test` add Pengaturan → Rekening (F5, the bank / e-wallet subset of F-006) and F6; 63/65 ACs covered by tests (D7, F1, T3 completed by F-002); C3 partly covered, P1 device review; ADR-0023 accepted |
 | [F-002](../features/F-002-public-booking-page.md) Public booking page | in-progress — built on `feat/F-002-public-booking-page`; 39/40 ACs covered by tests (AC-35 Lighthouse is a pre-pilot manual check; AC-36 device review pending); closes F-001 D7/F1/T3 and F-009 A5; ADR-0025 accepted; Q13 decided |
 | [F-005](../features/F-005-customer-booking-and-seat-hold.md) Customer booking & seat hold | done — built on `claude/f-005-customer-booking-9edbd4` (not merged); AC-1…AC-42 + AC-17b covered by tests (AC-42 real-device review with F-002/F-003's); closes F-009 R1, R20; ADR-0028 accepted; Q6–Q8, Q10–Q13 defaults in use |
-| [F-004](../features/F-004-request-a-date.md) Request-a-date | planned |
+| [F-004](../features/F-004-request-a-date.md) Request-a-date (WhatsApp handoff) | ready — re-scoped to "Option B" (Rengga 2026-10-22): keep `request_date` + dateless publish (n/4); the "Ajukan tanggal →" CTA hands off to WhatsApp (`whatsapp.date_request`) instead of an in-app form; in-app date-request entity/inbox/"Balas"/dashboard rows deferred to P1 (Out); AC-1…AC-10; ADR-0032 (gold-CTA exception) accepted 2026-10-22 |
 | [F-007](../features/F-007-seller-dashboard-and-bookings.md) Seller dashboard & bookings | done — built on `claude/f-007-seller-dashboard-654ef1` (not merged); AC-1…AC-38 covered by tests (AC-38 real-device review with the other P0 screens); Konfirmasi / Tolak come with F-006, date-request rows with F-004; ADR-0029 accepted |
 | [F-006](../features/F-006-payment-instructions-and-records.md) Payment instructions & records | done — AC-1…AC-32 covered by tests (payment screen, evidence upload, Konfirmasi / Tolak inline, QRIS, ADR-0018 block); supersedes F-001's Rekening with Pengaturan → Pembayaran; closes F-009 A20/A21, R2, R19 and the Pilot-go payment-security gate; AC-32 real-device review pending; cash & DP → P1; ADR-0030 + ADR-0031 accepted |
 | [F-008](../features/F-008-whatsapp-handoff.md) WhatsApp handoff | in-progress — built 2026-10-21 (sections A+B together): `App\WhatsApp\WhatsAppLink`, `lang/id/whatsapp.php` template home, "Tanya via WhatsApp" on the trip page; 21/23 ACs covered by passing tests, AC-A11/AC-B12 pending manual real-device review |
@@ -81,7 +81,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 
 | Decision | Source |
 |---|---|
-| Accepted date request → public or private departure; price on accept | [F-004](../features/F-004-request-a-date.md#open-questions) |
 | Admin auth mechanism; admin UI language (Bahasa or English) | [F-010](../features/F-010-admin-access-control.md#open-questions) |
 | Admin status mapping (depends on F-006) | [F-011](../features/F-011-admin-overview-dashboard.md#open-questions) |
 | Meaning of "last activity" in the seller directory | [F-012](../features/F-012-admin-seller-directory.md#open-questions) |

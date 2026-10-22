@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-weeks-2-3
 mockups: [4a, 4b, 4c, 4d, 4e, 4f]
 decisions: ["0003", "0004", "0005", "0007", "0008", "0010", "0012", "0013", "0018", "0019", "0023"]
-updated: 2026-10-19
+updated: 2026-10-22
 ---
 
 # F-001 · Seller onboarding & organization profile
@@ -119,7 +119,7 @@ from the rate-limit table in F-009; tests read the configured values rather than
 ### C. Guided first trip — steps 2–4 (4c, 4d, 4e)
 
 - [x] **C1** Each step header shows "Langkah n dari 4 · <nama langkah>" and a static "±m menit lagi" from the budget Akun 1′ · Usaha 1′ · Trip 4′ · Jadwal 2′ · Rekening 2′: step 1 → ±9, step 2 (Trip) → ±8, step 3 (Jadwal) → ±4, step 4 (Pembayaran) → ±2. Step names: Usaha, Trip, Jadwal, Pembayaran. Sign-up / sign-in screens carry no step header. Minute values live in one config / translation entry so they can be retuned (Q12).
-- [x] **C2** Step 2 (Trip): "Jenis trip" offers Open trip ("Jadwal tetap, gabung"), Private ("Pelanggan ajukan tanggal"), Day trip ("Beberapa jam / 1 hari"). Choosing one presets (aligned with F-003): Open trip → booking mode `scheduled`, duration 3H2M; Day trip → `scheduled`, duration 1 hari; Private → `request_date`, no duration preset. The seller can change the duration. Jenis trip is required.
+- [ ] **C2** Step 2 (Trip): "Jenis trip" offers **two** types — Open trip ("Jadwal tetap, gabung — 1 hari atau lebih") and Private ("Pelanggan ajukan tanggal"). Choosing one presets (aligned with F-003 AC-1): Open trip → booking mode `scheduled`, duration 3H2M; Private → `request_date`, no duration preset. There is no Day trip — a single-day trip is an Open trip with a 1-day duration, set in the Durasi picker. The seller can change the duration. Jenis trip is required. *Re-scoped 2026-10-22 (Rengga): Day Trip dropped; coupled with F-003 Q17. The Open-trip hint tweak ("— 1 hari atau lebih") is a Planner default; Rengga may keep "Jadwal tetap, gabung".*
 - [ ] **C3** Step 2 photos: "+ Galeri" opens the phone's picker (multiple select); the first photo is the cover ("sampul"); each photo shows upload progress and a retry on failure; the seller can remove a photo. File type and size limits follow F-003. Photos are stored under the organization's media prefix (ADR-0004).
   *Partly covered:* upload to the draft, the organization prefix, cover order and F-003 limits are tested; per-photo progress and "Coba lagi" were checked in the browser (2026-10-18), not in CI.
 - [x] **C4** Step 2 fields: "Nama trip" required (3–80 chars, F-003 `TripRules`; F-003 Q11); "Durasi" required, using the F-003 duration picker (presets + "Atur sendiri", nights ≤ days); "Termasuk apa saja?" optional multi-select chips plus "+ Lainnya" (free text, max 40 chars per item). **No description field** (optional to publish; added later from the dashboard). Gold CTA "Lanjut ke harga & jadwal". On submit the trip is saved as **draft** in the seller's organization.
@@ -238,7 +238,7 @@ None block building. The spec uses the recommended default for each; override an
 - [ ] **Q3 — Can sellers change their slug later?** *Recommend: editable until first publish; afterwards only via Rakyt support, no redirects in P0.* Shared links on IG bios and WA statuses break on change; support-only keeps it rare and deliberate. Revisit (self-serve + redirect from old slug) if pilots ask.
 - [x] **Q4 — "Akun" outside the 4 numbered steps?** Resolved from mockup 4a–4e: sign-up has no step header; Usaha, Trip, Jadwal, Pembayaran are steps 1–4.
 - [ ] **Q5 — 4f timer for sellers who come back days later.** *Recommend:* from sign-up to first publish, shown only if ≤ 60 min (D4). Showing "3 hari 2 jam" would undercut the promise.
-- [x] **Q6 — Trip type presets.** Aligned with F-003: Open trip → scheduled + 3H2M; Day trip → scheduled + 1 hari; Private → request_date, no duration preset.
+- [x] **Q6 — Trip type presets.** Aligned with F-003 AC-1: Open trip → scheduled + 3H2M; Private → request_date, no duration preset. *Updated 2026-10-22 (Rengga): Day Trip dropped — two types only; a day trip is an Open trip with a 1-day duration (F-003 Q17).*
 - [ ] **Q7 — Inclusion chips.** Mockup 4c shows Karimunjawa-specific chips (Kapal, Homestay, Makan, Alat snorkel, Guide). *Recommend a generic set:* Transportasi, Penginapan, Makan, Guide, Tiket masuk, Dokumentasi, + Lainnya.
 - [x] **Q8 — Timezone for operators in WITA/WIT (Bali, NTT, Sulawesi, Papua).** Decided 2026-10-17: ADR-0014 accepted. *Recommend:* default WIB, selectable WIB/WITA/WIT in Pengaturan → Profil usaha; don't add a field to step 1 (time budget).
 - [ ] **Q9 — Who owns logo / bio / contact editing?** *Recommend: F-001 section F* (blueprint P0 lists it; nothing else owns it). Confirm, or move it to F-007.
@@ -268,3 +268,7 @@ None block building. The spec uses the recommended default for each; override an
 - 2026-10-19 — Manual-test fixes: Pengaturan → Rekening added (F5) so a seller who saved a draft without an account can add one and publish (C12, Q10); seats helper made generic (C5); past deadline presets hidden and the meeting-time rule shown only when it applies (C6, F-003 AC-21–23); "+ Tambah rekening lain" (C11); every Pengaturan sub-page links back to Pengaturan (F6)
 - 2026-10-19 — Review follow-up: step 4's QRIS note no longer names a Pengaturan → Pembayaran menu that does not exist ("QRIS bisa ditambahkan nanti.", C11); Pengaturan → Rekening saves have their own limiter (`payment-change`, 10 per 15 min per user)
 - 2026-10-19 — F-002 build: D7, F1 (public half) and T3 (public half) covered by the public-page tests; ticked
+- 2026-10-22 — Rengga: Day Trip trip type dropped (coupled with F-003 Q17). C2 reworded to two types (Open trip,
+  Private) and **unticked** for the builder; Q6 updated; `lang/id/onboarding.php → trip.types` loses `day_trip` and the
+  Open-trip hint gains "— 1 hari atau lebih" (Planner default). Type presets and the enum change live in F-003; this
+  spec tracks the onboarding picker delta only. Status stays `in-progress`
