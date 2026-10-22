@@ -29,15 +29,14 @@ class TripEditingTest extends TestCase
             ->assertJsonPath('trip.status', 'draft');
     }
 
-    public function test_ac_1_day_trip_preset_is_scheduled_one_day(): void
+    public function test_ac_1_day_trip_is_no_longer_a_valid_type(): void
     {
         [$a] = $this->createTenants();
 
+        // Day Trip dropped 2026-10-22 (two-type enum): the picker and Rule::enum reject it.
         $this->actingAsTenant($a)->postJson(route('trips.store'), ['type' => 'day_trip', 'name' => 'Snorkeling Menjangan'])
-            ->assertCreated()
-            ->assertJsonPath('trip.booking_mode', 'scheduled')
-            ->assertJsonPath('trip.duration_days', 1)
-            ->assertJsonPath('trip.duration_nights', 0);
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['type']);
     }
 
     public function test_ac_1_private_preset_is_request_date_without_duration(): void
@@ -78,7 +77,7 @@ class TripEditingTest extends TestCase
                 ->where('trip', null)
                 ->where('options.types.0', ['value' => 'open_trip', 'booking_mode' => 'scheduled', 'duration' => ['duration_label' => 'days', 'duration_days' => 3, 'duration_nights' => 2]])
                 ->where('options.types.1', ['value' => 'private', 'booking_mode' => 'request_date', 'duration' => null])
-                ->where('options.types.2', ['value' => 'day_trip', 'booking_mode' => 'scheduled', 'duration' => ['duration_label' => 'days', 'duration_days' => 1, 'duration_nights' => 0]]));
+                ->where('options.types', fn ($types) => count($types) === 2));
     }
 
     public function test_ac_2_a_name_alone_saves_a_draft(): void

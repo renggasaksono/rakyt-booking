@@ -11,9 +11,9 @@ updated: 2026-10-22
 
 # F-008 · WhatsApp contact & prefilled messages
 
-> **Build state:** built 2026-10-21 — 21/23 acceptance criteria covered by passing tests (all of AC-A1…A10 and
-> AC-B1…B11). AC-A11 and AC-B12 are manual real-device reviews (Android Chrome, iOS Safari, Instagram/TikTok in-app
-> browsers) and remain unticked. The shared builder is `App\WhatsApp\WhatsAppLink` (`to()` / `toNumber()` / the
+> **Build state:** built 2026-10-21; `date_request` handoff added with F-004 on 2026-10-22 — 22/24 acceptance criteria
+> covered by passing tests (all of AC-A1…A10 and AC-B1…B11, plus AC-B9a shipped by F-004). AC-A11 and AC-B12 are manual
+> real-device reviews (Android Chrome, iOS Safari, Instagram/TikTok in-app browsers) and remain unticked. The shared builder is `App\WhatsApp\WhatsAppLink` (`to()` / `toNumber()` / the
 > text-free `chatNumber()`); every message body lives in `lang/id/whatsapp.php`. Section **A** (Tanya via WhatsApp on
 > the trip page) was approved 2026-10-19; section **B** (the template set) was made ready 2026-10-21; QB1 (one real
 > home — all bodies move) and QB2 ("booking confirmed" message out of P0) were decided by Rengga 2026-10-21 (D7, D8).
@@ -62,10 +62,16 @@ booking must go back, open WhatsApp, and explain which trip they mean.
   shows "Tanya via WhatsApp" (`lang/id/public.php → trip.ask_whatsapp`) linking to
   `https://wa.me/<digits>?text=<encoded>`, where digits are the seller's E.164 number without "+". It opens in a new
   tab/app (`target="_blank"`, `rel="noopener noreferrer"`).
-- [x] **AC-A2 Placement and CTA rule.** The link is an ink-outline button (min. 44 px tall, full width at phone width)
-  placed directly after the departures section; on a trip without that section (request-a-date mode) it follows the
-  header. It is never gold and never in the sticky bar: the page keeps exactly one gold button, "Pesan →" or
-  "Ajukan tanggal →" (F-002 AC-37, ADR-0008).
+- [x] **AC-A2 Placement and CTA rule.** On a **scheduled** trip the link is an ink-outline button (min. 44 px tall,
+  full width at phone width) placed directly after the departures section. On a `request_date` trip it is **not** shown
+  — there the gold "Ajukan tanggal →" WhatsApp handoff is the page's only WhatsApp link (F-004, ADR-0032). It is never
+  gold and never in the sticky bar: the page keeps exactly one gold button, "Pesan →" or "Ajukan tanggal →"
+  (F-002 AC-37, ADR-0008).
+
+> **Request-date exception (F-004, ADR-0032).** AC-A1…AC-A5 describe the ink "Tanya via WhatsApp" link as it appears on
+> **scheduled** trips. On `request_date` trips that ink link is not rendered (the gold "Ajukan tanggal →" handoff is the
+> only WhatsApp link); `PublicPagePresenter` still emits `organization.whatsapp_url` with the `whatsapp.trip` message
+> (AC-A3 regression keeps asserting it), but no button on a request-date page uses it.
 - [x] **AC-A3 Trip-only message.** Given no departure is selected — request-a-date trip, scheduled trip with no
   bookable departure, or no departure listed — then the text is `whatsapp.trip` (new in `whatsapp.php`, §A, D7):
   "Halo :name, saya tertarik dengan :trip. Saya mau tanya beberapa detail sebelum memesan." with the seller's Nama
@@ -151,7 +157,7 @@ seller → customer messages that ride on the booking's own customer number.
   reading its body from `lang/id/whatsapp.php → date_reply`. F-008 reserves the home and the builder path only; the
   **exact wording is owned by F-004** because it depends on F-004's accept/decline + price flow (QB3). No AC-B here
   asserts the copy; F-004's own ACs do.
-- [ ] **AC-B9a Customer → seller, date-request handoff (F-004).** F-004's "Ajukan tanggal →" CTA on the public trip
+- [x] **AC-B9a Customer → seller, date-request handoff (F-004).** F-004's "Ajukan tanggal →" CTA on the public trip
   page builds `https://wa.me/<org digits>?text=…` via `WhatsAppLink::to($organization, trans('whatsapp.date_request',
   ['name' => Nama usaha, 'trip' => trip name]))`, reading its body from `lang/id/whatsapp.php → date_request`:
   "Halo :name, saya mau ajukan tanggal untuk :trip. Boleh tahu tanggal yang tersedia?" (D10). This is a **customer →
@@ -316,3 +322,8 @@ none blocking):
 - 2026-10-22 — Planner: additive change for F-004's re-scope (Option B) — new customer → seller key `date_request`
   (AC-B9a, D10, template table, edge case, AC-B1 key list); copy owned by F-004; gold CTA styling cross-referenced to
   ADR-0032; `0032` added to decisions. No behaviour change to the built A/B templates
+- 2026-10-22 — F-004 build: `date_request` body added to `lang/id/whatsapp.php` and the AC-B1 exact-keys test; AC-B9a
+  ticked (the "Ajukan tanggal →" handoff is built and tested in F-004). `date_reply` stays reserved/empty
+- 2026-10-22 — Rengga (after preview): the ink "Tanya via WhatsApp" link is dropped from `request_date` trips (gold
+  "Ajukan tanggal →" handoff is their only WhatsApp link). AC-A2 reworded + "Request-date exception" note added; ADR-0032
+  consequence records it. Scheduled-trip behaviour unchanged; `organization.whatsapp_url` prop still emitted (AC-A3)

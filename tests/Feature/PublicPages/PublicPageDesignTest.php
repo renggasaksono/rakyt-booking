@@ -111,7 +111,9 @@ class PublicPageDesignTest extends TestCase
         $bar = substr($trip, strpos($trip, '<StickyAction>'));
         $this->assertSame(2, substr_count($bar, 'bg-prada'));
         $this->assertMatchesRegularExpression('/<a\s+v-if="scheduled && selected"\s+:href="bookUrl\(urls\.book, selected\.public_id\)"\s+class="[^"]*bg-prada/', $bar);
-        $this->assertMatchesRegularExpression('/<a\s+v-else\s+:href="urls\.request_date"\s+class="[^"]*bg-prada/', $bar);
+        // F-004 / ADR-0032: the gold "Ajukan tanggal →" is the WhatsApp handoff (v-else-if,
+        // opens a new tab); mutually exclusive with "Pesan →", so still one gold button.
+        $this->assertMatchesRegularExpression('/<a\s+v-else-if="urls\.request_date"\s+:href="urls\.request_date"\s+target="_blank"\s+rel="noopener noreferrer"\s+class="[^"]*bg-prada/', $bar);
 
         // Chat WhatsApp and Bagikan are ink outline — drawn with a box-shadow inset,
         // not gold and not a heavy border (docs/design README → Shape & outlines).

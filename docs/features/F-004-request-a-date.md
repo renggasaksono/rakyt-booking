@@ -1,7 +1,7 @@
 ---
 id: F-004
 title: Request-a-date mode (WhatsApp handoff)
-status: ready
+status: in-progress
 priority: P0
 roadmap: mvp-weeks-2-3
 mockups: [1e, 4c]
@@ -10,6 +10,10 @@ updated: 2026-10-22
 ---
 
 # F-004 · Request-a-date mode (WhatsApp handoff)
+
+> **Build state:** built 2026-10-22 — all 10 acceptance criteria (AC-1…AC-10) covered by passing tests. The handoff
+> URL is built by the shared `App\WhatsApp\WhatsAppLink::to()` from the new `whatsapp.date_request` body; the dead
+> `/ajukan-tanggal` route is gone. `php artisan test`, Pint, ESLint and Vitest green. Awaiting human review/merge.
 
 > **Scope note (2026-10-22, "Option B").** Rengga re-scoped this feature from a full in-app date-request flow to a
 > **WhatsApp handoff**. What stays: the `request_date` booking mode and dateless publish (a Private trip publishes with
@@ -70,40 +74,40 @@ These stay P1; promote them only with pilot evidence (roadmap). This feature mus
 
 UI copy is Bahasa Indonesia (ADR-0007). "Digits" = the seller's E.164 WhatsApp number without "+".
 
-- [ ] **AC-1 Dateless publish (regression).** Given a `request_date` (Private) trip with a cover photo, name, base
+- [x] **AC-1 Dateless publish (regression).** Given a `request_date` (Private) trip with a cover photo, name, base
   price and an active payment method, when the seller publishes, then it publishes with the checklist at **n/4** (no
   departure item, F-003 AC-9) and appears on the seller page and its own trip page.
-- [ ] **AC-2 Handoff CTA.** Given a published `request_date` trip of a seller with a valid WhatsApp number, then the
+- [x] **AC-2 Handoff CTA.** Given a published `request_date` trip of a seller with a valid WhatsApp number, then the
   public trip page shows exactly one gold CTA "Ajukan tanggal →" (`public.trip.request_date`) whose `href` is
   `https://wa.me/<digits>?text=<encoded>`, opening in a new tab (`target="_blank"`, `rel="noopener noreferrer"`).
-- [ ] **AC-3 Message content.** The `?text=` body is `whatsapp.date_request` (new key, Data & rules): "Halo :name, saya
+- [x] **AC-3 Message content.** The `?text=` body is `whatsapp.date_request` (new key, Data & rules): "Halo :name, saya
   mau ajukan tanggal untuk :trip. Boleh tahu tanggal yang tersedia?" with `:name` = the seller's Nama usaha and `:trip`
   = the trip name. It is `rawurlencode`d exactly once, server-side (names with `&`, `?`, `#`, `+`, quotes, emoji or
   non-Latin letters arrive intact); no placeholder, empty bracket or stray space remains.
-- [ ] **AC-4 Built through the shared builder.** The URL is produced by `WhatsAppLink::to($organization,
+- [x] **AC-4 Built through the shared builder.** The URL is produced by `WhatsAppLink::to($organization,
   __('whatsapp.date_request', ['name' => $organization->name, 'trip' => $trip->name]))` — the one customer → seller
   builder (F-008 AC-A9). No second link builder, no body defined outside `lang/id/whatsapp.php`.
-- [ ] **AC-5 Invalid-number guard.** Given the seller's `whatsapp` is not a valid Indonesian mobile
+- [x] **AC-5 Invalid-number guard.** Given the seller's `whatsapp` is not a valid Indonesian mobile
   (`PhoneNumber::isMobile()` false — e.g. the `'-'` backfill), then `WhatsAppLink::to()` returns `null`, the
   "Ajukan tanggal →" CTA is **not rendered** and no `https://wa.me/?text=…` is emitted; the rest of the page is
   unchanged. (On a request-date trip this leaves the page with no primary CTA — acceptable, matching F-008 AC-A6/D3;
   normal sellers always have a valid number from onboarding B3.)
-- [ ] **AC-6 Scheduled-trip reuse.** Given a `scheduled` trip, then the ink "Tanggal lain? Ajukan tanggal ke operator"
+- [x] **AC-6 Scheduled-trip reuse.** Given a `scheduled` trip, then the ink "Tanggal lain? Ajukan tanggal ke operator"
   link (F-002 AC-25) and — when the trip has no bookable departure — the gold "Ajukan tanggal →" (F-002 AC-23) use the
   **same** `date_request` handoff URL, open in a new tab, and are hidden under the same invalid-number guard. The ink
   link stays an ink link (never gold); only the no-bookable-date CTA is gold.
-- [ ] **AC-7 Placeholder route removed.** The dead `url($base.'/ajukan-tanggal')` is gone from
+- [x] **AC-7 Placeholder route removed.** The dead `url($base.'/ajukan-tanggal')` is gone from
   `PublicPagePresenter` and from the page; `urls.request_date` now holds the `wa.me` handoff URL (or `null`). No
   `/ajukan-tanggal` route, link or reference remains anywhere. `PublicTenancyTest`'s exact-keys assertion is updated if
   the shape of `urls.request_date` (string-or-null) changes.
-- [ ] **AC-8 One gold button (ADR-0032).** Every trip page keeps exactly one gold (Prada) button (F-002 AC-37,
+- [x] **AC-8 One gold button (ADR-0032).** Every trip page keeps exactly one gold (Prada) button (F-002 AC-37,
   ADR-0008). On a `request_date` trip and on a `scheduled` trip with no bookable departure, that single gold button is
   the WhatsApp "Ajukan tanggal →" handoff — the deliberate, scoped exception to F-008 AC-A2 ("WhatsApp links are never
   gold") recorded in ADR-0032. The ink "Tanya via WhatsApp" general-inquiry link (F-008 §A) is shown only on scheduled
   trips, so the two WhatsApp links never both appear gold.
-- [ ] **AC-9 Tenant isolation.** A request-date trip page only ever carries its own seller's number. A two-seller test
+- [x] **AC-9 Tenant isolation.** A request-date trip page only ever carries its own seller's number. A two-seller test
   asserts seller B's trip page contains no `wa.me` URL with seller A's digits (parallel to F-008 AC-A10).
-- [ ] **AC-10 No in-app request entity (Out guard).** There is no `date_requests` table or model, no customer
+- [x] **AC-10 No in-app request entity (Out guard).** There is no `date_requests` table or model, no customer
   date-request form route, no seller "Balas" action, and no "Permintaan tanggal" row/pill/count in Pesanan terbaru, the
   booking list, "Perlu tindakan" or the nav badge. A test asserts the absence of any such route (the handoff is a plain
   `wa.me` link, not an app endpoint).
@@ -196,3 +200,9 @@ None open — all resolved by Rengga 2026-10-22.
   removed; gold-CTA exception recorded as ADR-0032 (`proposed`); D1–D5 recorded; status `draft` → `ready`
 - 2026-10-22 — Rengga: accepted ADR-0032 (gold CTA may be the WhatsApp handoff); confirmed the ajukan copy and the
   fulfillment path (Q1); Q1/Q2 closed, no open questions remain
+- 2026-10-22 — Builder: built the handoff — `whatsapp.date_request` body added to `lang/id/whatsapp.php`;
+  `PublicPagePresenter` builds `urls.request_date` via `WhatsAppLink::to()` (wa.me or null); `Public/Trip.vue` opens the
+  gold "Ajukan tanggal →" and ink "other date" links in a new tab and hides them when the URL is null; the ink "Tanya
+  via WhatsApp" link now shows only on scheduled trips (ADR-0032). New `RequestDateHandoffTest` covers AC-1…AC-10
+  (AC-8 also via `PublicPageDesignTest`; F-008 exact-keys test updated to include `date_request`). Status `ready` →
+  `in-progress`; all gates green
