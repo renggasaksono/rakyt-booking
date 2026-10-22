@@ -55,3 +55,13 @@
     border-bottom: 2px solid #211710;
     padding-bottom: 8px;
 }
+
+/* F-016 AC-11: the customer booking proof prints as a clean black-on-white
+   receipt. The live page is `print:hidden`; the proof snapshot is `print:block`.
+   Force a white ground so brand surfaces/tints never carry into print. */
+@media print {
+    html,
+    body {
+        background: #fff;
+    }
+}

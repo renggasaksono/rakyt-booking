@@ -77,6 +77,12 @@ return [
         'line' => ':n peserta × :price',
         'total' => 'Total :amount',
         'whatsapp' => 'Kabari operator via WhatsApp',
+        // F-016: keep + save the private booking link (there is no account or email).
+        'copy_link' => 'Salin tautan pesanan',
+        'link_copied' => 'Tautan disalin',
+        'link_copy_failed' => 'Gagal menyalin. Salin tautan dari bilah alamat.',
+        'link_hint' => 'Simpan tautan ini untuk membuka pesanan Anda lagi — tidak perlu akun.',
+        'save_proof' => 'Simpan bukti pesanan',
     ],
 
     // F-006 customer payment screen (mockups 1d/2e/3e bottom half).

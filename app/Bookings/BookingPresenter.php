@@ -130,6 +130,9 @@ final class BookingPresenter
                 'home' => route('home'),
                 'evidence_upload' => route('public.booking.evidence', ['organization' => $organization->slug, 'token' => $booking->access_token]),
                 'evidence_show' => route('public.booking.evidence.show', ['organization' => $organization->slug, 'token' => $booking->access_token]),
+                // F-016 AC-7: the page's own private URL, for the "Salin tautan pesanan"
+                // button — the same builder BookingController::bookingUrl() uses for redirects.
+                'self' => route('public.booking.show', ['organization' => $organization->slug, 'token' => $booking->access_token]),
             ],
         ];
     }

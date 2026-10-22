@@ -13,6 +13,7 @@ import {
     releaseTime,
     remainingMs,
 } from '../../lib/booking.js';
+import { bookingLinkFeedback, openPrintDialog } from '../../lib/bookingProof.js';
 import { formatRupiah } from '../../lib/money.js';
 import { copyText, digitsOnly, progressSteps } from '../../lib/payment.js';
 import { t } from '../../lib/text.js';
@@ -99,6 +100,23 @@ async function copyValue(kind, value) {
     }
 }
 
+// F-016 AC-3–AC-5: copy the page's own private link, with success / failure
+// feedback following the same `aria-live` pattern as the amount / account copy.
+const linkCopied = ref(null);
+
+async function copyBookingLink() {
+    linkCopied.value = await bookingLinkFeedback(props.urls.self);
+
+    if (linkCopied.value === 'ok') {
+        window.setTimeout(() => (linkCopied.value = linkCopied.value === 'ok' ? null : linkCopied.value), 2000);
+    }
+}
+
+// F-016 AC-8: browser-native "Save as PDF" / print of the proof snapshot.
+function printProof() {
+    openPrintDialog();
+}
+
 const form = useForm({ bukti: null });
 const fileInput = ref(null);
 
@@ -125,7 +143,8 @@ function submitEvidence(event) {
 
 <template>
     <Head :title="title" />
-    <main class="mx-auto max-w-md px-4 pb-10">
+    <!-- AC-10: the live page hides entirely in print; only the receipt snapshot below prints. -->
+    <main class="mx-auto max-w-md px-4 pb-10 print:hidden">
         <nav class="flex h-14 items-center">
             <span class="truncate text-sm text-secondary">{{ organization.name }}</span>
         </nav>
@@ -433,19 +452,83 @@ function submitEvidence(event) {
             </template>
         </section>
 
-        <a
-            v-if="organization.whatsapp_url"
-            :href="organization.whatsapp_url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-lg border border-ink px-4 font-heading text-base font-semibold text-ink"
-        >
-            {{ t(copy, 'page.whatsapp') }}
-        </a>
+        <!-- F-016 section B/C: keep the link, save a proof. All ink-outline secondary. -->
+        <section class="mt-6 space-y-3">
+            <div>
+                <button
+                    type="button"
+                    class="inline-flex min-h-12 w-full items-center justify-center rounded-lg border border-ink px-4 font-heading text-base font-semibold text-ink"
+                    @click="copyBookingLink"
+                >
+                    {{ t(copy, 'page.copy_link') }}
+                </button>
+                <p
+                    v-if="linkCopied"
+                    class="mt-1 text-xs font-semibold"
+                    :class="linkCopied === 'ok' ? 'text-status-paid' : 'text-status-rejected'"
+                    aria-live="polite"
+                >
+                    {{ t(copy, linkCopied === 'ok' ? 'page.link_copied' : 'page.link_copy_failed') }}
+                </p>
+                <p class="mt-1 text-xs text-secondary [overflow-wrap:anywhere]">
+                    {{ t(copy, 'page.link_hint') }}
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="inline-flex min-h-12 w-full items-center justify-center rounded-lg border border-ink px-4 font-heading text-base font-semibold text-ink"
+                @click="printProof"
+            >
+                {{ t(copy, 'page.save_proof') }}
+            </button>
+
+            <a
+                v-if="organization.whatsapp_url"
+                :href="organization.whatsapp_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex min-h-12 w-full items-center justify-center rounded-lg border border-ink px-4 font-heading text-base font-semibold text-ink"
+            >
+                {{ t(copy, 'page.whatsapp') }}
+            </a>
+        </section>
 
         <PublicFooter
             :label="t(copy, 'footer')"
             :href="urls.home"
         />
     </main>
+
+    <!-- F-016 AC-9/AC-10/AC-11: print-only proof. Only this prints (main is print:hidden);
+         black-on-white, no brand tints, a snapshot of the fields as loaded. -->
+    <section class="hidden px-6 py-8 text-ink print:block">
+        <p class="text-sm">
+            {{ organization.name }}
+        </p>
+        <p class="mt-4 text-xs uppercase tracking-wide">
+            {{ t(copy, 'page.reference') }}
+        </p>
+        <p class="font-heading text-xl font-semibold tracking-wide [overflow-wrap:anywhere]">
+            {{ booking.reference }}
+        </p>
+        <p class="mt-1 text-sm font-semibold">
+            {{ t(copy, `status.${status}`) }}
+        </p>
+
+        <div class="mt-4 border-t border-ink/40 pt-4">
+            <p class="font-heading text-base font-semibold [overflow-wrap:anywhere]">
+                {{ trip.name }}
+            </p>
+            <p class="text-sm">
+                {{ dates }}
+            </p>
+            <p class="mt-3 text-sm">
+                {{ t(copy, 'page.line', { n: booking.participants, price: rupiah(booking.unit_price) }) }}
+            </p>
+            <p class="font-heading text-base font-semibold">
+                {{ t(copy, 'page.total', { amount: rupiah(booking.total_amount) }) }}
+            </p>
+        </div>
+    </section>
 </template>

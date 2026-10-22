@@ -1,12 +1,12 @@
 ---
 id: F-016
 title: Booking confirmation — copy link & print-friendly proof
-status: ready
+status: done
 priority: P0
 roadmap: mvp-week-4
 mockups: [1d, 2e, 3e]
 decisions: ["0007", "0008", "0017", "0025", "0027"]
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 
 # F-016 · Booking confirmation — copy link & print-friendly proof
@@ -72,42 +72,42 @@ ink-outline secondary (ADR-0008). Test names: `test_ac_<n>_…`.
 
 ### A. Confirmation content (regression — already built by F-005/F-006)
 
-- [ ] **AC-1 Required fields present.** Given a booking opened at `/{slug}/pesanan/{token}`, the page shows: the booking
+- [x] **AC-1 Required fields present.** Given a booking opened at `/{slug}/pesanan/{token}`, the page shows: the booking
   reference in large type; the status pill (glyph + word, from the glossary status set); the trip name and departure
   date line; the customer name and participant count; the total amount; and — while relevant — the payment status /
   progress and next steps (countdown + release time while `awaiting_payment`, payment instructions, or the expired /
   paid / rejected state). No new booking step or required field is added. *Covered by existing F-005/F-006 page tests;
   this AC asserts the set is complete for the CR.*
-- [ ] **AC-2 No unnecessary UI change.** The visual design, layout and existing CTAs are unchanged except for the two
+- [x] **AC-2 No unnecessary UI change.** The visual design, layout and existing CTAs are unchanged except for the two
   new secondary buttons and the link hint; the gold "Unggah bukti transfer" stays the only gold button.
 
 ### B. Copy the private booking link
 
-- [ ] **AC-3 Copy button.** The page shows a secondary ink-outline **"Salin tautan pesanan"** button
+- [x] **AC-3 Copy button.** The page shows a secondary ink-outline **"Salin tautan pesanan"** button
   (`booking.page.copy_link`). Tapping it copies the page's own private URL (`/{slug}/pesanan/{token}`, carrying the
   token) to the clipboard via the existing `copyLink` helper (`resources/js/lib/onboarding.js`).
-- [ ] **AC-4 Success feedback.** On a successful copy, an `aria-live="polite"` message shows **"Tautan disalin"**
+- [x] **AC-4 Success feedback.** On a successful copy, an `aria-live="polite"` message shows **"Tautan disalin"**
   (`booking.page.link_copied`); it clears after a short delay, following the same pattern as the existing amount /
   account-number copy feedback on this page.
-- [ ] **AC-5 Failure feedback.** When the clipboard write fails (or the API is unavailable), the page shows a Bahasa
+- [x] **AC-5 Failure feedback.** When the clipboard write fails (or the API is unavailable), the page shows a Bahasa
   fallback (`booking.page.link_copy_failed`, e.g. "Gagal menyalin. Salin tautan dari bilah alamat.") instead of a silent
   no-op. The button never throws.
-- [ ] **AC-6 Link hint.** Near the button a one-line secondary hint explains the link is how the customer returns to
+- [x] **AC-6 Link hint.** Near the button a one-line secondary hint explains the link is how the customer returns to
   the booking without an account (`booking.page.link_hint`), making the private link easy to find without overwhelming
   the screen.
-- [ ] **AC-7 URL exposed explicitly.** The page URL reaches the client as `urls.self` from `BookingPresenter::page()`
+- [x] **AC-7 URL exposed explicitly.** The page URL reaches the client as `urls.self` from `BookingPresenter::page()`
   (built with `route('public.booking.show', …)`), added to the exact-keys list in F-005 AC-37 / `BookingPageTest`. No
   other new prop key is introduced; no token hash, numeric id or seller-private field is added.
 
 ### C. Print-friendly proof (browser-native)
 
-- [ ] **AC-8 Print button.** The page shows a secondary ink-outline **"Simpan bukti pesanan"** button
+- [x] **AC-8 Print button.** The page shows a secondary ink-outline **"Simpan bukti pesanan"** button
   (`booking.page.save_proof`) that calls `window.print()`, letting the customer choose "Save as PDF" or a printer. No
   PDF library or server route is added.
-- [ ] **AC-9 Print snapshot content.** When printing, the output shows: the booking reference, trip name, departure
+- [x] **AC-9 Print snapshot content.** When printing, the output shows: the booking reference, trip name, departure
   date, participant count, booking status, payment status and total amount — a snapshot of the information as displayed
   when printed (status reflects the values loaded on the page, not live).
-- [ ] **AC-10 Print hides interactive and irrelevant UI.** The print output hides: the top nav / seller bar, all buttons
+- [x] **AC-10 Print hides interactive and irrelevant UI.** The print output hides: the top nav / seller bar, all buttons
   (copy, print, WhatsApp, upload CTA), the file input, the live countdown block, the payment-instruction account/QRIS
   blocks and their copy buttons, the progress bar, the page footer, and any error messages — using Tailwind's `print:`
   variant / an `@media print` block. Only the receipt-style summary prints.
@@ -117,7 +117,7 @@ ink-outline secondary (ADR-0008). Test names: `test_ac_<n>_…`.
 
 ### D. WhatsApp CTA (regression — already built by F-005 AC-33)
 
-- [ ] **AC-12 WhatsApp prefilled, no change.** The existing "Kabari operator via WhatsApp" CTA still opens
+- [x] **AC-12 WhatsApp prefilled, no change.** The existing "Kabari operator via WhatsApp" CTA still opens
   `https://wa.me/<seller digits>?text=…` in a new tab (`rel="noopener noreferrer"`) with a prefilled, URL-encoded
   message naming the booking reference, trip and date (`booking.whatsapp.customer`), using the seller's configured
   number. It sends nothing automatically and does not change booking status. *Existing AC-33 test is the regression; a
@@ -125,14 +125,14 @@ ink-outline secondary (ADR-0008). Test names: `test_ac_<n>_…`.
 
 ### E. Security, privacy & logs (regression)
 
-- [ ] **AC-13 No token leak.** The private URL is only rendered client-side in the copy button and print layout; the
+- [x] **AC-13 No token leak.** The private URL is only rendered client-side in the copy button and print layout; the
   token is not written to any new log line, audit event or analytics payload. The booking page keeps
   `Cache-Control: no-store, private`, `Referrer-Policy: no-referrer` and `X-Robots-Tag: noindex` (F-005 AC-36); the
   logged path still redacts the `/pesanan/{token}` segment (F-005 AC-40 / F-009 R20). No change to these; asserted as a
   regression.
-- [ ] **AC-14 Tenancy unchanged.** Access is still by `access_token_hash` within the slug's organization; another
+- [x] **AC-14 Tenancy unchanged.** Access is still by `access_token_hash` within the slug's organization; another
   seller's token under this slug is a 404 by construction (F-005 AC-35/AC-38). No new route or lookup is added.
-- [ ] **AC-15 No extra PII.** The print layout and the page add no customer personal data beyond what F-005/F-006
+- [x] **AC-15 No extra PII.** The print layout and the page add no customer personal data beyond what F-005/F-006
   already display (name, participant count, the customer's own phone as today). Per-participant identities, ID numbers
   and seller-private data never appear.
 
@@ -224,6 +224,14 @@ otherwise).
 
 ## Changelog
 
+- 2026-10-22 — built on `claude/f-016-ready-thin-7efe0b`; status `done`. Added `urls.self` to `BookingPresenter::page()`
+  (exact-keys test updated), the Bahasa `page.copy_link / link_copied / link_copy_failed / link_hint / save_proof` copy,
+  the customer-side "Salin tautan pesanan" (reusing `copyLink`, with `aria-live` success/failure feedback) and
+  "Simpan bukti pesanan" (`window.print()`) secondary buttons, and a `print:block` receipt snapshot (`main` is
+  `print:hidden`, plus a white-ground `@media print` rule). AC-1–AC-10, AC-12–AC-15 covered by `BookingConfirmationTest`
+  + the F-005/F-006 regressions in `BookingPageTest`; `copyLink` success/failure already covered in `onboarding.test.js`.
+  AC-11 (A4 fit) and AC-16 (360 px + desktop) are the device review with the other P0 screens. No schema change; no new
+  ADR; token revoke/regenerate still deferred to P1 (Q1).
 - 2026-10-21 — created `ready` from the "Improve Customer Booking Confirmation & Retrieval" change request. Scoped to a
   thin delta over F-005/F-006: customer-side "Salin tautan pesanan" (copy link + feedback), browser-native
   "Simpan bukti pesanan" (print snapshot), and `urls.self` exposure. Confirmation content (A), the token retrieval
