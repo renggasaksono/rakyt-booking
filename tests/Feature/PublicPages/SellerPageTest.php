@@ -79,6 +79,15 @@ class SellerPageTest extends TestCase
         $this->assertSame(BookingSlug::url('kencana'), $this->sellerProps()['organization']['share_url']);
     }
 
+    public function test_the_booking_link_scheme_and_host_follow_config(): void
+    {
+        // Local dev points these at the app so copied links open on the machine.
+        config(['rakyt.public_scheme' => 'http', 'rakyt.public_host' => 'rakyt-booking.test']);
+
+        $this->assertSame('http://rakyt-booking.test/kencana', BookingSlug::url('kencana'));
+        $this->assertSame('http://rakyt-booking.test/kencana', $this->sellerProps()['organization']['share_url']);
+    }
+
     public function test_ac_13_trips_are_ordered_bookable_first_then_request_date_then_without_dates(): void
     {
         $zebra = $this->tripFor($this->a, ['name' => 'Zebra'], published: true);

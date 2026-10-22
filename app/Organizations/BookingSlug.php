@@ -140,10 +140,11 @@ final class BookingSlug
     }
 
     /**
-     * "https://rakyt.id/kencana" (D5).
+     * "https://rakyt.id/kencana" (D5). Scheme and host are configurable so
+     * local dev can serve the link on its own domain (config/rakyt.php).
      */
     public static function url(string $slug): string
     {
-        return 'https://'.self::display($slug);
+        return config('rakyt.public_scheme').'://'.self::display($slug);
     }
 }
