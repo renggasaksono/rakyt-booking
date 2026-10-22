@@ -85,8 +85,13 @@ return [
         'up', 'build',
     ],
 
-    // Public host shown in booking links (rakyt.id/<slug>).
+    // Public host shown in booking links (rakyt.id/<slug>). Override locally
+    // (e.g. RAKYT_PUBLIC_HOST=rakyt-booking.test) so copied links open in dev.
     'public_host' => env('RAKYT_PUBLIC_HOST', 'rakyt.id'),
+
+    // Scheme for those links. Production serves over HTTPS; local plain-HTTP
+    // dev sets RAKYT_PUBLIC_SCHEME=http so copied links don't hit a TLS error.
+    'public_scheme' => env('RAKYT_PUBLIC_SCHEME', 'https'),
 
     /*
     | Public booking pages (F-002 Data & rules).
