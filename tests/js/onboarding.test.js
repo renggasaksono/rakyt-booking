@@ -56,4 +56,20 @@ describe('share (F-001 D5)', () => {
     it('reports a failed copy', async () => {
         await expect(copyLink('x', { clipboard: { writeText: () => Promise.reject(new Error('no')) } })).resolves.toBe('failed');
     });
+
+    it('falls back to execCommand on plain-HTTP pages without an async clipboard', async () => {
+        const field = { setAttribute: vi.fn(), select: vi.fn(), remove: vi.fn(), style: {} };
+        const execCommand = vi.fn().mockReturnValue(true);
+        globalThis.document = {
+            createElement: () => field,
+            execCommand,
+            body: { appendChild: vi.fn() },
+        };
+        try {
+            await expect(copyLink('https://rakyt.id/kencana', {})).resolves.toBe('copied');
+            expect(execCommand).toHaveBeenCalledWith('copy');
+        } finally {
+            delete globalThis.document;
+        }
+    });
 });
