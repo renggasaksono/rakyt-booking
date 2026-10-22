@@ -245,7 +245,8 @@ class BookingPageTest extends TestCase
         $this->assertSame(['name', 'url'], array_keys($props['trip']));
         $this->assertSame(['start_date', 'end_date'], array_keys($props['departure']));
         $this->assertSame(['now', 'timezone'], array_keys($props['context']));
-        $this->assertSame(['home', 'evidence_upload', 'evidence_show'], array_keys($props['urls']));
+        // F-016 AC-7: `self` is the page's own private URL (copy-link + print proof).
+        $this->assertSame(['home', 'evidence_upload', 'evidence_show', 'self'], array_keys($props['urls']));
         $this->assertSame(['methods'], array_keys($props['payment']));
 
         // The evidence/upload URLs legitimately carry this booking's own token (the
