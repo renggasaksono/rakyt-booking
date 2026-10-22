@@ -1,7 +1,7 @@
 ---
 id: F-008
 title: WhatsApp contact & prefilled messages
-status: in-progress
+status: done
 priority: P0
 roadmap: mvp-week-4
 mockups: [1a, 1b, 1d, 2e, 1e]
@@ -11,9 +11,9 @@ updated: 2026-10-22
 
 # F-008 · WhatsApp contact & prefilled messages
 
-> **Build state:** built 2026-10-21; `date_request` handoff added with F-004 on 2026-10-22 — 22/24 acceptance criteria
-> covered by passing tests (all of AC-A1…A10 and AC-B1…B11, plus AC-B9a shipped by F-004). AC-A11 and AC-B12 are manual
-> real-device reviews (Android Chrome, iOS Safari, Instagram/TikTok in-app browsers) and remain unticked. The shared builder is `App\WhatsApp\WhatsAppLink` (`to()` / `toNumber()` / the
+> **Build state:** `done`. Built 2026-10-21; `date_request` handoff added with F-004 on 2026-10-22 — AC-A1…A10 and
+> AC-B1…B11 (plus AC-B9a) covered by passing tests, and AC-A11 and AC-B12 (the real-device review across Android Chrome,
+> iOS Safari, Instagram/TikTok in-app browsers) confirmed by Rengga 2026-10-22. The shared builder is `App\WhatsApp\WhatsAppLink` (`to()` / `toNumber()` / the
 > text-free `chatNumber()`); every message body lives in `lang/id/whatsapp.php`. Section **A** (Tanya via WhatsApp on
 > the trip page) was approved 2026-10-19; section **B** (the template set) was made ready 2026-10-21; QB1 (one real
 > home — all bodies move) and QB2 ("booking confirmed" message out of P0) were decided by Rengga 2026-10-21 (D7, D8).
@@ -97,9 +97,9 @@ booking must go back, open WhatsApp, and explain which trip they mean.
   their WhatsApp button for an invalid number (D3) instead of linking to `https://wa.me/?text=…`.
 - [x] **AC-A10 Tenant isolation.** A trip page only ever carries its own seller's number: a test with two sellers
   asserts seller B's trip page contains no URL with seller A's digits.
-- [ ] **AC-A11 Editable before sending.** The message is only prefilled (`?text=`); the customer edits and sends it
-  in WhatsApp. Checked by hand in the real-device review (Android Chrome, iOS Safari, Instagram and TikTok in-app
-  browsers), together with F-002 AC-36.
+- [x] **AC-A11 Editable before sending.** The message is only prefilled (`?text=`); the customer edits and sends it
+  in WhatsApp. Confirmed by hand in the real-device review (Android Chrome, iOS Safari, Instagram and TikTok in-app
+  browsers), together with F-002 AC-36 — Rengga 2026-10-22.
 
 ### B. Template set (ready)
 
@@ -173,9 +173,9 @@ seller → customer messages that ride on the booking's own customer number.
   customer number. A two-seller test asserts seller B cannot obtain a reminder / cancelled / rejected URL for seller
   A's booking (booking scoping blocks it), and that the digits in any built URL equal the booking's own customer
   number — never another booking's and never the organization's own number.
-- [ ] **AC-B12 Real-device review.** The seller → customer links open WhatsApp (app or web) with the right number and
-  prefilled, editable message on Android Chrome, iOS Safari, and Instagram/TikTok in-app browsers. Checked by hand in
-  the real-device review alongside AC-A11.
+- [x] **AC-B12 Real-device review.** The seller → customer links open WhatsApp (app or web) with the right number and
+  prefilled, editable message on Android Chrome, iOS Safari, and Instagram/TikTok in-app browsers. Confirmed by hand in
+  the real-device review alongside AC-A11 — Rengga 2026-10-22.
 
 ## Data & rules
 
@@ -327,3 +327,5 @@ none blocking):
 - 2026-10-22 — Rengga (after preview): the ink "Tanya via WhatsApp" link is dropped from `request_date` trips (gold
   "Ajukan tanggal →" handoff is their only WhatsApp link). AC-A2 reworded + "Request-date exception" note added; ADR-0032
   consequence records it. Scheduled-trip behaviour unchanged; `organization.whatsapp_url` prop still emitted (AC-A3)
+- 2026-10-22 — Rengga: real-device review passed (Android Chrome, iOS Safari, Instagram/TikTok in-app browsers) — AC-A11
+  and AC-B12 ticked; all 24 ACs now covered; status `in-progress` → `done`
