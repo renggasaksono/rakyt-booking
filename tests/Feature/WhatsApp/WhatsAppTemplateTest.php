@@ -18,7 +18,7 @@ class WhatsAppTemplateTest extends TestCase
         sort($keys);
 
         $this->assertSame(
-            ['cancelled', 'customer', 'date_reply', 'rejected', 'reminder', 'seller', 'tomorrow', 'trip', 'trip_dated'],
+            ['cancelled', 'customer', 'date_reply', 'date_request', 'rejected', 'reminder', 'seller', 'tomorrow', 'trip', 'trip_dated'],
             $keys,
         );
     }
@@ -53,5 +53,10 @@ class WhatsAppTemplateTest extends TestCase
         $this->assertSame('besok :time', Lang::get('whatsapp.tomorrow'));
         $this->assertSame('Halo :name, pesanan :reference untuk :trip tanggal :date dibatalkan. Hubungi kami jika ada pertanyaan.', Lang::get('whatsapp.cancelled'));
         $this->assertSame('Halo :name, bukti transfer untuk pesanan :reference belum bisa kami terima. Silakan hubungi kami.', Lang::get('whatsapp.rejected'));
+    }
+
+    public function test_ac_b9a_date_request_body_is_the_f004_handoff_copy(): void
+    {
+        $this->assertSame('Halo :name, saya mau ajukan tanggal untuk :trip. Boleh tahu tanggal yang tersedia?', Lang::get('whatsapp.date_request'));
     }
 }

@@ -150,9 +150,14 @@ final class PublicPagePresenter
                 'calendar' => __('trips.calendar'),
                 'urls' => [
                     'seller' => route('public.seller', ['organization' => $organization->slug]),
-                    // Owned by F-005 and F-004 (Q8); F-002 only builds the links.
+                    // Owned by F-005; F-002 only builds the link.
                     'book' => url($base.'/pesan'),
-                    'request_date' => url($base.'/ajukan-tanggal'),
+                    // F-004 (Option B): "Ajukan tanggal →" hands off to WhatsApp via the
+                    // shared builder (AC-4); null hides the CTA on an invalid number (AC-5).
+                    'request_date' => WhatsAppLink::to($organization, __('whatsapp.date_request', [
+                        'name' => $organization->name,
+                        'trip' => $trip->name,
+                    ])),
                     'home' => route('home'),
                 ],
             ],

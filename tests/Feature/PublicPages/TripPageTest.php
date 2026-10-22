@@ -45,8 +45,9 @@ class TripPageTest extends TestCase
         $this->assertSame('Snorkeling dan camping.', $props['trip']['short_description']);
         $this->assertSame(route('public.seller', ['organization' => 'kencana']), $props['urls']['seller']);
 
-        $this->tripFor($this->a, ['name' => 'Jepara Kota', 'type' => 'day_trip', 'duration_label' => 'hours', 'duration_days' => 1, 'duration_nights' => 0], published: true);
-        $this->assertSame(['Day trip', 'Beberapa jam'], array_values(array_intersect_key($this->tripProps('kencana', 'jepara-kota')['trip'], array_flip(['type_label', 'duration']))));
+        // A one-day Open trip (Day Trip dropped 2026-10-22): "Beberapa jam" duration.
+        $this->tripFor($this->a, ['name' => 'Jepara Kota', 'type' => 'open_trip', 'duration_label' => 'hours', 'duration_days' => 1, 'duration_nights' => 0], published: true);
+        $this->assertSame(['Open trip', 'Beberapa jam'], array_values(array_intersect_key($this->tripProps('kencana', 'jepara-kota')['trip'], array_flip(['type_label', 'duration']))));
 
         $this->asTenant($this->a, fn () => Trip::factory()->requestDate()->published()->create(['name' => 'Private', 'duration_label' => null, 'duration_days' => null, 'duration_nights' => null]));
         $private = $this->tripProps('kencana', 'private')['trip'];
@@ -154,7 +155,11 @@ class TripPageTest extends TestCase
         $props = $this->tripProps('kencana', 'karimunjawa');
         $this->assertSame(['full'], array_column($props['departures'], 'state'));
         $this->assertSame(1_250_000, $props['trip']['from_price']);
-        $this->assertSame(url('/kencana/karimunjawa/ajukan-tanggal'), $props['urls']['request_date']);
+        // F-004 AC-6: a scheduled trip with no bookable departure hands off to WhatsApp.
+        $this->assertSame(
+            'https://wa.me/6281277881020?text='.rawurlencode(__('whatsapp.date_request', ['name' => 'Kencana Trip', 'trip' => 'Karimunjawa'])),
+            $props['urls']['request_date'],
+        );
 
         $this->tripFor($this->a, ['name' => 'Kosong'], published: true);
         $this->assertSame([], $this->tripProps('kencana', 'kosong')['departures']);
@@ -169,7 +174,11 @@ class TripPageTest extends TestCase
         $this->assertSame('request_date', $props['trip']['booking_mode']);
         $this->assertSame([], $props['departures']);
         $this->assertSame(3_000_000, $props['trip']['from_price']);
-        $this->assertSame(url('/kencana/private-karimun/ajukan-tanggal'), $props['urls']['request_date']);
+        // F-004 AC-2: the request-date trip's "Ajukan tanggal →" is the WhatsApp handoff.
+        $this->assertSame(
+            'https://wa.me/6281277881020?text='.rawurlencode(__('whatsapp.date_request', ['name' => 'Kencana Trip', 'trip' => 'Private Karimun'])),
+            $props['urls']['request_date'],
+        );
     }
 
     public function test_ac_26_detail_sections_keep_real_day_numbers(): void

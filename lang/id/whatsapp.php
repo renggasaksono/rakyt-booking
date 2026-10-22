@@ -39,6 +39,9 @@ return [
     // Kabari pelanggan — rejected proof (F-006 AC-18). Placeholders: :name :reference.
     'rejected' => 'Halo :name, bukti transfer untuk pesanan :reference belum bisa kami terima. Silakan hubungi kami.',
 
+    // Ajukan tanggal — handoff CTA, customer → seller (F-004 AC-3, F-008 AC-B9a). Placeholders: :name :trip.
+    'date_request' => 'Halo :name, saya mau ajukan tanggal untuk :trip. Boleh tahu tanggal yang tersedia?',
+
     // Balas permintaan tanggal — F-004 owns the wording (AC-B9/QB3); reserved only.
     'date_reply' => '',
 

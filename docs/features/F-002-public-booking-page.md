@@ -164,15 +164,16 @@ zone (ADR-0014). *Bookable* is the single server-side rule from F-003 (`TripDepa
   server-side). Changing the selection updates the bar without a page load.
 - [x] **AC-23 No bookable date.** Given a `scheduled` trip with no bookable departure (none listed, or all full/closed),
   then the list shows the rows that exist (AC-20) or "Belum ada tanggal yang bisa dipesan.", and the sticky bar shows
-  "Mulai Rp… / orang" with the gold CTA "Ajukan tanggal →" (the F-004 form). There is still exactly one gold button.
+  "Mulai Rp… / orang" with the gold CTA "Ajukan tanggal →" (the F-004 WhatsApp handoff). There is still exactly one gold button.
 - [x] **AC-24 Request-date trip.** Given a `request_date` trip, then no departure list is shown; the sticky bar shows
-  "Mulai Rp… / orang" (base price) and the gold CTA "Ajukan tanggal →" linking to `/<slug>/<trip-slug>/ajukan-tanggal`
-  (route owned by F-004). *Re-scoped 2026-10-22: F-004 ("Option B") replaces this placeholder URL with a WhatsApp
-  handoff (`WhatsAppLink::to` + `whatsapp.date_request`); the gold styling of that WhatsApp CTA is the ADR-0032
-  exception. The F-004 builder updates this AC's URL and tests.*
+  "Mulai Rp… / orang" (base price) and the gold CTA "Ajukan tanggal →" opening the WhatsApp handoff
+  (`urls.request_date` = `WhatsAppLink::to()` + `whatsapp.date_request`, a `wa.me` URL or null), in a new tab. *Built
+  2026-10-22 by F-004 ("Option B"): the placeholder `/ajukan-tanggal` URL is replaced by the handoff; the gold styling
+  of that WhatsApp CTA is the ADR-0032 exception. See F-004 AC-2/AC-24.*
 - [x] **AC-25 Other date link.** Given a `scheduled` trip, then below the list an ink link "Tanggal lain? Ajukan
-  tanggal ke operator" points to the same F-004 URL (it is a link, not a second gold button). *Re-scoped 2026-10-22: it
-  points to the same WhatsApp `date_request` handoff (stays an ink link, never gold) — see F-004 AC-6.*
+  tanggal ke operator" points to the same WhatsApp `date_request` handoff (it is an ink link, never a second gold
+  button), opening in a new tab and hidden under the same invalid-number guard. *Built 2026-10-22 by F-004 — see
+  F-004 AC-6.*
 - [x] **AC-26 Detail sections.** Each section renders only when it has content, in this order:
   - **Termasuk** — each item prefixed "✓";
   - **Tidak termasuk** — each item prefixed "–";

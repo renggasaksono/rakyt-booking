@@ -144,17 +144,12 @@ function onKey(event, departure) {
             </p>
         </header>
 
-        <!-- AC-A2: request-a-date trips have no departures section, so the link follows the header. -->
-        <a
-            v-if="!scheduled && whatsappLink"
-            :href="whatsappLink"
-            target="_blank"
-            rel="noopener noreferrer"
-            :class="askWhatsappClass"
-        >
-            {{ t(copy, 'trip.ask_whatsapp') }}
-        </a>
-
+        <!--
+            F-004 AC-8 / ADR-0032: the ink "Tanya via WhatsApp" general-inquiry link
+            is shown only on scheduled trips. On a request-date trip the single gold
+            CTA is itself the WhatsApp "Ajukan tanggal →" handoff, so the two WhatsApp
+            links never both appear.
+        -->
         <section
             v-if="scheduled"
             class="mt-6"
@@ -231,8 +226,12 @@ function onKey(event, departure) {
             >
                 {{ t(copy, `trip.closing.${closing.summary}`) }}
             </p>
+            <!-- F-004 AC-6: the "other date" link is the WhatsApp handoff; stays ink, opens a new tab. -->
             <a
+                v-if="urls.request_date"
                 :href="urls.request_date"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="mt-2 inline-flex min-h-11 items-center text-sm text-ink underline underline-offset-2"
             >
                 {{ t(copy, 'trip.other_date') }}
@@ -371,9 +370,16 @@ function onKey(event, departure) {
             >
                 {{ t(copy, 'trip.book') }}
             </a>
+            <!--
+                F-004 AC-8 / ADR-0032: on a request-date trip, and on a scheduled trip
+                with no bookable departure, the single gold CTA is the WhatsApp "Ajukan
+                tanggal →" handoff. Opens a new tab; hidden on an invalid number (AC-5).
+            -->
             <a
-                v-else
+                v-else-if="urls.request_date"
                 :href="urls.request_date"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="inline-flex min-h-12 flex-none items-center bg-prada px-5 font-heading text-base font-semibold text-ink"
             >
                 {{ t(copy, 'trip.request_date') }}

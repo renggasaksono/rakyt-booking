@@ -11,9 +11,9 @@ updated: 2026-10-22
 
 # F-008 · WhatsApp contact & prefilled messages
 
-> **Build state:** built 2026-10-21 — 21/23 acceptance criteria covered by passing tests (all of AC-A1…A10 and
-> AC-B1…B11). AC-A11 and AC-B12 are manual real-device reviews (Android Chrome, iOS Safari, Instagram/TikTok in-app
-> browsers) and remain unticked. The shared builder is `App\WhatsApp\WhatsAppLink` (`to()` / `toNumber()` / the
+> **Build state:** built 2026-10-21; `date_request` handoff added with F-004 on 2026-10-22 — 22/24 acceptance criteria
+> covered by passing tests (all of AC-A1…A10 and AC-B1…B11, plus AC-B9a shipped by F-004). AC-A11 and AC-B12 are manual
+> real-device reviews (Android Chrome, iOS Safari, Instagram/TikTok in-app browsers) and remain unticked. The shared builder is `App\WhatsApp\WhatsAppLink` (`to()` / `toNumber()` / the
 > text-free `chatNumber()`); every message body lives in `lang/id/whatsapp.php`. Section **A** (Tanya via WhatsApp on
 > the trip page) was approved 2026-10-19; section **B** (the template set) was made ready 2026-10-21; QB1 (one real
 > home — all bodies move) and QB2 ("booking confirmed" message out of P0) were decided by Rengga 2026-10-21 (D7, D8).
@@ -151,7 +151,7 @@ seller → customer messages that ride on the booking's own customer number.
   reading its body from `lang/id/whatsapp.php → date_reply`. F-008 reserves the home and the builder path only; the
   **exact wording is owned by F-004** because it depends on F-004's accept/decline + price flow (QB3). No AC-B here
   asserts the copy; F-004's own ACs do.
-- [ ] **AC-B9a Customer → seller, date-request handoff (F-004).** F-004's "Ajukan tanggal →" CTA on the public trip
+- [x] **AC-B9a Customer → seller, date-request handoff (F-004).** F-004's "Ajukan tanggal →" CTA on the public trip
   page builds `https://wa.me/<org digits>?text=…` via `WhatsAppLink::to($organization, trans('whatsapp.date_request',
   ['name' => Nama usaha, 'trip' => trip name]))`, reading its body from `lang/id/whatsapp.php → date_request`:
   "Halo :name, saya mau ajukan tanggal untuk :trip. Boleh tahu tanggal yang tersedia?" (D10). This is a **customer →
@@ -316,3 +316,5 @@ none blocking):
 - 2026-10-22 — Planner: additive change for F-004's re-scope (Option B) — new customer → seller key `date_request`
   (AC-B9a, D10, template table, edge case, AC-B1 key list); copy owned by F-004; gold CTA styling cross-referenced to
   ADR-0032; `0032` added to decisions. No behaviour change to the built A/B templates
+- 2026-10-22 — F-004 build: `date_request` body added to `lang/id/whatsapp.php` and the AC-B1 exact-keys test; AC-B9a
+  ticked (the "Ajukan tanggal →" handoff is built and tested in F-004). `date_reply` stays reserved/empty
