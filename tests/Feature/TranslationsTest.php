@@ -51,8 +51,9 @@ class TranslationsTest extends TestCase
 
     public function test_home_page_copy_comes_from_lang_files(): void
     {
+        // The landing page (F-017) takes all its copy from lang/id/landing.php.
         $this->get('/')->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Home')
-            ->where('tagline', __('home.tagline')));
+            ->where('copy', __('landing')));
     }
 }

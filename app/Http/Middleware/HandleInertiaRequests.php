@@ -39,13 +39,26 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        // Public pages show nothing of the signed-in seller (F-002 AC-7, AC-8).
+        // Customer booking pages show nothing of the signed-in seller and no
+        // analytics — the sign-up funnel is for sellers (F-002 AC-7, AC-8; F-017).
         if (ResolvePublicOrganization::isPublicPage($request)) {
             return parent::share($request);
         }
 
+        // Landing sign-up-funnel analytics (F-017) loads only on the funnel pages
+        // (landing → register/login → onboarding), never across the seller app.
+        $shared = $request->routeIs('home', 'register', 'login', 'onboarding', 'onboarding.*')
+            ? [...parent::share($request), 'analytics' => fn () => $this->analytics($request)]
+            : parent::share($request);
+
+        // The marketing landing (F-017 AC-2): the funnel analytics prop, but
+        // none of a signed-in seller's navigation, name or action counts.
+        if ($request->routeIs('home')) {
+            return $shared;
+        }
+
         return [
-            ...parent::share($request),
+            ...$shared,
             'flash' => fn () => [
                 'toast' => $request->session()->get('toast'),
                 'notice' => $request->session()->get('notice'),
@@ -69,6 +82,27 @@ class HandleInertiaRequests extends Middleware
                     'account' => route('settings.account'),
                 ],
             ],
+        ];
+    }
+
+    /**
+     * Landing sign-up-funnel analytics (F-017, ADR-0034). The client loads GA
+     * only when a measurement id is configured (unset in tests and local by
+     * default, so nothing is emitted — AC-19). `event` carries a server-flashed
+     * funnel milestone (sign_up, onboarding_start, onboarding_publish) so the
+     * client can fire it after the Inertia redirect; it never contains PII.
+     *
+     * @return array{measurementId: ?string, event: ?string}
+     */
+    private function analytics(Request $request): array
+    {
+        return [
+            // Null (tests and local default) disables GA entirely — no script,
+            // no network call, no cookie (AC-19).
+            'measurementId' => config('services.google_analytics.measurement_id'),
+            // A server-flashed funnel milestone the client fires after the
+            // redirect (sign_up, onboarding_start, onboarding_publish). No PII.
+            'event' => $request->hasSession() ? $request->session()->get('analytics_event') : null,
         ];
     }
 
