@@ -66,6 +66,17 @@ class ProfileTest extends TestCase
                 ->where('backLabel', '← Pengaturan'));
     }
 
+    public function test_ac_p1_simpan_profil_sits_inline_with_the_bottom_nav_like_the_other_pengaturan_pages(): void
+    {
+        $vue = file_get_contents(resource_path('js/pages/Settings/Profile.vue'));
+
+        // A sticky bar hid the phone bottom nav and, being viewport-wide, covered the desktop side nav's footer.
+        $this->assertStringNotContainsString('StickyAction', $vue);
+        $this->assertStringNotContainsString('hide-bottom-nav', $vue);
+        $this->assertSame(1, substr_count($vue, ' bg-prada '));
+        $this->assertMatchesRegularExpression('/<\/form>\s*<button\s+type="submit"\s+form="profile-form"\s+class="mt-4 [^"]*bg-prada/', $vue);
+    }
+
     public function test_ac_f1_name_city_whatsapp_and_bio_are_saved_with_the_onboarding_rules(): void
     {
         $this->actingAsTenant($this->seller)->put(route('settings.profile'), $this->input([

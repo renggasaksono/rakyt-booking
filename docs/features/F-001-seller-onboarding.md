@@ -188,7 +188,7 @@ booking or seat hold happens here. Capacity changes after publish go through F-0
 
 ### Phone width & design rules
 
-- [ ] **P1** Every screen in this feature works at 360 × 640 with no horizontal scroll; the gold CTA is sticky at the bottom; all tap targets ≥ 44 px; the on-screen keyboard does not cover the focused field.
+- [ ] **P1** Every screen in this feature works at 360 × 640 with no horizontal scroll; on the sign-up, sign-in and onboarding screens the gold CTA is sticky at the bottom, while Pengaturan pages (Profil usaha, Akun) keep the seller layout's bottom nav and put their save button under the form; all tap targets ≥ 44 px; the on-screen keyboard does not cover the focused field.
   *Partly verified:* browser smoke test at 375 × 812 on 2026-10-18 (sign-up → steps 1–4 → 4f → Profil usaha): no horizontal scroll, sticky gold CTA, 44 px targets. Not in CI; device review at 360 × 640 still to do.
 - [x] **P2** One gold button per screen ("Daftar", "Masuk", "Kirim link", "Simpan password", 4b–4e "Lanjut…"/"Terbitkan trip", 4f "↗ Bagikan ke WA / IG"); everything else ink outline or link (ADR-0008). Helper text ≥ 12 px; kickers ≥ 11 px.
 - [x] **P3** Correct keyboards and autofill: `type="email"` for email, `autocomplete="current-password"` / `new-password` for passwords (password managers work), `inputmode="numeric"` for phone, price, seats and account number.
@@ -294,3 +294,7 @@ None block building. The spec uses the recommended default for each; override an
   `throttle:account-change`, sign-up's rule via `RegisterRequest::nameRules()`, no password, no audit, toast "Nama
   disimpan."); the shared `account` prop drops `name`. `AccountSettingsTest` covers A14, F3 (name → email → password)
   and T6 (name change ignores a user id). A14, F3, T6 ticked (64/66). Status stays `in-progress`
+- 2026-10-23 — Rengga: P1 narrowed — the sticky gold CTA is for sign-up, sign-in and onboarding. Profil usaha drops
+  its sticky "Simpan profil" bar for an inline button under the form, like Pembayaran, Pemesanan and Akun: the phone
+  bottom nav comes back, and the viewport-wide bar no longer covers the desktop side nav's business/plan footer.
+  `ProfileTest` asserts it. P1 stays open for the device review
