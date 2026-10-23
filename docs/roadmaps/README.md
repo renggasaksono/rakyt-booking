@@ -67,8 +67,6 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 | Who owns logo / bio / contact editing | F-001 section F | [F-001 Q9](../features/F-001-seller-onboarding.md#open-questions) |
 | QRIS-only or cash-only sellers in onboarding | Bank/e-wallet only; others add theirs via F-006 (a draft without any account can add a bank / e-wallet in Pengaturan → Rekening, F-001 F5) | [F-001 Q10](../features/F-001-seller-onboarding.md#open-questions) |
 | Onboarding time budget (±9/8/4/2 min) | Keep for build; retime in wk-1 user tests | [F-001 Q12](../features/F-001-seller-onboarding.md#open-questions) |
-| Ask "Nama Anda" at sign-up | Yes; editable in Pengaturan → Akun (A14) | [F-001 Q13](../features/F-001-seller-onboarding.md#open-questions) |
-| Full name or first name in the Hari ini greeting | First word of the name; full name in emails | [F-007 Q9](../features/F-007-seller-dashboard-and-bookings.md#open-questions) |
 | Password confirmation field | No; show/hide toggle | [F-001 Q14](../features/F-001-seller-onboarding.md#open-questions) |
 | Auth events of a seller without an organization yet | Not audited in P0 | [F-001 Q17](../features/F-001-seller-onboarding.md#open-questions) |
 | International (non-+62) customer WhatsApp numbers | Indonesian mobiles only in P0 | [F-005 Q6](../features/F-005-customer-booking-and-seat-hold.md#open-questions) |
