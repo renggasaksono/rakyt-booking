@@ -31,8 +31,8 @@ const passwordForm = useForm({ current_password: '', password: '' });
 
 function changeName() {
     if (!nameForm.processing) {
-        // Keep the saved (trimmed) name as the form's new baseline.
-        nameForm.put(props.urls.name, { preserveScroll: true, onSuccess: () => nameForm.defaults({ name: props.user.name }).reset() });
+        // The saved (trimmed) name from the response becomes the form's new baseline.
+        nameForm.put(props.urls.name, { preserveScroll: true, onSuccess: (page) => nameForm.defaults({ name: page.props.user.name }).reset() });
     }
 }
 
