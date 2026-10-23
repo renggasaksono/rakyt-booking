@@ -2,12 +2,14 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import FlashMessages from '../components/FlashMessages.vue';
+import ProductMark from '../components/ProductMark.vue';
 import VerificationBanner from '../components/VerificationBanner.vue';
 
 /**
  * Seller app layout (F-007 AC-2–AC-4): six-item side nav from 1024 px, a
  * four-item bottom nav below it; Pesanan and Pembayaran carry the Perlu
- * tindakan badge. Halaman publik opens the seller page in a new tab.
+ * tindakan badge. Halaman publik opens the seller page in a new tab. The side
+ * nav is the ink panel of mockups 1e/2f with the "Rakyt | Booking" lockup.
  */
 defineProps({
     // The trip editor uses the bottom of the phone screen for its own action bar.
@@ -22,12 +24,16 @@ const phoneNav = computed(() => nav.value.filter((item) => item.phone));
 
 <template>
     <div class="min-h-screen bg-gading lg:flex">
-        <aside class="hidden w-60 shrink-0 border-r border-ink/10 bg-surface px-4 py-6 lg:block">
-            <p class="px-3 font-heading text-xl font-semibold text-ink">
-                {{ seller?.brand }}
-            </p>
+        <aside class="hidden w-60 shrink-0 bg-ink px-5 py-7 lg:sticky lg:top-0 lg:block lg:h-screen lg:overflow-y-auto">
+            <div class="px-3">
+                <ProductMark
+                    :brand="seller?.brand ?? ''"
+                    :suffix="seller?.brand_suffix"
+                    tone="reverse"
+                />
+            </div>
             <nav
-                class="mt-6 flex flex-col gap-1"
+                class="mt-8 flex flex-col gap-0.5"
                 :aria-label="seller?.menu_label"
             >
                 <template
@@ -39,7 +45,7 @@ const phoneNav = computed(() => nav.value.filter((item) => item.phone));
                         :href="item.url"
                         target="_blank"
                         rel="noopener"
-                        class="flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 font-heading text-sm font-medium text-ink hover:bg-gading"
+                        class="flex min-h-11 items-center justify-between gap-2 px-3 font-heading text-sm text-sand hover:bg-gading/10 hover:text-gading"
                     >
                         {{ item.label }}
                         <span aria-hidden="true">{{ seller.external_mark }}</span>
@@ -48,14 +54,16 @@ const phoneNav = computed(() => nav.value.filter((item) => item.phone));
                     <Link
                         v-else
                         :href="item.url"
-                        class="flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 font-heading text-sm font-medium"
-                        :class="item.active ? 'bg-gading text-sogan' : 'text-ink hover:bg-gading'"
+                        class="flex min-h-11 items-center justify-between gap-2 px-3 font-heading text-sm"
+                        :class="item.active ? 'bg-sogan font-semibold text-gading' : 'text-sand hover:bg-gading/10 hover:text-gading'"
                         :aria-current="item.active ? 'page' : undefined"
                     >
                         {{ item.label }}
+                        <!-- 1e/2f: a plain count; Pembayaran's is the gold-soft accent. -->
                         <span
                             v-if="item.badge"
-                            class="min-w-6 rounded-full bg-status-waiting-tint px-2 text-center text-xs font-semibold text-status-waiting"
+                            class="min-w-6 text-right text-sm"
+                            :class="item.key === 'payments' ? 'font-semibold text-gold-soft' : ''"
                             :aria-label="item.badge.label"
                         >{{ item.badge.count }}</span>
                     </Link>

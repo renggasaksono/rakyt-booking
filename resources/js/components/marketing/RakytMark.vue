@@ -1,15 +1,22 @@
 <script setup>
+import { computed } from 'vue';
+
 /**
  * Rakyt monogram (F-017) — the "#" grid lockup mark from the landing mockups
  * (docs/design/mockups/rakyt-booking-landing-sogan-cerah.html). Four square-cap
  * strokes with a dot at each inner intersection; one dot is gold — the single
  * brand accent. `tone="ink"` draws ink strokes on a transparent ground (nav);
- * `tone="cream"` draws cream strokes for use inside the ink footer tile.
+ * `tone="cream"` draws cream strokes for use inside the ink footer tile;
+ * `tone="reverse"` is the ink-ground lockup of the seller side nav (1e/2f):
+ * gading strokes and nodes, the accent node in gold-soft.
  */
-defineProps({
-    tone: { type: String, default: 'ink' }, // 'ink' | 'cream'
+const props = defineProps({
+    tone: { type: String, default: 'ink' }, // 'ink' | 'cream' | 'reverse'
     size: { type: Number, default: 26 },
 });
+
+const line = computed(() => (props.tone === 'ink' ? 'var(--color-ink)' : 'var(--color-gading)'));
+const accent = computed(() => (props.tone === 'reverse' ? 'var(--color-gold-soft)' : 'var(--color-gold-dull, #b8862f)'));
 </script>
 
 <template>
@@ -21,7 +28,7 @@ defineProps({
         aria-hidden="true"
     >
         <g
-            :stroke="tone === 'cream' ? 'var(--color-gading)' : 'var(--color-ink)'"
+            :stroke="line"
             :stroke-width="tone === 'cream' ? 6 : 5"
             stroke-linecap="square"
             fill="none"
@@ -45,25 +52,25 @@ defineProps({
                 cx="20"
                 cy="22"
                 r="6"
-                fill="var(--color-ink)"
+                :fill="line"
             />
             <circle
                 cx="44"
                 cy="22"
                 r="6"
-                fill="var(--color-ink)"
+                :fill="line"
             />
             <circle
                 cx="20"
                 cy="44"
                 r="6"
-                fill="var(--color-gold-dull, #b8862f)"
+                :fill="accent"
             />
             <circle
                 cx="44"
                 cy="44"
                 r="6"
-                fill="var(--color-ink)"
+                :fill="line"
             />
         </template>
     </svg>

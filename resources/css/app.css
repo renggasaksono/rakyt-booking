@@ -28,6 +28,12 @@
     --color-secondary: #6f5b4b;
     --color-prada: #e5a823;
 
+    /* Ink ground — the seller side nav (mockups 1e/2f). Sogan fails on ink (2.1 : 1), so
+       on this ground the brand/link role moves to gold-soft. Never a button fill: the
+       gold CTA stays prada. */
+    --color-sand: #d8c9b6; /* resting nav text on ink — 10.8 : 1 */
+    --color-gold-soft: #d9ae5c; /* brand accent on ink: monogram node, "Booking", counts — 8.5 : 1 */
+
     --color-status-waiting: #8f4a00;
     --color-status-check: #2c4a7a;
     --color-status-paid: #2f6b3a;
@@ -40,6 +46,10 @@
     --color-status-paid-tint: #e6f0e7;
     --color-status-rejected-tint: #f6e3e1;
     --color-status-cancelled-tint: #eceae8;
+
+    /* Seat bar "ditahan" segment (mockup 2f): a solid amber that reads next to the
+       solid Lunas green. The bar is decoration; its text summary carries the meaning. */
+    --color-status-waiting-bar: #d9963a;
 }
 
 /* "Sogan Cerah" — landing-only reskin (F-017), proposed in the landing mockups

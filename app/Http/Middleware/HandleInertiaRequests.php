@@ -146,6 +146,7 @@ class HandleInertiaRequests extends Middleware
                 $item('settings', __('dashboard.nav.settings'), route('settings.index'), $request->routeIs('settings.*'), ['phone' => true]),
             ],
             'brand' => __('trips.nav.brand'),
+            'brand_suffix' => __('trips.nav.brand_suffix'),
             'menu_label' => __('trips.nav.menu'),
             'close_label' => __('trips.nav.close'),
             'external_mark' => __('dashboard.nav.external'),
