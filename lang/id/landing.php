@@ -28,7 +28,8 @@ return [
         'login' => 'Masuk',
         'cta' => 'Coba gratis',
         // Shown instead of "Coba gratis" to a signed-in seller (AC-3, Q1).
-        'cta_authenticated' => 'Buka dashboard',
+        // Short on purpose: the nav CTA wraps on mobile at "Buka dashboard".
+        'cta_authenticated' => 'Dashboard',
     ],
 
     'hero' => [
