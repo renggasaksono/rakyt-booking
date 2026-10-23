@@ -179,7 +179,7 @@ class CreateBookingTest extends TestCase
 
         $this->submit(['participants' => 5])
             ->assertRedirect($this->formRedirect())
-            ->assertSessionHasErrors(['participants' => 'Sisa kursi tinggal 3. Kurangi jumlah peserta.']);
+            ->assertSessionHasErrors(['participants' => 'Sisa kuota tinggal 3. Kurangi jumlah peserta.']);
 
         $this->assertSame(1, $this->bookingCount());
         $this->assertSame(3, $this->formProps('bromo-adventure', 'karimunjawa-3h2m', $this->departure->public_id)['departure']['seats_left']);

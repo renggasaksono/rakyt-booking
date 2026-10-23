@@ -25,9 +25,9 @@ Source of UI wording: [design mockup](../design/README.md).
 | booking mode | cara pesan | `scheduled` (jadwal tetap) or `request_date` (pelanggan ajukan tanggal). |
 | departure | keberangkatan, jadwal | A specific bookable occurrence of a trip: dates, seats, optional price override, booking deadline, open/closed. |
 | duration | durasi | Days + nights, e.g. 3H2M = 3 hari 2 malam. End date is derived from it. |
-| capacity / seats | kapasitas / kursi | Total seats on a departure. |
+| capacity / seats | kapasitas / kuota | Total seats on a departure. UI copy says "kuota", not "kursi", so it fits activities too (ADR-0037). |
 | seats taken | terisi | Seats held + paid on a departure. |
-| seats left | sisa kursi | capacity − seats taken. |
+| seats left | sisa kuota | capacity − seats taken. |
 | full | penuh | Departure is open but seats taken = capacity. |
 | departure status | buka / tutup pemesanan | `open` or `closed` (`closed_reason`: `manual` or `deadline`). |
 | booking deadline | tutup pemesanan / tutup pesan | When a departure stops accepting bookings, e.g. H-3 = 3 days before, 23.59. |
@@ -43,8 +43,8 @@ Source of UI wording: [design mockup](../design/README.md).
 | booking reference | kode pesanan | Human-readable ID, e.g. `RKB-BRM-1024-0142`: seller's booking code, `MMDD` = departure start date, `NNNN` = the seller's own booking counter; unique across the platform (ADR-0026). Display only — never grants access. |
 | booking access token | — (in link) | Unguessable token in the customer's booking/payment link ([ADR-0017](../decisions/0017-customer-booking-access-token.md)). |
 | customer booking page | halaman pesanan | `rakyt.id/<slug>/pesanan/<token>` — the customer's page for one booking: reference, status, hold countdown, payment (F-005, F-006; ADR-0027). |
-| seat hold | kursi ditahan | Seats reserved for an unpaid booking for 2 hours; uploading payment evidence stops the clock until the seller reviews it (ADR-0006). |
-| hold expiry | waktu pembayaran habis, kursi dilepas | An `awaiting_payment` booking reaching `hold_expires_at`: it becomes `cancelled` with reason `hold_expired` and its seats return (F-005). |
+| seat hold | kuota ditahan | Seats reserved for an unpaid booking for 2 hours; uploading payment evidence stops the clock until the seller reviews it (ADR-0006). |
+| hold expiry | waktu pembayaran habis, kuota dilepas | An `awaiting_payment` booking reaching `hold_expires_at`: it becomes `cancelled` with reason `hold_expired` and its seats return (F-005). |
 | holding statuses | — | Booking statuses that take seats: `awaiting_payment`, `needs_review`, `paid`. `seats_taken` = their participants summed (ADR-0026). |
 | payment record | pembayaran | Amount due/paid, evidence, verification for a booking. |
 | payment evidence | bukti transfer | Photo/screenshot uploaded by the customer. |

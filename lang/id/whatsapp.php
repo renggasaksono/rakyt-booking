@@ -28,7 +28,7 @@ return [
     'trip_dated' => 'Halo :name, saya tertarik dengan :trip keberangkatan :date. Saya mau tanya beberapa detail sebelum memesan.',
 
     // Ingatkan via WA — reminder (F-007 AC-25). Placeholders: :name :reference :trip :date :n :total :time :url.
-    'reminder' => 'Halo :name, pesanan :reference untuk :trip tanggal :date (:n orang) menunggu pembayaran :total. Kursi ditahan sampai :time. Detail pesanan: :url',
+    'reminder' => 'Halo :name, pesanan :reference untuk :trip tanggal :date (:n orang) menunggu pembayaran :total. Kuota ditahan sampai :time. Detail pesanan: :url',
 
     // Reminder :time fragment when the hold releases tomorrow (F-007 AC-25). Placeholder: :time.
     'tomorrow' => 'besok :time',

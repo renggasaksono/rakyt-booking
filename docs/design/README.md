@@ -125,6 +125,8 @@ in it are the phone-frame bezel and dev-tooling chips). Keep it that way:
 - **Structured inputs over free text** for durasi and tutup pesan: presets + "Atur sendiri"; show the deadline as a real date.
 - **Share** is labelled ("↗ Bagikan"), opens the native share sheet, falls back to copy + "Link disalin".
 - Seller dashboard is built around today's tasks (verify payments, seat counts, share link) — not a shrunk admin.
+- **"Kuota", not "kursi".** The mockups say "kursi" ("Sisa 6 kursi", "Kursi ditahan 2 jam"). The app says "kuota" ("Sisa
+  kuota 6", "Kuota ditahan 2 jam"), so the copy fits activities as well as trips ([ADR-0037](../decisions/0037-ui-term-kuota-instead-of-kursi.md)).
 
 ## Assumptions baked into the mockup (verify before building)
 

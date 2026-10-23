@@ -49,7 +49,7 @@ class WhatsAppTemplateTest extends TestCase
         $this->assertSame('Halo :seller, saya sudah pesan :trip tanggal :date untuk :n orang. Kode pesanan :reference.', Lang::get('whatsapp.customer'));
         $this->assertSame('Halo :name, saya tertarik dengan :trip. Saya mau tanya beberapa detail sebelum memesan.', Lang::get('whatsapp.trip'));
         $this->assertSame('Halo :name, saya tertarik dengan :trip keberangkatan :date. Saya mau tanya beberapa detail sebelum memesan.', Lang::get('whatsapp.trip_dated'));
-        $this->assertSame('Halo :name, pesanan :reference untuk :trip tanggal :date (:n orang) menunggu pembayaran :total. Kursi ditahan sampai :time. Detail pesanan: :url', Lang::get('whatsapp.reminder'));
+        $this->assertSame('Halo :name, pesanan :reference untuk :trip tanggal :date (:n orang) menunggu pembayaran :total. Kuota ditahan sampai :time. Detail pesanan: :url', Lang::get('whatsapp.reminder'));
         $this->assertSame('besok :time', Lang::get('whatsapp.tomorrow'));
         $this->assertSame('Halo :name, pesanan :reference untuk :trip tanggal :date dibatalkan. Hubungi kami jika ada pertanyaan.', Lang::get('whatsapp.cancelled'));
         $this->assertSame('Halo :name, bukti transfer untuk pesanan :reference belum bisa kami terima. Silakan hubungi kami.', Lang::get('whatsapp.rejected'));

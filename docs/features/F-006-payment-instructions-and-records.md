@@ -154,7 +154,7 @@ word (ADR-0008, `docs/design` status set). Money is integer rupiah with the F-00
   chars), then in one transaction (departure lock → booking lock): the booking becomes `rejected`, `seats_taken` drops
   by the booking's participants (seats back on sale — ADR-0030 §2), the record gets `decision = rejected`,
   `reject_reason`, `verified_by`, `verified_at`, and a `payment.rejected` audit event is written. The response returns
-  with "Bukti ditolak. n kursi dibuka lagi." and an ink-outline "Kabari pelanggan via WA" (opens `whatsapp.rejected`:
+  with "Bukti ditolak. Kuota n orang dibuka lagi." and an ink-outline "Kabari pelanggan via WA" (opens `whatsapp.rejected`:
   "Halo :name, bukti transfer untuk pesanan :reference belum bisa kami terima. Silakan hubungi kami."). `rejected` is
   terminal: there is no re-confirm and no re-open (the customer re-books, AC-10).
 - [x] **AC-19 Evidence viewing is gated.** The evidence image is served only after an authorisation check — the seller
@@ -445,3 +445,4 @@ the acceptance criteria; each can change before the pilot at the cost of test da
   `done`. Implementation choices in ADR-0031
 - 2026-10-20 — Post-merge review (PR #16): two non-blocking follow-ups recorded (payment_records CHECK-constraint test;
   AC-24 audit-action doc/code naming) — see Follow-ups
+- 2026-10-23 — UI copy says "kuota" instead of "kursi" (ADR-0037): quoted strings updated to the new `lang/id` copy and the tests that assert them. Behaviour unchanged; status unchanged

@@ -91,7 +91,7 @@ class BookingDetailTest extends TestCase
         $this->assertSame(['point' => 'Pelabuhan Jepara', 'time' => '06:00'], $props['meeting']);
         $this->assertSame(['now' => '2024-10-10T03:00:00Z', 'timezone' => 'Asia/Jakarta', 'today' => '2024-10-10'], $props['context']);
         $this->assertSame(url('/pesanan'), $props['urls']['back']);
-        $this->assertSame(['Dibuat :date', 'Kursi ditahan s.d. :time', ':n peserta × :price'], [$props['copy']['show']['created'], $props['copy']['show']['hold_until'], $props['copy']['show']['line']]);
+        $this->assertSame(['Dibuat :date', 'Kuota ditahan s.d. :time', ':n peserta × :price'], [$props['copy']['show']['created'], $props['copy']['show']['hold_until'], $props['copy']['show']['line']]);
     }
 
     public function test_ac_23_amounts_come_from_the_booking_snapshot_not_the_current_price(): void
@@ -118,7 +118,7 @@ class BookingDetailTest extends TestCase
         $props = $this->detailProps($this->a, $seller);
         $this->assertSame('seller', $props['booking']['cancel_reason']);
         $this->assertSame([
-            'hold_expired' => 'Waktu pembayaran habis, kursi dilepas otomatis.',
+            'hold_expired' => 'Waktu pembayaran habis, kuota dilepas otomatis.',
             'seller' => 'Dibatalkan oleh Anda.',
         ], $props['copy']['show']['cancel_reasons']);
     }
@@ -149,7 +149,7 @@ class BookingDetailTest extends TestCase
 
         $this->assertSame('https://wa.me/6281234567890', $whatsapp['chat_url']);
         $text = 'Halo Rina Wulandari, pesanan RKB-KCN-1024-0142 untuk Karimunjawa 3H2M tanggal 24–26 Okt (2 orang) menunggu pembayaran Rp2.500.000. '
-            .'Kursi ditahan sampai 12.00. Detail pesanan: https://rakyt.id/kencana/pesanan/'.$booking->access_token;
+            .'Kuota ditahan sampai 12.00. Detail pesanan: https://rakyt.id/kencana/pesanan/'.$booking->access_token;
         $this->assertSame('https://wa.me/6281234567890?text='.rawurlencode($text), $whatsapp['reminder_url']);
         $this->assertNull($whatsapp['cancelled_url']);
 
@@ -165,7 +165,7 @@ class BookingDetailTest extends TestCase
 
         $url = $this->detailProps($this->a, $booking)['whatsapp']['reminder_url'];
 
-        $this->assertStringContainsString(rawurlencode('Kursi ditahan sampai besok 01.10.'), $url);
+        $this->assertStringContainsString(rawurlencode('Kuota ditahan sampai besok 01.10.'), $url);
     }
 
     public function test_ac_25_no_reminder_without_an_active_hold(): void

@@ -129,14 +129,14 @@ class BookingFormTest extends TestCase
         // AC-5: the stepper's maximum; AC-6: the unit price for the live total.
         $this->assertSame(12, $props['departure']['seats_left']);
         $this->assertSame(1_250_000, $props['departure']['price']);
-        $this->assertSame('Sisa :n kursi', $copy['participants_help']);
+        $this->assertSame('Sisa kuota :n', $copy['participants_help']);
         $this->assertSame('Konfirmasi & info keberangkatan dikirim ke sini.', $copy['phone_help']);
         $this->assertSame(['Nama lengkap', 'Nomor WhatsApp', 'Jumlah peserta', 'Catatan (opsional)'], [$copy['name'], $copy['phone'], $copy['participants'], $copy['notes']]);
 
         // AC-7: the hours come from the server's constant.
         $this->assertSame(120, $props['hold_minutes']);
         $this->assertSame(config('rakyt.booking.hold_minutes'), $props['hold_minutes']);
-        $this->assertSame('Kursi ditahan :hours jam sampai dibayar, lalu dilepas.', $copy['hold']);
+        $this->assertSame('Kuota ditahan :hours jam sampai dibayar, lalu dilepas.', $copy['hold']);
 
         // AC-8
         $this->assertSame('Data Anda hanya diteruskan ke :name untuk mengurus pesanan ini.', $copy['privacy']);

@@ -32,7 +32,7 @@ return [
 
     'upcoming' => [
         'title' => 'Keberangkatan',
-        'subtitle' => 'Ketuk untuk ubah harga, kursi, atau buka/tutup.',
+        'subtitle' => 'Ketuk untuk ubah harga, kuota, atau buka/tutup.',
         'empty' => 'Belum ada keberangkatan terdekat',
         'back' => 'Kembali ke daftar trip',
         'more' => 'Tampilkan lebih banyak',
@@ -137,7 +137,7 @@ return [
         'past_group' => 'Sudah lewat',
         'start_date' => 'Tanggal berangkat',
         'end_date' => 's.d. :date',
-        'seats' => 'Kursi',
+        'seats' => 'Kuota',
         'seats_taken' => ':taken/:capacity',
         'price' => 'Harga',
         'deadline' => 'Tutup pesan',
@@ -218,7 +218,7 @@ return [
     'preview' => [
         'title' => 'Pratinjau di halaman Anda',
         'from' => 'Mulai',
-        'seats' => ':n kursi',
+        'seats' => 'Kuota :n',
         'full' => 'Penuh',
         'no_departure' => 'Belum ada tanggal',
         'open' => 'Pratinjau',
@@ -229,7 +229,7 @@ return [
     'quick_edit' => [
         'title' => 'Edit cepat',
         'price' => 'Harga / orang',
-        'capacity' => 'Total kursi',
+        'capacity' => 'Kuota peserta',
         'floor' => ':n terisi — tidak bisa di bawah :n',
         'open' => 'Buka',
         'closed' => 'Tutup pemesanan',
@@ -257,7 +257,7 @@ return [
         'name_required' => 'Isi nama trip dulu.',
         'name_min' => 'Nama trip minimal :min karakter.',
         'price_range' => 'Harga antara Rp1.000 dan Rp100.000.000.',
-        'capacity_range' => 'Jumlah kursi 1–999.',
+        'capacity_range' => 'Kuota peserta 1–999.',
         'items_max' => 'Maksimal :max item.',
         'item_too_long' => 'Maksimal :max karakter per item.',
         'publish_incomplete' => 'Belum bisa terbit. Lengkapi: :items.',
@@ -326,7 +326,7 @@ return [
         'terms' => 'ketentuan',
         'base_price' => 'harga dasar',
         'start_date' => 'tanggal berangkat',
-        'capacity' => 'jumlah kursi',
+        'capacity' => 'kuota peserta',
         'price_override' => 'harga',
         'price' => 'harga',
         'booking_deadline_preset' => 'tutup pemesanan',

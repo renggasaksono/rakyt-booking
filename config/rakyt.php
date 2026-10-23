@@ -112,7 +112,7 @@ return [
     | Public booking pages (F-002 Data & rules).
     */
     'public' => [
-        // AC-19: "Tinggal n dari m kursi" when seats left are at most this (Q4).
+        // AC-19: "Kuota tinggal n dari m" when seats left are at most this (Q4).
         'low_seats' => 5,
         // AC-19a: a closing date within this many days is always shown on its row.
         'deadline_urgent_days' => 7,
