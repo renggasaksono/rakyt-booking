@@ -1,12 +1,12 @@
 ---
 id: F-011
 title: Admin overview dashboard
-status: draft
+status: ready
 priority: P0
 roadmap: mvp-week-4
 mockups: []
 decisions: ["0011"]
-updated: 2026-10-17
+updated: 2026-10-23
 ---
 
 # F-011 · Admin overview dashboard
@@ -29,8 +29,8 @@ F-010 · F-001 (organizations) · F-003 (trip published state) · F-005/F-006 (b
 
 ## Acceptance criteria
 
-- [ ] Shows the five counts, computed live (or briefly cached) from `organizations`, `trips`, `bookings`, `payment_records`; no duplicated counters.
-- [ ] "Pending bookings" and "payment pending verification" use the same status definitions as the seller app (see open question).
+- [ ] Shows the five counts, computed live (or briefly cached) from `organizations`, `trips`, `bookings`; no duplicated counters.
+- [ ] "Pending bookings" counts bookings in `awaiting_payment`; "payment pending verification" counts bookings in `needs_review` — the single `BookingStatus` enum the seller app uses (F-006 kept the lifecycle on `booking.status`; there is no separate payment-status driver).
 - [ ] Each count links to the matching filtered list in F-012 or F-013.
 - [ ] Suspended organizations are counted and shown separately from active ones.
 - [ ] Only reachable through the F-010 gate; tested.
@@ -38,8 +38,9 @@ F-010 · F-001 (organizations) · F-003 (trip published state) · F-005/F-006 (b
 
 ## Open questions
 
-- [ ] Exact status mapping depends on F-006's open question (booking.status vs payment_record.status). Working assumption: pending = `awaiting_payment`; pending verification = `needs_review`. — Rengga
+None — status mapping resolved 2026-10-23 (see changelog).
 
 ## Changelog
 
 - 2026-10-17 — created
+- 2026-10-23 — **ready.** Status mapping pinned from the shipped F-006 code: pending = `awaiting_payment`, pending verification = `needs_review` on the single `App\Bookings\BookingStatus` enum (no `payment_records.status` driver). Counts read `organizations`/`trips`/`bookings` only.

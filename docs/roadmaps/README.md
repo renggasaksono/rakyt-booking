@@ -11,7 +11,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 
 | Item | Status |
 |---|---|
-| Week 1 — resolve open questions, confirm proposed ADRs, scaffold Laravel app | scaffold done (ADR-0020); ADR-0011 still proposed |
+| Week 1 — resolve open questions, confirm proposed ADRs, scaffold Laravel app | scaffold done (ADR-0020); ADR-0011 accepted (2026-10-23) |
 | [F-009](../features/F-009-tenancy-security-operations.md) Tenancy & security baseline (slice A wk 2 · ops wk 4 · hardening wk 6) | in-progress — slice A built (A5 done with F-002); B, C to do |
 | [F-003](../features/F-003-trips-and-departures.md) Trips & departures | in-progress — built on `feat/F-003-trips-and-departures`; 39/43 ACs covered by tests (AC-1 re-ticked 2026-10-22 after dropping the Day Trip type — two-type enum + data migration); AC-3/7/7a/41 partly covered, AC-35 is a pilot check; device review after F-001 section A |
 | [F-001](../features/F-001-seller-onboarding.md) Seller onboarding | in-progress — merged (PR #5); manual-test fixes on `fix/F-001-manual-test` add Pengaturan → Rekening (F5, the bank / e-wallet subset of F-006) and F6; 63/65 ACs covered by tests (D7, F1, T3 completed by F-002); C3 partly covered, P1 device review; ADR-0023 accepted |
@@ -22,7 +22,7 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | [F-006](../features/F-006-payment-instructions-and-records.md) Payment instructions & records | done — AC-1…AC-32 covered by tests (payment screen, evidence upload, Konfirmasi / Tolak inline, QRIS, ADR-0018 block); supersedes F-001's Rekening with Pengaturan → Pembayaran; closes F-009 A20/A21, R2, R19 and the Pilot-go payment-security gate; AC-32 real-device review pending; cash & DP → P1; ADR-0030 + ADR-0031 accepted |
 | [F-008](../features/F-008-whatsapp-handoff.md) WhatsApp handoff | done — built 2026-10-21 (sections A+B): `App\WhatsApp\WhatsAppLink`, `lang/id/whatsapp.php` template home, "Tanya via WhatsApp" on the trip page; `date_request` handoff + AC-B9a shipped with F-004 (2026-10-22); all 24 ACs covered — AC-A11/AC-B12 real-device review passed (Rengga 2026-10-22) |
 | [F-016](../features/F-016-booking-confirmation-retrieval.md) Booking confirmation — copy link & print proof | done — merged to `main`; AC-1…AC-10, AC-12…AC-15 covered by tests (customer "Salin tautan pesanan" + browser-native "Simpan bukti pesanan" print snapshot + `urls.self`; retrieval, content and WhatsApp CTA are regressions); AC-11/AC-16 device review passed (Rengga 2026-10-23, paid + awaiting-payment states); token revoke/regenerate deferred to P1 (Q1) |
-| Internal admin panel — [F-010](../features/F-010-admin-access-control.md) access control, [F-011](../features/F-011-admin-overview-dashboard.md) overview, [F-012](../features/F-012-admin-seller-directory.md) seller directory, [F-013](../features/F-013-admin-booking-search.md) booking search, [F-014](../features/F-014-seller-suspension.md) suspension, [F-015](../features/F-015-admin-audit-log.md) admin audit log | planned |
+| Internal admin panel — [F-010](../features/F-010-admin-access-control.md) access control, [F-011](../features/F-011-admin-overview-dashboard.md) overview, [F-012](../features/F-012-admin-seller-directory.md) seller directory, [F-013](../features/F-013-admin-booking-search.md) booking search, [F-014](../features/F-014-seller-suspension.md) suspension, [F-015](../features/F-015-admin-audit-log.md) admin audit log | ready — all six specs `ready` (2026-10-23); ADR-0011 accepted; ready to build (wk 4) |
 
 The admin panel is an internal tool for the sole platform admin (product owner) to onboard pilot sellers, inspect
 bookings, investigate problems and suspend/reactivate sellers — not a back office (ADR-0011).
@@ -35,9 +35,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 
 ### Proposed ADRs — accept or reject
 
-| Decision | Recommended | Source | Needed by |
-|---|---|---|---|
-| Platform admin inside the same app, gated, no impersonation; admin login = email + password + TOTP | Accept | [ADR-0011](../decisions/0011-platform-admin-access.md) · F-010–F-015 | Before admin build (wk 4) |
+_None open — ADR-0011 (platform admin) accepted 2026-10-23._
 
 ### Week 1 — choices outside the specs
 
@@ -79,18 +77,19 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 
 ### Draft specs — to resolve when the spec is made `ready`
 
-| Decision | Source |
-|---|---|
-| Admin auth mechanism; admin UI language (Bahasa or English) | [F-010](../features/F-010-admin-access-control.md#open-questions) |
-| Admin status mapping (depends on F-006) | [F-011](../features/F-011-admin-overview-dashboard.md#open-questions) |
-| Meaning of "last activity" in the seller directory | [F-012](../features/F-012-admin-seller-directory.md#open-questions) |
-| Suspension effects: public page, seller sign-in, unpaid holds, paid upcoming bookings (F-002 routes the public page through one `PublicVisibility` check) | [F-014](../features/F-014-seller-suspension.md#open-questions) |
-| Do sellers see admin actions on their organization | [F-015](../features/F-015-admin-audit-log.md#open-questions) |
+_None — all admin specs (F-010–F-015) made `ready` on 2026-10-23; their open questions are resolved in the spec changelogs:_
+
+- _F-010 admin auth = Fortify email + password + required TOTP; admin UI in Bahasa Indonesia._
+- _F-011 status mapping pinned to the shipped `BookingStatus` enum (pending = `awaiting_payment`, verification = `needs_review`)._
+- _F-012 "last activity" = owner's last successful sign-in (`users.last_login_at`)._
+- _F-014 suspension effects: neutral "tidak tersedia" public page (not 404), seller sign-in blocked, unpaid holds expire + uploads blocked, paid bookings untouched / no auto-notify._
+- _F-015 admin actions stay platform-internal; sellers do not see them._
 
 ### Missing mockups
 
 Sign-up / sign-in / password reset (F-001) · Pengaturan → Akun, Profil usaha and Rekening (F-001) · mobile trip editor (F-003 Q8) ·
-mobile dashboard (F-007 Q1 decided: build phone-first, device review instead).
+mobile dashboard (F-007 Q1 decided: build phone-first, device review instead) ·
+admin panel screens (F-010–F-015: no mockups — internal tool, build phone-first from the seller-app patterns, device review instead).
 
 ## Next — after pilot feedback (P1)
 

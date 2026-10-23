@@ -18,12 +18,12 @@ Status flow: `draft` → `ready` → `in-progress` → `done` (or `parked`). Kee
 | [F-007](F-007-seller-dashboard-and-bookings.md) | Seller dashboard ("Hari ini") & booking list | P0 | done | MVP wk 2–4 |
 | [F-008](F-008-whatsapp-handoff.md) | WhatsApp contact & prefilled messages | P0 | done | MVP wk 4 |
 | [F-009](F-009-tenancy-security-operations.md) | Tenancy, security & operations baseline | P0 | in-progress | MVP wk 2–6 |
-| [F-010](F-010-admin-access-control.md) | Admin authentication & access control | P0 | draft | MVP wk 4 |
-| [F-011](F-011-admin-overview-dashboard.md) | Admin overview dashboard | P0 | draft | MVP wk 4 |
-| [F-012](F-012-admin-seller-directory.md) | Admin seller directory & organization details | P0 | draft | MVP wk 4 |
-| [F-013](F-013-admin-booking-search.md) | Admin cross-seller booking search & details | P0 | draft | MVP wk 4 |
-| [F-014](F-014-seller-suspension.md) | Seller account suspension & reactivation | P0 | draft | MVP wk 4 |
-| [F-015](F-015-admin-audit-log.md) | Audit logging for admin actions | P0 | draft | MVP wk 4 |
+| [F-010](F-010-admin-access-control.md) | Admin authentication & access control | P0 | ready | MVP wk 4 |
+| [F-011](F-011-admin-overview-dashboard.md) | Admin overview dashboard | P0 | ready | MVP wk 4 |
+| [F-012](F-012-admin-seller-directory.md) | Admin seller directory & organization details | P0 | ready | MVP wk 4 |
+| [F-013](F-013-admin-booking-search.md) | Admin cross-seller booking search & details | P0 | ready | MVP wk 4 |
+| [F-014](F-014-seller-suspension.md) | Seller account suspension & reactivation | P0 | ready | MVP wk 4 |
+| [F-015](F-015-admin-audit-log.md) | Audit logging for admin actions | P0 | ready | MVP wk 4 |
 | [F-016](F-016-booking-confirmation-retrieval.md) | Booking confirmation — copy link & print-friendly proof | P0 | ready | MVP wk 4 |
 
 F-010–F-015 form the internal admin panel for the sole platform admin during MVP/pilot (ADR-0011).
