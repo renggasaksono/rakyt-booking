@@ -38,6 +38,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
+| Seller side nav on ink with the "Rakyt \| Booking" mark; "Booking" kicker in gold-soft `#D9AE5C` on ink (Sogan fails at 2.1 : 1); solid 2f seat-bar colours | Accept — built on `fix/dashboard-mockup-revisions` | [ADR-0036](../decisions/0036-ink-ground-side-nav-and-seat-bar-colours.md) · [F-007](../features/F-007-seller-dashboard-and-bookings.md) | Pre-pilot (visual sign-off) |
 | "Sogan Cerah" landing reskin — keep scoped to the landing, or adopt the brighter palette product-wide (supersede ADR-0008)? | Keep scoped (`.cerah`) for now; measure `#a65f2c` contrast before any product-wide move | [ADR-0035](../decisions/0035-sogan-cerah-landing-reskin.md) · [F-017](../features/F-017-public-landing-page.md) | Pre-pilot (visual sign-off) |
 
 ### Week 1 — choices outside the specs

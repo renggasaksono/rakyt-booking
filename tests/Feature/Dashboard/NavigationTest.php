@@ -75,6 +75,7 @@ class NavigationTest extends TestCase
         ], array_column($nav, 'url'));
         $this->assertSame([false, false, false, false, true, false], array_column($nav, 'external'));
         $this->assertSame([true, false, false, false, false, false], array_column($nav, 'active'));
+        $this->assertSame(['Rakyt', 'Booking'], [$this->todayProps($this->a)['seller']['brand'], $this->todayProps($this->a)['seller']['brand_suffix']]);
     }
 
     public function test_ac_2_the_current_section_is_marked_and_details_mark_pesanan(): void
@@ -96,7 +97,13 @@ class NavigationTest extends TestCase
         $layout = file_get_contents(resource_path('js/layouts/SellerLayout.vue'));
 
         $this->assertStringContainsString(":aria-current=\"item.active ? 'page' : undefined\"", $layout);
-        $this->assertStringContainsString("item.active ? 'bg-gading text-sogan'", $layout);
+        $this->assertStringContainsString("item.active ? 'bg-sogan font-semibold text-gading'", $layout);
+        // The ink side nav carries the same "Rakyt | Booking" lockup as the landing nav.
+        $this->assertMatchesRegularExpression('/<aside class="[^"]*\bbg-ink\b/', $layout);
+        $this->assertMatchesRegularExpression('/<ProductMark[^>]*:suffix="seller\?\.brand_suffix"[^>]*tone="reverse"/s', $layout);
+        $this->assertStringContainsString('<ProductMark', file_get_contents(resource_path('js/components/marketing/MarketingNav.vue')));
+        $this->assertSame(['Rakyt', 'Booking'], [__('trips.nav.brand'), __('trips.nav.brand_suffix')]);
+        $this->assertSame(__('landing.nav.brand_suffix'), __('trips.nav.brand_suffix'));
         $this->assertMatchesRegularExpression('/v-if="item\.external"[^>]*target="_blank"[^>]*rel="noopener"/s', $layout);
         // AC-3: the four phone items are at least 44 px tall.
         $this->assertStringContainsString('phoneNav', $layout);

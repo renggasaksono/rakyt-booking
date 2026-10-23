@@ -45,6 +45,17 @@ class DashboardDesignTest extends TestCase
             $this->assertSame(0, substr_count($this->vue($file), 'bg-prada'), $file);
         }
 
+        // 2f: the gold button is the biggest — 48 px on a phone, 44 px on desktop; every other
+        // button on Hari ini is 44 px on a phone (tap target) and the 36 px secondary size on desktop.
+        $this->assertMatchesRegularExpression('/class="[^"]*\bmin-h-12\b[^"]*bg-prada[^"]*lg:min-h-11/', $this->vue('pages/Dashboard/Today'));
+        foreach (['components/BookingRow', 'components/LinkCard'] as $file) {
+            preg_match_all('/<(?:button|a)\b[^>]*?\s(?<!:)class="([^"]*(?:ring-inset|bg-ink )[^"]*)"/s', $this->vue($file), $matches);
+            $this->assertNotEmpty($matches[1], $file);
+            foreach ($matches[1] as $class) {
+                $this->assertMatchesRegularExpression('/\bmin-h-11\b.*\blg:min-h-9\b/', $class, "{$file}: a secondary button bigger than 36 px on desktop [{$class}].");
+            }
+        }
+
         // AC-13: while open, the quick-edit sheet's "Simpan" is the gold one.
         $this->assertSame(1, substr_count($this->vue('components/QuickEditSheet'), ' bg-prada '));
     }

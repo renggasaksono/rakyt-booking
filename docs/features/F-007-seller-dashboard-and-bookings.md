@@ -88,9 +88,11 @@ F-005 AC-23 invariant still holds.
   there with 302). A seller still in onboarding is redirected to their resume step (F-001 E2); a guest goes to `/masuk`.
 - [x] **AC-2 Desktop nav.** Given a screen ≥ 1024 px, then the side nav lists, in order: **Hari ini** (`/hari-ini`),
   **Pesanan** (`/pesanan`), **Trip & keberangkatan** (`/trip`), **Pembayaran** (`/pesanan?status=perlu_tindakan`),
-  **Halaman publik** (the seller page `/<slug>`, new tab, `rel="noopener"`, marked "↗"), **Pengaturan**. The current
-  section is marked (Sogan text, `aria-current="page"`); booking detail pages mark Pesanan.
-- [x] **AC-3 Phone nav.** Given a screen < 1024 px, then the bottom nav has four items, each ≥ 44 px tall: **Hari ini**,
+  **Halaman publik** (the seller page `/<slug>`, new tab, `rel="noopener"`, marked "↗"), **Pengaturan**. The nav is
+  the ink panel of 1e/2f under the **Rakyt | Booking** product mark (ADR-0036); the current section is marked (Sogan
+  fill with gading text, `aria-current="page"`); booking detail pages mark Pesanan.
+- [x] **AC-3 Phone nav.** Given a screen < 1024 px, then the bottom nav — the same ink panel as the side nav (ADR-0036)
+  — has four items, each ≥ 44 px tall: **Hari ini**,
   **Pesanan**, **Trip**, **Pengaturan**. Halaman publik is reached from the link card (AC-14), Pembayaran from Perlu
   tindakan (AC-8).
 - [x] **AC-4 Nav counts.** Given the seller's bookings, then **Pesanan** and **Pembayaran** show the **Perlu tindakan
@@ -103,7 +105,9 @@ F-005 AC-23 invariant still holds.
 - [x] **AC-5 Header.** Given seller Agus of "Kencana Trip" opens Hari ini at 08.15 local on Friday 16 Oktober, then the
   page shows the date "Jumat, 16 Oktober" (year added when not the current year — never needed for today), the greeting
   "Selamat pagi, Agus." using `users.name` (pagi 04.00–10.59, siang 11.00–14.59, sore 15.00–17.59, malam 18.00–03.59,
-  local time), the business name and the plan badge "Paket Gratis" (Q3), and "+ Trip baru" linking to `/trip/baru`.
+  local time), and "+ Trip baru" linking to `/trip/baru`. As in 1e/2f the date is an uppercase Sogan kicker over a
+  30 px greeting (24 px on a phone). The business name and the plan "Paket Gratis" (Q3) sit at the foot of the desktop
+  side nav on every seller page (shared `seller.organization`), not in the page header; the phone shows neither.
   "+ Trip baru" is the page's one gold button (mockup 1e/2f); every other action on the page is ink or ink outline.
 - [x] **AC-6 Order on a phone.** At 360 px the sections stack in this order: header, Perlu tindakan, Keberangkatan
   terdekat, Pesanan terbaru, link card (Q1). On desktop they follow the mockup's two-column layout.
@@ -132,9 +136,10 @@ F-005 AC-23 invariant still holds.
   to `/trip`.
 - [x] **AC-12 Seat bar.** Given a departure with capacity 16, `paid` bookings for 12 participants, `awaiting_payment`
   and `needs_review` bookings for 2, and an open deadline of 21 Okt 23.59, then the bar has three segments in
-  proportion — **lunas** 12 (Lunas tint/deep), **ditahan** 2 (Menunggu pembayaran tint/deep), **kosong** 2 (Surface
-  with a border) — with a legend "Lunas · Ditahan · Kosong" (each with its glyph) once per section, and the text
-  "12 lunas · 2 ditahan · 2 kosong · tutup 21 Okt". Zero parts are left out ("5 lunas · 11 kosong"; "16 lunas" for a
+  proportion — **lunas** 12 (solid Lunas green), **ditahan** 2 (solid amber `status-waiting-bar`), **kosong** 2 (a
+  faint ink track), square with 3 px gaps as in 2f (ADR-0036) — with a legend "Lunas · Ditahan · Kosong" (each with
+  its glyph) once per section, and the text "12 lunas · 2 ditahan · 2 kosong · tutup 21 Okt" ("2 ditahan" in the
+  waiting deep colour). Zero parts are left out ("5 lunas · 11 kosong"; "16 lunas" for a
   full one), "· tutup …" appears only while the departure is open and before its deadline, and lunas + ditahan always
   equals the departure's `seats_taken` (a test asserts it). The bar itself is `aria-hidden`; the text is what screen
   readers get. Colour is never the only signal (the text is always shown).
@@ -453,3 +458,9 @@ review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spe
 - 2026-10-22 — Planner: F-004 re-scoped to a WhatsApp handoff ("Option B", Rengga) — the in-app "◐ Permintaan tanggal"
   rows / "Balas" are deferred to P1, so the Out list and the F-004 dependency note now record that nothing is added here
   in P0. No code change; status stays `done`
+- 2026-10-23 — Mockup revisions (Rengga): side nav on ink with the shared "Rakyt | Booking" mark, Hari ini section
+  titles as the `section-header` kicker, departure rows and seat bar redrawn to 2f (AC-2, AC-12 wording updated;
+  ADR-0036 proposed). Status stays `done`
+- 2026-10-23 — Phone bottom nav on the same ink panel as the side nav (AC-3 wording). Status stays `done`
+- 2026-10-23 — AC-5 to the mockup: date kicker, larger greeting, roomier page padding; business name and plan moved from the Hari ini header to the foot of the desktop side nav (Rengga). Status stays `done`
+- 2026-10-23 — Button sizes to 2f: gold "+ Trip baru" is the biggest (48px phone / 44px desktop); Konfirmasi, Tolak, Ingatkan via WA, Salin link and Bagikan use the 36px secondary size on desktop (44px tap target on a phone); link card title as a Sogan kicker. Status stays `done`

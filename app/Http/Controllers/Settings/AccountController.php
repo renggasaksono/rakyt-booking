@@ -28,6 +28,7 @@ class AccountController extends Controller
     public function edit(Request $request, CurrentOrganization $current): Response
     {
         $user = $request->user();
+        $organization = $current->get();
 
         return Inertia::render('Settings/Account', [
             'copy' => __('account'),
@@ -39,11 +40,12 @@ class AccountController extends Controller
             'urls' => [
                 'email' => route('settings.account.email'),
                 'password' => route('settings.account.password'),
-                'logout' => route('logout'),
                 'back' => $current->check() ? route('settings.index') : route('onboarding'),
             ],
             'backLabel' => $current->check() ? __('profile.settings.back') : __('account.settings.back'),
             'limits' => ['password_min' => RegisterRequest::PASSWORD_MIN],
+            // Past onboarding the page sits in the seller layout; during it, a bare frame (no seller nav yet).
+            'inApp' => $organization !== null && ! $organization->isOnboarding(),
         ]);
     }
 

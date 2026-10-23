@@ -22,25 +22,41 @@ export function dayMonth(iso, today, calendar) {
 }
 
 /**
- * AC-12: the seat summary — "12 lunas · 2 ditahan · 2 kosong · tutup 21 Okt".
- * Zero parts are left out; "tutup …" only while the departure is open and
- * before its deadline (the server sends closes_on only then).
+ * AC-12: the seat summary as parts — "12 lunas", "2 ditahan", "2 kosong",
+ * "tutup 21 Okt". Zero parts are left out; "tutup …" only while the departure
+ * is open and before its deadline (the server sends closes_on only then).
+ * The bar emphasises the "ditahan" part, so each part keeps its key.
  */
-export function seatSummary(seats, closesOn, today, copy, calendar) {
+export function seatSummaryParts(seats, closesOn, today, copy, calendar) {
     const parts = [
         ['paid', seats.paid],
         ['held', seats.held],
         ['empty', seats.empty],
     ]
         .filter(([, n]) => n > 0)
-        .map(([key, n]) => t(copy, `departures.seats.${key}`, { n }));
+        .map(([key, n]) => ({ key, text: t(copy, `departures.seats.${key}`, { n }) }));
 
     if (closesOn) {
-        parts.push(t(copy, 'departures.seats.closes', { date: dayMonth(closesOn, today, calendar) }));
+        parts.push({ key: 'closes', text: t(copy, 'departures.seats.closes', { date: dayMonth(closesOn, today, calendar) }) });
     }
 
-    return parts.join(' · ');
+    return parts;
 }
+
+/** AC-12: "12 lunas · 2 ditahan · 2 kosong · tutup 21 Okt" — what screen readers get. */
+export function seatSummary(seats, closesOn, today, copy, calendar) {
+    return seatSummaryParts(seats, closesOn, today, copy, calendar).map((part) => part.text).join(' · ');
+}
+
+/**
+ * AC-12 bar and legend colours (mockup 2f): solid Lunas green, amber for
+ * ditahan, a faint ink track for kosong. Tokens only (resources/css/app.css).
+ */
+export const SEAT_SEGMENT_CLASSES = {
+    paid: 'bg-status-paid',
+    held: 'bg-status-waiting-bar',
+    empty: 'bg-ink/12',
+};
 
 /**
  * AC-12: segment widths in percent of the capacity, zero parts dropped.

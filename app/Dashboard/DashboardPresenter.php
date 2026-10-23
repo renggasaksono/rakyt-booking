@@ -50,11 +50,6 @@ final class DashboardPresenter
                 // AC-5: "Jumat, 16 Oktober" — today is always the current year.
                 'date' => $local->translatedFormat('l, j F'),
             ],
-            'organization' => [
-                'name' => $organization->name,
-                'slug' => $organization->slug,
-                'plan_label' => __('dashboard.plan.free'),
-            ],
             'public_url' => BookingSlug::url($organization->slug),
             'action_needed' => [
                 'count' => self::actionNeededCount($now),

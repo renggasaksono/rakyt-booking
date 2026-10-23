@@ -22,7 +22,7 @@ class AccountSettingsTest extends TestCase
 {
     use BuildsOnboarding, InteractsWithTenants, RefreshDatabase;
 
-    public function test_ac_f3_akun_is_its_own_page_with_email_password_and_sign_out(): void
+    public function test_ac_f3_akun_is_its_own_page_with_email_and_password_in_the_seller_layout(): void
     {
         $tenant = $this->createTenant();
 
@@ -31,15 +31,41 @@ class AccountSettingsTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Settings/Account')
                 ->where('account.email', $tenant->owner->email)
-                ->where('urls.logout', route('logout'))
                 ->where('urls.back', route('settings.index'))
-                ->where('backLabel', '← Pengaturan'));
+                ->missing('urls.logout')
+                ->where('backLabel', '← Pengaturan')
+                ->where('inApp', true)
+                ->has('seller.nav', 6));
 
         $this->actingAsTenant($tenant)->get(route('settings.index'))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Settings/Index')
                 ->where('items.0.url', route('settings.profile'))
-                ->where('items.1.url', route('settings.account')));
+                ->where('items.1.url', route('settings.account'))
+                ->where('urls.logout', route('logout')));
+
+        // A6: "Keluar" is on Pengaturan (and the onboarding header), not repeated on Akun.
+        $vue = file_get_contents(resource_path('js/pages/Settings/Account.vue'));
+        $this->assertStringContainsString('inApp ? SellerLayout : BareFrame', $vue);
+        $this->assertStringNotContainsString('logout', $vue);
+    }
+
+    public function test_ac_f3_during_onboarding_akun_keeps_its_bare_frame(): void
+    {
+        $user = $this->signedUpUser();
+
+        $this->actingAs($user)->get(route('settings.account'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Settings/Account')
+                ->where('urls.back', route('onboarding'))
+                ->where('inApp', false));
+
+        $tenant = $this->onboardingTenant();
+
+        $this->actingAsTenant($tenant)->get(route('settings.account'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('inApp', false));
     }
 
     public function test_ac_a11_changing_the_email_needs_the_current_password(): void

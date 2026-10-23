@@ -49,7 +49,14 @@ class HariIniTest extends TestCase
         $props = $this->todayProps($this->a);
 
         $this->assertSame(['text' => 'Selamat pagi, Agus.', 'date' => 'Jumat, 16 Oktober'], $props['greeting']);
-        $this->assertSame(['name' => 'Kencana Trip', 'slug' => 'kencana', 'plan_label' => 'Paket Gratis'], $props['organization']);
+        // 1e/2f: business and plan sit at the foot of the desktop side nav, not in the page header.
+        $this->assertArrayNotHasKey('organization', $props);
+        $this->assertSame(['name' => 'Kencana Trip', 'plan_label' => 'Paket Gratis'], $props['seller']['organization']);
+        $layout = file_get_contents(resource_path('js/layouts/SellerLayout.vue'));
+        $this->assertMatchesRegularExpression('/<aside class="hidden [^"]*lg:flex/', $layout);
+        $this->assertStringContainsString('{{ seller.organization.plan_label }}', $layout);
+        $page = file_get_contents(resource_path('js/pages/Dashboard/Today.vue'));
+        $this->assertMatchesRegularExpression('/class="[^"]*uppercase[^"]*text-sogan">\s*\{\{ greeting\.date \}\}/', $page);
         $this->assertSame(url('/trip/baru'), $props['urls']['new_trip']);
         $this->assertSame('+ Trip baru', $props['copy']['new_trip']);
     }
@@ -243,9 +250,13 @@ class HariIniTest extends TestCase
         $bar = file_get_contents(resource_path('js/components/SeatBar.vue'));
 
         $this->assertMatchesRegularExpression('/aria-hidden="true"/', $bar);
-        $this->assertStringContainsString('seatSummary(', $bar);
-        foreach (['bg-status-paid-tint', 'bg-status-waiting-tint', 'bg-surface'] as $class) {
-            $this->assertStringContainsString($class, $bar);
+        $this->assertStringContainsString('seatSummaryParts(', $bar);
+        // Mockup 2f: solid status colours from tokens, shared by the bar and the legend.
+        $this->assertStringContainsString('SEAT_SEGMENT_CLASSES[segment.key]', $bar);
+        $this->assertStringContainsString('SEAT_SEGMENT_CLASSES[item.key]', file_get_contents(resource_path('js/pages/Dashboard/Today.vue')));
+        $lib = file_get_contents(resource_path('js/lib/dashboard.js'));
+        foreach (["paid: 'bg-status-paid'", "held: 'bg-status-waiting-bar'", "empty: 'bg-ink/12'"] as $class) {
+            $this->assertStringContainsString($class, $lib);
         }
     }
 
@@ -287,7 +298,9 @@ class HariIniTest extends TestCase
         // F-001 D5's behaviour, reused: native share, else copy.
         $this->assertStringContainsString("import { copyLink, shareOrCopy } from '../lib/onboarding.js'", $card);
         $this->assertMatchesRegularExpression('/:href="viewUrl"\s+target="_blank"\s+rel="noopener"/', $card);
-        $this->assertStringContainsString('border-2 border-ink', $card);
+        // 2f: Salin link in the 1.5px ink outline, Bagikan in the quiet 1px one.
+        $this->assertStringContainsString('ring-[1.5px] ring-ink ring-inset', $card);
+        $this->assertStringContainsString('ring-1 ring-ink/25 ring-inset', $card);
     }
 
     public function test_ac_15_the_query_count_does_not_grow_with_bookings(): void

@@ -156,7 +156,7 @@ from the rate-limit table in F-009; tests read the configured values rather than
 - [x] **F1** The owner can edit "Nama usaha", "Kota basis", "Nomor WhatsApp usaha" (same validation as B3, not verified), "Logo" (JPG/PNG/WebP, ≤ 2 MB, shown square) and "Bio singkat" (≤ 160 chars). Changes appear on the public page (F-002) immediately.
   *Covered:* editing, validation and the logo are tested here; the public page shows changes on the next load (F-002 AC-10).
 - [x] **F2** The slug is shown read-only after first publish with "Hubungi Rakyt untuk mengganti link." (Q3). Before first publish it is editable with the B5–B7, B10 rules.
-- [x] **F3** Account settings (email, password, sign-out) live in Pengaturan → Akun (A6, A11, A12), separate from the business profile.
+- [x] **F3** Account settings (email, password) live in Pengaturan → Akun (A11, A12), separate from the business profile. Past onboarding Akun sits in the seller layout like the other Pengaturan pages; "Keluar" (A6) is on Pengaturan itself and in the onboarding header, not repeated on Akun.
 - [x] **F4** Given an organization with future departures that use a relative deadline preset (`same_day`, `h1`, `h3`, `h7`), when the owner changes the time zone in Profil usaha, then those deadlines are recomputed in the new zone with F-003's `DeadlineCalculator`, inside the same transaction, each change audited as `departure.deadline_changed`; custom deadlines keep their instant (ADR-0014, F-003 Q15).
 
 - [x] **F5** Pengaturan → Rekening (`/pengaturan/rekening`, route `payment-methods.index`) lists the organization's bank / e-wallet accounts with the step 4 fields and rules (C10, max 5, at least one kept) and saves them with the same service (own limiter `throttle:payment-change`, 10 per 15 min per user): one `payment_instructions.changed` audit event with before/after values per real change, none when nothing changed. It is on the Pengaturan index and linked from the F-003 editor's publish checklist, at phone width too (the list under "Pratinjau"). Page visits during the guided flow resume it (E2). QRIS and cash stay in F-006. No mockup; built from the 4e block.
@@ -275,3 +275,5 @@ None block building. The spec uses the recommended default for each; override an
 - 2026-10-22 — Builder: onboarding picker now offers the two types only (`day_trip` removed from
   `lang/id/onboarding.php → trip.types`, Open-trip hint updated); `GuidedTripTest::test_ac_c2_...` asserts the two-type
   set and the new hint. C2 re-ticked. All gates green
+- 2026-10-23 — F3: Akun uses the seller layout once onboarding is done and no longer repeats "Keluar" (it stays on
+  Pengaturan and in the onboarding header). Status unchanged

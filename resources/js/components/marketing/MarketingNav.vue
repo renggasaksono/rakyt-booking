@@ -1,6 +1,6 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import RakytMark from './RakytMark.vue';
+import ProductMark from '../ProductMark.vue';
 
 /**
  * Sticky landing nav (F-017): brand, in-page anchors, "Masuk" (secondary ink),
@@ -22,15 +22,13 @@ const emit = defineEmits(['cta']);
         <nav class="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
             <a
                 href="#atas"
-                class="flex items-center gap-2.5 text-ink"
+                class="flex text-ink"
                 :aria-label="`${nav.brand} ${nav.brand_suffix}`"
             >
-                <RakytMark :size="26" />
-                <span class="font-heading text-xl font-semibold tracking-[-0.03em] text-ink">{{ nav.brand }}</span>
-                <span
-                    v-if="nav.brand_suffix"
-                    class="border-l border-ink/20 pl-2.5 font-heading text-[11px] font-semibold uppercase tracking-[0.14em] text-sogan"
-                >{{ nav.brand_suffix }}</span>
+                <ProductMark
+                    :brand="nav.brand"
+                    :suffix="nav.brand_suffix"
+                />
             </a>
 
             <ul class="ml-4 hidden items-center gap-5 md:flex">
