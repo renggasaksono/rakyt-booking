@@ -30,8 +30,8 @@ class AccountSettingsTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Settings/Account')
-                ->where('account.name', $tenant->owner->name)
-                ->where('account.email', $tenant->owner->email)
+                ->where('user.name', $tenant->owner->name)
+                ->where('user.email', $tenant->owner->email)
                 ->where('urls.name', route('settings.account.name'))
                 ->where('urls.email', route('settings.account.email'))
                 ->where('urls.password', route('settings.account.password'))
@@ -61,11 +61,32 @@ class AccountSettingsTest extends TestCase
         $this->assertTrue($name < $email && $email < $password);
     }
 
+    public function test_ac_a10_akun_keeps_the_shared_account_prop_for_the_verification_banner(): void
+    {
+        // Akun's own props must not shadow the shared `account` prop (Inertia merges them shallowly).
+        $banner = fn (AssertableInertia $page) => $page
+            ->component('Settings/Account')
+            ->where('account.verified', false)
+            ->where('account.copy.banner', 'Cek email Anda untuk verifikasi alamat email.')
+            ->where('account.urls.resend', route('verification.send'))
+            ->has('user.email');
+
+        $tenant = $this->createTenant();
+        $tenant->owner->forceFill(['email_verified_at' => null])->save();
+        $this->actingAsTenant($tenant)->get(route('settings.account'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $banner($page)->where('inApp', true));
+
+        $this->actingAs($this->signedUpUser())->get(route('settings.account'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $banner($page)->where('inApp', false));
+    }
+
     public function test_ac_a14_the_name_section_shows_the_current_name_in_an_editable_field(): void
     {
         $vue = file_get_contents(resource_path('js/pages/Settings/Account.vue'));
 
-        $this->assertMatchesRegularExpression('/useForm\(\{ name: props\.account\.name \}\)/', $vue);
+        $this->assertMatchesRegularExpression('/useForm\(\{ name: props\.user\.name \}\)/', $vue);
         $this->assertMatchesRegularExpression('/<input\s+id="account-name"\s+v-model="nameForm\.name"\s+type="text"\s+autocomplete="name"/', $vue);
         $this->assertStringContainsString('<FieldError :message="nameForm.errors.name ?? nameForm.errors.rate_limit" />', $vue);
 

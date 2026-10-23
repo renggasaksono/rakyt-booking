@@ -16,7 +16,7 @@ import { t } from '../../lib/text.js';
  */
 const props = defineProps({
     copy: { type: Object, required: true },
-    account: { type: Object, required: true },
+    user: { type: Object, required: true },
     urls: { type: Object, required: true },
     limits: { type: Object, required: true },
     backLabel: { type: String, required: true },
@@ -25,14 +25,14 @@ const props = defineProps({
 
 const BareFrame = (_, { slots }) => h('div', { class: 'min-h-screen bg-gading' }, [h(VerificationBanner), slots.default?.(), h(FlashMessages)]);
 
-const nameForm = useForm({ name: props.account.name });
+const nameForm = useForm({ name: props.user.name });
 const emailForm = useForm({ email: '', current_password: '' });
 const passwordForm = useForm({ current_password: '', password: '' });
 
 function changeName() {
     if (!nameForm.processing) {
         // Keep the saved (trimmed) name as the form's new baseline.
-        nameForm.put(props.urls.name, { preserveScroll: true, onSuccess: () => nameForm.defaults({ name: props.account.name }).reset() });
+        nameForm.put(props.urls.name, { preserveScroll: true, onSuccess: () => nameForm.defaults({ name: props.user.name }).reset() });
     }
 }
 
@@ -103,13 +103,13 @@ function changePassword() {
                     {{ t(copy, 'settings.email_section') }}
                 </h2>
                 <p class="mt-1 text-sm text-ink">
-                    {{ t(copy, 'settings.current_email') }}: <span class="font-semibold">{{ account.email }}</span>
+                    {{ t(copy, 'settings.current_email') }}: <span class="font-semibold">{{ user.email }}</span>
                 </p>
                 <p
                     class="text-xs"
-                    :class="account.verified ? 'text-status-paid' : 'text-status-waiting'"
+                    :class="user.verified ? 'text-status-paid' : 'text-status-waiting'"
                 >
-                    {{ account.verified ? t(copy, 'settings.verified') : `◷ ${t(copy, 'settings.unverified')}` }}
+                    {{ user.verified ? t(copy, 'settings.verified') : `◷ ${t(copy, 'settings.unverified')}` }}
                 </p>
 
                 <label
@@ -163,7 +163,7 @@ function changePassword() {
                 <input
                     type="email"
                     autocomplete="username"
-                    :value="account.email"
+                    :value="user.email"
                     class="sr-only"
                     tabindex="-1"
                     aria-hidden="true"

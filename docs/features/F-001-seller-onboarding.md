@@ -108,7 +108,8 @@ from the rate-limit table in F-009; tests read the configured values rather than
   "Simpan nama" is ink outline like the email and password buttons (P2). The new name is used from the next page load
   by the Hari ini greeting (F-007 AC-5) and the auth email greeting "Halo :name,". The route shares
   `throttle:account-change` with A11/A12. The shared `account` Inertia prop no longer carries `name` — no shared
-  component reads it; Akun gets the name through its own page props.
+  component reads it; Akun gets the name through its own page prop, named so it does not shadow the shared `account`
+  prop that the verification banner reads (A10).
 
 ### B. Organization — "Langkah 1 dari 4 · Usaha" (4b, adapted)
 
@@ -298,3 +299,6 @@ None block building. The spec uses the recommended default for each; override an
   its sticky "Simpan profil" bar for an inline button under the form, like Pembayaran, Pemesanan and Akun: the phone
   bottom nav comes back, and the viewport-wide bar no longer covers the desktop side nav's business/plan footer.
   `ProfileTest` asserts it. P1 stays open for the device review
+- 2026-10-23 — Review fix: Akun's page prop `account` shadowed the shared `account` prop (Inertia merges them
+  shallowly), so the verification banner (A10) broke on Akun for an unverified seller. Renamed to `user`; a test checks
+  the banner props on Akun in the seller layout and in the onboarding frame

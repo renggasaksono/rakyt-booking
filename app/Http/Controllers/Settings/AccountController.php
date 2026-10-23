@@ -32,7 +32,8 @@ class AccountController extends Controller
 
         return Inertia::render('Settings/Account', [
             'copy' => __('account'),
-            'account' => [
+            // Not `account`: that shared prop (A6, A10) feeds the verification banner.
+            'user' => [
                 'name' => $user->name,
                 'email' => $user->email,
                 'verified' => $user->hasVerifiedEmail(),
