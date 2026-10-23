@@ -8,7 +8,7 @@ import SeatBar from '../../components/SeatBar.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import SellerLayout from '../../layouts/SellerLayout.vue';
 import { BOOKING_STATUS_STYLES } from '../../lib/booking.js';
-import { dayMonth } from '../../lib/dashboard.js';
+import { SEAT_SEGMENT_CLASSES, dayMonth } from '../../lib/dashboard.js';
 import { t } from '../../lib/text.js';
 
 /**
@@ -37,9 +37,9 @@ const selectedId = ref(null);
 const selected = computed(() => props.departures.find((departure) => departure.id === selectedId.value) ?? null);
 const presets = ['same_day', 'h1', 'h3', 'h7', 'custom'];
 const legend = [
-    { key: 'paid', glyph: BOOKING_STATUS_STYLES.paid.glyph, className: 'bg-status-paid-tint border-status-paid' },
-    { key: 'held', glyph: BOOKING_STATUS_STYLES.awaiting_payment.glyph, className: 'bg-status-waiting-tint border-status-waiting' },
-    { key: 'empty', glyph: '○', className: 'bg-surface border-ink/30' },
+    { key: 'paid', glyph: BOOKING_STATUS_STYLES.paid.glyph },
+    { key: 'held', glyph: BOOKING_STATUS_STYLES.awaiting_payment.glyph },
+    { key: 'empty', glyph: '○' },
 ];
 
 // AC-13: after a quick edit (saved or refused) the rows show the current numbers.
@@ -82,30 +82,27 @@ function refresh() {
                     class="min-w-0 lg:col-start-1"
                     aria-labelledby="action-needed-title"
                 >
-                    <div class="flex items-center justify-between gap-2">
-                        <h2
-                            id="action-needed-title"
-                            class="font-heading text-base font-semibold text-ink"
-                        >
+                    <div class="section-header flex items-center justify-between gap-2">
+                        <h2 id="action-needed-title">
                             {{ t(copy, 'action_needed.title', { n: action_needed.count }) }}
                         </h2>
                         <Link
                             v-if="action_needed.count > 0"
                             :href="urls.action_needed"
-                            class="inline-flex min-h-11 items-center text-sm text-sogan underline"
+                            class="-my-3 inline-flex min-h-11 shrink-0 items-center font-sans text-sm font-normal normal-case tracking-normal text-sogan hover:underline"
                         >
                             {{ t(copy, 'action_needed.all') }}
                         </Link>
                     </div>
                     <p
                         v-if="!action_needed.items.length"
-                        class="mt-2 rounded-xl border border-ink/10 bg-surface p-4 text-sm text-ink"
+                        class="mt-3 rounded-xl border border-ink/10 bg-surface p-4 text-sm text-ink"
                     >
                         <span aria-hidden="true">✓</span> {{ t(copy, 'action_needed.empty') }}
                     </p>
                     <ul
                         v-else
-                        class="mt-2 flex flex-col gap-2"
+                        class="mt-3 flex flex-col gap-2"
                     >
                         <li
                             v-for="booking in action_needed.items"
@@ -128,40 +125,37 @@ function refresh() {
                     class="min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1"
                     aria-labelledby="departures-title"
                 >
-                    <div class="flex items-center justify-between gap-2">
-                        <h2
-                            id="departures-title"
-                            class="font-heading text-base font-semibold text-ink"
-                        >
+                    <div class="section-header flex items-center justify-between gap-2">
+                        <h2 id="departures-title">
                             {{ t(copy, 'departures.title') }}
                         </h2>
                         <Link
                             :href="urls.departures"
-                            class="inline-flex min-h-11 items-center text-sm text-sogan underline"
+                            class="-my-3 inline-flex min-h-11 shrink-0 items-center font-sans text-sm font-normal normal-case tracking-normal text-sogan hover:underline"
                         >
                             {{ t(copy, 'departures.all') }}
                         </Link>
                     </div>
                     <ul
                         v-if="departures.length"
-                        class="mt-1 flex flex-wrap gap-x-3 text-xs text-ink"
+                        class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-secondary"
                         :aria-hidden="true"
                     >
                         <li
                             v-for="item in legend"
                             :key="item.key"
-                            class="inline-flex items-center gap-1"
+                            class="inline-flex items-center gap-1.5"
                         >
                             <span
-                                class="inline-block h-3 w-3 rounded-sm border"
-                                :class="item.className"
+                                class="inline-block h-2.5 w-2.5"
+                                :class="SEAT_SEGMENT_CLASSES[item.key]"
                             />
                             <span>{{ item.glyph }} {{ t(copy, `departures.legend.${item.key}`) }}</span>
                         </li>
                     </ul>
                     <div
                         v-if="!departures.length"
-                        class="mt-2 rounded-xl border border-ink/10 bg-surface p-4 text-sm text-ink"
+                        class="mt-3 rounded-xl border border-ink/10 bg-surface p-4 text-sm text-ink"
                     >
                         <p>{{ t(copy, 'departures.empty') }}</p>
                         <Link
@@ -171,24 +165,34 @@ function refresh() {
                             {{ t(copy, 'departures.add') }}
                         </Link>
                     </div>
+                    <!-- 2f: plain rows on the page ground — title · date with "Edit cepat" on the right, the bar, its summary. -->
                     <ul
                         v-else
-                        class="mt-2 flex flex-col gap-2"
+                        class="mt-1 flex flex-col divide-y divide-ink/10"
                     >
                         <li
                             v-for="departure in departures"
                             :key="departure.id"
-                            class="rounded-xl border border-ink/10 bg-surface p-4"
+                            class="py-3"
                         >
-                            <div class="flex items-start justify-between gap-2">
-                                <p class="min-w-0 truncate font-heading text-sm font-semibold text-ink">
+                            <div class="flex items-center justify-between gap-3">
+                                <p class="min-w-0 truncate font-heading text-[15px] font-semibold text-ink">
                                     {{ departure.trip.name }} · {{ dayMonth(departure.start_date, context.today, calendar) }}
                                 </p>
-                                <StatusBadge
-                                    v-if="departure.display_status === 'closed' || departure.display_status === 'full'"
-                                    :status="departure.display_status"
-                                    :label="t(copy.trips, `status.${departure.display_status}`)"
-                                />
+                                <div class="flex shrink-0 items-center gap-3">
+                                    <StatusBadge
+                                        v-if="departure.display_status === 'closed' || departure.display_status === 'full'"
+                                        :status="departure.display_status"
+                                        :label="t(copy.trips, `status.${departure.display_status}`)"
+                                    />
+                                    <button
+                                        type="button"
+                                        class="-my-3 inline-flex min-h-11 items-center font-heading text-xs font-semibold text-sogan hover:underline"
+                                        @click="selectedId = departure.id"
+                                    >
+                                        {{ t(copy, 'departures.quick_edit') }}
+                                    </button>
+                                </div>
                             </div>
                             <SeatBar
                                 class="mt-2"
@@ -198,13 +202,6 @@ function refresh() {
                                 :copy="copy"
                                 :calendar="calendar"
                             />
-                            <button
-                                type="button"
-                                class="mt-2 min-h-11 rounded-lg border-2 border-ink px-3 font-heading text-sm font-semibold text-ink"
-                                @click="selectedId = departure.id"
-                            >
-                                {{ t(copy, 'departures.quick_edit') }}
-                            </button>
                         </li>
                     </ul>
                 </section>
@@ -214,29 +211,26 @@ function refresh() {
                     class="min-w-0 lg:col-start-1"
                     aria-labelledby="recent-title"
                 >
-                    <div class="flex items-center justify-between gap-2">
-                        <h2
-                            id="recent-title"
-                            class="font-heading text-base font-semibold text-ink"
-                        >
+                    <div class="section-header flex items-center justify-between gap-2">
+                        <h2 id="recent-title">
                             {{ t(copy, 'recent.title') }}
                         </h2>
                         <Link
                             :href="urls.bookings"
-                            class="inline-flex min-h-11 items-center text-sm text-sogan underline"
+                            class="-my-3 inline-flex min-h-11 shrink-0 items-center font-sans text-sm font-normal normal-case tracking-normal text-sogan hover:underline"
                         >
                             {{ t(copy, 'recent.all') }}
                         </Link>
                     </div>
                     <p
                         v-if="!recent.length"
-                        class="mt-2 rounded-xl border border-ink/10 bg-surface p-4 text-sm text-ink"
+                        class="mt-3 rounded-xl border border-ink/10 bg-surface p-4 text-sm text-ink"
                     >
                         {{ t(copy, 'recent.empty') }}
                     </p>
                     <ul
                         v-else
-                        class="mt-2 flex flex-col gap-2"
+                        class="mt-3 flex flex-col gap-2"
                     >
                         <li
                             v-for="booking in recent"

@@ -1,11 +1,12 @@
 <script setup>
 import { computed } from 'vue';
-import { seatSegments, seatSummary } from '../lib/dashboard.js';
+import { SEAT_SEGMENT_CLASSES, seatSegments, seatSummaryParts } from '../lib/dashboard.js';
 
 /**
- * AC-12: lunas / ditahan / kosong in proportion. The bar is decoration
- * (aria-hidden); the summary text is always shown and is what screen readers
- * get — colour is never the only signal. Tints are status tokens.
+ * AC-12: lunas / ditahan / kosong in proportion (mockup 2f) — a thin, square,
+ * solid bar with hairline gaps, and "2 ditahan" picked out in the waiting
+ * colour. The bar is decoration (aria-hidden); the summary text is always shown
+ * and is what screen readers get — colour is never the only signal.
  */
 const props = defineProps({
     seats: { type: Object, required: true },
@@ -15,32 +16,40 @@ const props = defineProps({
     calendar: { type: Object, required: true },
 });
 
-const SEGMENT_CLASSES = {
-    paid: 'bg-status-paid-tint border-status-paid',
-    held: 'bg-status-waiting-tint border-status-waiting',
-    empty: 'bg-surface border-ink/30',
-};
-
 const segments = computed(() => seatSegments(props.seats));
-const summary = computed(() => seatSummary(props.seats, props.closesOn, props.today, props.copy, props.calendar));
+const parts = computed(() => seatSummaryParts(props.seats, props.closesOn, props.today, props.copy, props.calendar));
 </script>
 
 <template>
     <div>
         <div
-            class="flex h-3 w-full gap-0.5 overflow-hidden rounded-full"
+            class="flex h-2 w-full gap-[3px]"
             aria-hidden="true"
         >
             <span
                 v-for="segment in segments"
                 :key="segment.key"
-                class="h-full border"
-                :class="SEGMENT_CLASSES[segment.key]"
-                :style="{ width: `${segment.width}%` }"
+                class="h-full basis-0"
+                :class="SEAT_SEGMENT_CLASSES[segment.key]"
+                :style="{ flexGrow: segment.n }"
             />
         </div>
-        <p class="mt-1 text-xs text-ink">
-            {{ summary }}
+        <p class="mt-2 text-xs text-secondary">
+            <template
+                v-for="(part, i) in parts"
+                :key="part.key"
+            >
+                <template v-if="i > 0">
+                    ·
+                </template>
+                <b
+                    v-if="part.key === 'held'"
+                    class="font-semibold text-status-waiting"
+                >{{ part.text }}</b>
+                <template v-else>
+                    {{ part.text }}
+                </template>
+            </template>
         </p>
     </div>
 </template>

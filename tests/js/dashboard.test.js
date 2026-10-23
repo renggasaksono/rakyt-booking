@@ -10,6 +10,7 @@ import {
     phoneDisplay,
     seatSegments,
     seatSummary,
+    seatSummaryParts,
 } from '../../resources/js/lib/dashboard.js';
 
 const calendar = {
@@ -39,6 +40,18 @@ describe('seat summary (AC-12)', () => {
 
     it('adds the year to a closing date in another year', () => {
         expect(seatSummary({ paid: 0, held: 0, empty: 4 }, '2025-01-03', '2024-12-30', copy, calendar)).toBe('4 kosong · tutup 3 Jan 2025');
+    });
+});
+
+describe('seat summary parts (AC-12)', () => {
+    it('keep their key so the bar can pick out "ditahan"', () => {
+        expect(seatSummaryParts({ paid: 12, held: 2, empty: 2 }, '2024-10-21', '2024-10-10', copy, calendar)).toEqual([
+            { key: 'paid', text: '12 lunas' },
+            { key: 'held', text: '2 ditahan' },
+            { key: 'empty', text: '2 kosong' },
+            { key: 'closes', text: 'tutup 21 Okt' },
+        ]);
+        expect(seatSummaryParts({ paid: 0, held: 0, empty: 16 }, null, '2024-10-10', copy, calendar)).toEqual([{ key: 'empty', text: '16 kosong' }]);
     });
 });
 

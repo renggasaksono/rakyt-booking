@@ -243,9 +243,13 @@ class HariIniTest extends TestCase
         $bar = file_get_contents(resource_path('js/components/SeatBar.vue'));
 
         $this->assertMatchesRegularExpression('/aria-hidden="true"/', $bar);
-        $this->assertStringContainsString('seatSummary(', $bar);
-        foreach (['bg-status-paid-tint', 'bg-status-waiting-tint', 'bg-surface'] as $class) {
-            $this->assertStringContainsString($class, $bar);
+        $this->assertStringContainsString('seatSummaryParts(', $bar);
+        // Mockup 2f: solid status colours from tokens, shared by the bar and the legend.
+        $this->assertStringContainsString('SEAT_SEGMENT_CLASSES[segment.key]', $bar);
+        $this->assertStringContainsString('SEAT_SEGMENT_CLASSES[item.key]', file_get_contents(resource_path('js/pages/Dashboard/Today.vue')));
+        $lib = file_get_contents(resource_path('js/lib/dashboard.js'));
+        foreach (["paid: 'bg-status-paid'", "held: 'bg-status-waiting-bar'", "empty: 'bg-ink/12'"] as $class) {
+            $this->assertStringContainsString($class, $lib);
         }
     }
 
