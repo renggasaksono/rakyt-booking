@@ -29,7 +29,7 @@ function onToggle(index) {
                     :aria-expanded="isOpen(open, index)"
                     @click="onToggle(index)"
                 >
-                    <span class="font-heading text-base font-semibold text-ink">{{ item.q }}</span>
+                    <span class="font-heading text-[17px] font-semibold tracking-[-0.01em] text-ink">{{ item.q }}</span>
                     <span
                         class="flex-none font-heading text-lg text-secondary"
                         aria-hidden="true"

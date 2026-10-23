@@ -46,10 +46,10 @@ const sectionWrap = 'mx-auto max-w-5xl px-4';
         <section :class="[sectionWrap, 'pb-10 pt-10 md:pt-16']">
             <div class="grid items-center gap-10 md:grid-cols-2">
                 <div>
-                    <h1 class="font-heading text-3xl font-semibold leading-tight text-ink md:text-5xl">
+                    <h1 class="font-heading text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-ink md:text-5xl">
                         {{ copy.hero.headline }}
                     </h1>
-                    <p class="mt-4 text-base text-secondary md:text-lg">
+                    <p class="mt-4 text-lg leading-relaxed text-secondary">
                         {{ copy.hero.subheadline }}
                     </p>
                     <div class="mt-6">
@@ -87,7 +87,7 @@ const sectionWrap = 'mx-auto max-w-5xl px-4';
                 <p class="section-header">
                     {{ copy.value.kicker }}
                 </p>
-                <h2 class="mt-3 max-w-2xl font-heading text-2xl font-semibold text-ink md:text-3xl">
+                <h2 class="mt-3 max-w-2xl font-heading text-2xl font-semibold tracking-[-0.02em] text-ink md:text-3xl">
                     {{ copy.value.headline }}
                 </h2>
                 <div class="mt-8 grid gap-6 md:grid-cols-3">
@@ -96,13 +96,13 @@ const sectionWrap = 'mx-auto max-w-5xl px-4';
                         :key="i"
                         class="bg-gading p-5 shadow-[inset_0_0_0_1px_rgba(33,23,16,0.12)]"
                     >
-                        <p class="text-xs text-secondary line-through decoration-status-rejected/60">
+                        <p class="text-[13px] text-secondary line-through decoration-status-rejected/60">
                             {{ item.myth }}
                         </p>
-                        <h3 class="mt-2 font-heading text-base font-semibold text-ink">
+                        <h3 class="mt-2 font-heading text-[19px] font-semibold tracking-[-0.01em] text-ink">
                             {{ item.title }}
                         </h3>
-                        <p class="mt-1.5 text-sm text-secondary">
+                        <p class="mt-1.5 text-[15px] leading-relaxed text-secondary">
                             {{ item.body }}
                         </p>
                     </div>
@@ -119,10 +119,10 @@ const sectionWrap = 'mx-auto max-w-5xl px-4';
                 <p class="section-header">
                     {{ copy.how.kicker }}
                 </p>
-                <h2 class="mt-3 font-heading text-2xl font-semibold text-ink md:text-3xl">
+                <h2 class="mt-3 font-heading text-2xl font-semibold tracking-[-0.02em] text-ink md:text-3xl">
                     {{ copy.how.headline }}
                 </h2>
-                <p class="mt-2 max-w-2xl text-sm text-secondary">
+                <p class="mt-2 max-w-2xl text-[15px] leading-relaxed text-secondary">
                     {{ copy.how.lede }}
                 </p>
                 <ol class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -131,11 +131,11 @@ const sectionWrap = 'mx-auto max-w-5xl px-4';
                         :key="i"
                         class="bg-surface p-4 shadow-[inset_0_0_0_1px_rgba(33,23,16,0.12)]"
                     >
-                        <span class="flex h-8 w-8 items-center justify-center bg-ink font-heading text-sm font-semibold text-surface">{{ stepItem.n }}</span>
-                        <h3 class="mt-3 font-heading text-sm font-semibold text-ink">
+                        <span class="font-heading text-[32px] font-semibold leading-none tracking-[-0.03em] text-sogan">{{ String(stepItem.n).padStart(2, '0') }}</span>
+                        <h3 class="mt-3 font-heading text-base font-semibold text-ink">
                             {{ stepItem.title }}
                         </h3>
-                        <p class="mt-1 text-xs text-secondary">
+                        <p class="mt-1 text-[13px] leading-relaxed text-secondary">
                             {{ stepItem.body }}
                         </p>
                     </li>
@@ -216,7 +216,7 @@ const sectionWrap = 'mx-auto max-w-5xl px-4';
                                 </h3>
                                 <span
                                     v-if="item.soon"
-                                    class="bg-ink/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-secondary"
+                                    class="bg-ink/10 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-secondary"
                                 >{{ copy.usecases.soon_label }}</span>
                             </div>
                             <p class="mt-1 text-xs text-secondary">
@@ -228,18 +228,18 @@ const sectionWrap = 'mx-auto max-w-5xl px-4';
             </div>
         </section>
 
-        <!-- Seller-direct payment -->
-        <section class="py-12">
+        <!-- Seller-direct payment — gold-tint ground (Cerah) -->
+        <section class="bg-[var(--color-payment-ground,#f7e7ce)] py-12">
             <div :class="sectionWrap">
                 <div class="grid gap-8 md:grid-cols-2">
                     <div>
                         <p class="section-header">
                             {{ copy.payment.kicker }}
                         </p>
-                        <h2 class="mt-3 font-heading text-2xl font-semibold text-ink md:text-3xl">
+                        <h2 class="mt-3 font-heading text-2xl font-semibold tracking-[-0.02em] text-ink md:text-3xl">
                             {{ copy.payment.headline }}
                         </h2>
-                        <p class="mt-3 text-sm text-secondary">
+                        <p class="mt-3 text-[15px] leading-relaxed text-secondary">
                             {{ copy.payment.body }}
                         </p>
                     </div>
@@ -249,10 +249,10 @@ const sectionWrap = 'mx-auto max-w-5xl px-4';
                             :key="i"
                             class="bg-surface p-4 shadow-[inset_0_0_0_1px_rgba(33,23,16,0.12)]"
                         >
-                            <h3 class="font-heading text-sm font-semibold text-ink">
+                            <h3 class="font-heading text-base font-semibold text-ink">
                                 {{ point.title }}
                             </h3>
-                            <p class="mt-1 text-sm text-secondary">
+                            <p class="mt-1 text-[15px] leading-relaxed text-secondary">
                                 {{ point.body }}
                             </p>
                         </li>
@@ -270,23 +270,23 @@ const sectionWrap = 'mx-auto max-w-5xl px-4';
                 <p class="section-header">
                     {{ copy.faq.kicker }}
                 </p>
-                <h2 class="mt-3 font-heading text-2xl font-semibold text-ink md:text-3xl">
+                <h2 class="mt-3 font-heading text-2xl font-semibold tracking-[-0.02em] text-ink md:text-3xl">
                     {{ copy.faq.headline }}
                 </h2>
                 <FaqAccordion :items="copy.faq.items" />
             </div>
         </section>
 
-        <!-- Closing CTA -->
-        <section class="py-14">
+        <!-- Closing CTA — full-bleed sogan-brown band with cream text (Cerah) -->
+        <section class="bg-[var(--color-sogan-deep,#9c5b2c)] py-16">
             <div :class="[sectionWrap, 'max-w-2xl text-center']">
-                <p class="section-header inline-block">
+                <p class="inline-block border-b-2 border-gading/40 pb-2 font-heading text-[11px] font-semibold uppercase tracking-[0.16em] text-gading/80">
                     {{ copy.closing.kicker }}
                 </p>
-                <h2 class="mt-4 font-heading text-2xl font-semibold text-ink md:text-4xl">
+                <h2 class="mt-4 font-heading text-2xl font-semibold tracking-[-0.02em] text-gading md:text-4xl">
                     {{ copy.closing.headline }}
                 </h2>
-                <p class="mt-3 text-base text-secondary">
+                <p class="mt-3 text-base leading-relaxed text-gading/80">
                     {{ copy.closing.body }}
                 </p>
                 <div class="mt-6 flex justify-center">

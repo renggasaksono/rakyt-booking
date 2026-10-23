@@ -20,7 +20,9 @@ const emit = defineEmits(['cta']);
 </script>
 
 <template>
-    <div class="flex min-h-screen flex-col bg-gading text-ink">
+    <!-- `cerah`: landing-only "Sogan Cerah" reskin (see resources/css/app.css).
+         Redefines the brand tokens for this subtree only; global pages are unaffected. -->
+    <div class="cerah flex min-h-screen flex-col bg-gading text-ink">
         <MarketingNav
             :nav="nav"
             :cta="cta"

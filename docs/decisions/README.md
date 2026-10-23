@@ -44,3 +44,4 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0032](0032-gold-cta-whatsapp-handoff-for-request-date.md) | The one gold CTA may be a WhatsApp handoff on request-date trips | accepted | 2026-10-22 |
 | [0033](0033-public-landing-open-self-serve-signup.md) | Public landing drives open self-serve sign-up; marketing reuses app tokens | accepted | 2026-10-23 |
 | [0034](0034-landing-funnel-analytics-ga4-consent-mode.md) | Landing-funnel analytics — GA4 with Consent Mode v2 (default-denied) + opt-in | accepted | 2026-10-23 |
+| [0035](0035-sogan-cerah-landing-reskin.md) | "Sogan Cerah" landing reskin (scoped via `.cerah`), WCAG review of the brighter brown | proposed | 2026-10-23 |

@@ -3,6 +3,12 @@
 Reference: [`mockups/rakyt-booking-draft-v2.html`](mockups/rakyt-booking-draft-v2.html) — a self-contained canvas
 (open in a browser). It holds three rounds of work; later rounds override earlier ones where they conflict.
 
+Landing page (F-017) mockups:
+[`mockups/rakyt-booking-landing-sogan-cerah.html`](mockups/rakyt-booking-landing-sogan-cerah.html) (desktop, **"Sogan Cerah"** — a
+brighter, warmer reskin of the brand palette) and
+[`mockups/rakyt-booking-landing-mobile.html`](mockups/rakyt-booking-landing-mobile.html) (mobile, current/darker palette plus a
+sticky bottom CTA bar). **Where the two conflict on colour, Cerah wins.** These are proposals, not yet reflected in the tokens.
+
 | Round | Contents |
 |---|---|
 | 1 (1a–1g) | Quick hi-fi: customer booking flow (mobile) + seller dashboard & trip upload |

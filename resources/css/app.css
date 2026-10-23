@@ -42,6 +42,33 @@
     --color-status-cancelled-tint: #eceae8;
 }
 
+/* "Sogan Cerah" — landing-only reskin (F-017), proposed in the landing mockups
+   docs/design/mockups/rakyt-booking-landing-sogan-cerah.html. A brighter, warmer
+   take on the brand palette. Scoped to the marketing subtree via `.cerah` so the
+   global @theme tokens (and every other page) are untouched: custom properties
+   set here shadow :root for descendants only. If this is adopted product-wide it
+   graduates into @theme and supersedes ADR-0008 — not before. The gold CTA
+   (prada) and all six status colours are deliberately unchanged. */
+.cerah {
+    --color-gading: #fdf8ef; /* page ground — brighter than #f4efe6 */
+    --color-surface: #fffdf9; /* cards — near-white warm */
+    --color-ink: #2b1e15; /* warmer near-black */
+    --color-sogan: #a65f2c; /* brighter terracotta for kickers/links */
+    --color-secondary: #574434; /* body-weight secondary */
+
+    /* tints warmed to sit on the brighter grounds */
+    --color-status-waiting-tint: #fbe9cf;
+    --color-status-check-tint: #e1e8f3;
+    --color-status-paid-tint: #e2eddc;
+
+    /* landing-only accents (no utility; referenced via bg-[var(--…)] / text-[var(--…)]) */
+    --color-sogan-deep: #9c5b2c; /* full-bleed closing band */
+    --color-payment-ground: #f7e7ce; /* gold-tint payment section */
+    --color-accent-tan: #efddc4; /* image / chat placeholders */
+    --color-gold-dull: #b8862f; /* the brand monogram's accent node */
+    --color-secondary-meta: #7a6250; /* lighter metadata tier */
+}
+
 /* Section header: the uppercase kicker with a 2px ink underline used for every
    section title on the public pages ("Trip tersedia", "Pilih keberangkatan",
    "Termasuk", …). See docs/design/README.md → Shape & outlines. */
@@ -52,7 +79,7 @@
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--color-ink);
-    border-bottom: 2px solid #211710;
+    border-bottom: 2px solid var(--color-ink);
     padding-bottom: 8px;
 }
 

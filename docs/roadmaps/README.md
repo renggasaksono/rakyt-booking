@@ -38,7 +38,7 @@ When a decision is made: tick it in its source, record it (ADR or spec changelog
 
 | Decision | Recommended | Source | Needed by |
 |---|---|---|---|
-| _None — all proposed ADRs decided (ADR-0011 accepted 2026-10-23)._ | | | |
+| "Sogan Cerah" landing reskin — keep scoped to the landing, or adopt the brighter palette product-wide (supersede ADR-0008)? | Keep scoped (`.cerah`) for now; measure `#a65f2c` contrast before any product-wide move | [ADR-0035](../decisions/0035-sogan-cerah-landing-reskin.md) · [F-017](../features/F-017-public-landing-page.md) | Pre-pilot (visual sign-off) |
 
 ### Week 1 — choices outside the specs
 
