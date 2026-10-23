@@ -91,7 +91,8 @@ F-005 AC-23 invariant still holds.
   **Halaman publik** (the seller page `/<slug>`, new tab, `rel="noopener"`, marked "↗"), **Pengaturan**. The nav is
   the ink panel of 1e/2f under the **Rakyt | Booking** product mark (ADR-0036); the current section is marked (Sogan
   fill with gading text, `aria-current="page"`); booking detail pages mark Pesanan.
-- [x] **AC-3 Phone nav.** Given a screen < 1024 px, then the bottom nav has four items, each ≥ 44 px tall: **Hari ini**,
+- [x] **AC-3 Phone nav.** Given a screen < 1024 px, then the bottom nav — the same ink panel as the side nav (ADR-0036)
+  — has four items, each ≥ 44 px tall: **Hari ini**,
   **Pesanan**, **Trip**, **Pengaturan**. Halaman publik is reached from the link card (AC-14), Pembayaran from Perlu
   tindakan (AC-8).
 - [x] **AC-4 Nav counts.** Given the seller's bookings, then **Pesanan** and **Pembayaran** show the **Perlu tindakan
@@ -458,3 +459,4 @@ review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spe
 - 2026-10-23 — Mockup revisions (Rengga): side nav on ink with the shared "Rakyt | Booking" mark, Hari ini section
   titles as the `section-header` kicker, departure rows and seat bar redrawn to 2f (AC-2, AC-12 wording updated;
   ADR-0036 proposed). Status stays `done`
+- 2026-10-23 — Phone bottom nav on the same ink panel as the side nav (AC-3 wording). Status stays `done`

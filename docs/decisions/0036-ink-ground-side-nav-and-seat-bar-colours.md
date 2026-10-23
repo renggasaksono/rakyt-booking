@@ -27,9 +27,10 @@ broken when a departure was empty (one outlined capsule).
 
 We will:
 
-1. Draw the desktop seller side nav on **ink**: resting items in **sand** `#D8C9B6` (10.8 : 1), the current item on a
-   **Sogan** fill with gading text (7.2 : 1), the Perlu tindakan counts as plain numbers with Pembayaran's in
-   gold-soft.
+1. Draw the seller nav on **ink**, both the desktop side nav and the phone bottom bar. Resting items are **sand**
+   `#D8C9B6` (10.8 : 1). The current item is on a **Sogan** fill with gading text (7.2 : 1). The Perlu tindakan
+   counts are plain numbers: Pembayaran's on desktop and Pesanan's on the phone use gold-soft, and any count on the
+   Sogan-filled current item turns gading, because gold-soft is only 3.9 : 1 there.
 2. Use one `ProductMark` component for the **Rakyt | Booking** lockup in both the landing nav (`tone="ink"`) and the
    side nav (`tone="reverse"`).
 3. On the ink ground, give Sogan's "brand & links" role to **gold-soft** `#D9AE5C` (8.5 : 1), so "Booking" is

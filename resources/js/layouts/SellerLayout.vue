@@ -59,11 +59,11 @@ const phoneNav = computed(() => nav.value.filter((item) => item.phone));
                         :aria-current="item.active ? 'page' : undefined"
                     >
                         {{ item.label }}
-                        <!-- 1e/2f: a plain count; Pembayaran's is the gold-soft accent. -->
+                        <!-- 1e/2f: a plain count; Pembayaran's is the gold-soft accent (gading on the Sogan fill, where gold-soft is 3.9 : 1). -->
                         <span
                             v-if="item.badge"
                             class="min-w-6 text-right text-sm"
-                            :class="item.key === 'payments' ? 'font-semibold text-gold-soft' : ''"
+                            :class="item.key === 'payments' ? ['font-semibold', item.active ? 'text-gading' : 'text-gold-soft'] : ''"
                             :aria-label="item.badge.label"
                         >{{ item.badge.count }}</span>
                     </Link>
@@ -81,22 +81,25 @@ const phoneNav = computed(() => nav.value.filter((item) => item.phone));
 
         <nav
             v-if="!hideBottomNav"
-            class="fixed inset-x-0 bottom-0 z-30 border-t border-ink/10 bg-surface lg:hidden"
+            class="fixed inset-x-0 bottom-0 z-30 bg-ink pb-[env(safe-area-inset-bottom)] lg:hidden"
             :aria-label="seller?.menu_label"
         >
+            <!-- Same ink panel as the side nav: sand items, the current one on a Sogan fill. -->
             <div class="mx-auto flex max-w-md">
                 <Link
                     v-for="item in phoneNav"
                     :key="item.key"
                     :href="item.url"
-                    class="relative flex min-h-14 flex-1 items-center justify-center gap-1 px-2 text-center font-heading text-xs font-medium"
-                    :class="item.active ? 'text-sogan' : 'text-secondary'"
+                    class="relative flex min-h-14 flex-1 items-center justify-center gap-1 px-2 text-center font-heading text-xs"
+                    :class="item.active ? 'bg-sogan font-semibold text-gading' : 'font-medium text-sand'"
                     :aria-current="item.active ? 'page' : undefined"
                 >
                     {{ item.phone_label ?? item.label }}
+                    <!-- Pembayaran is not on the phone bar, so Pesanan's count takes its gold-soft accent. -->
                     <span
                         v-if="item.badge"
-                        class="min-w-5 rounded-full bg-status-waiting-tint px-1.5 text-center text-xs font-semibold text-status-waiting"
+                        class="min-w-4 text-center text-xs font-semibold"
+                        :class="item.active ? 'text-gading' : 'text-gold-soft'"
                         :aria-label="item.badge.label"
                     >{{ item.badge.count }}</span>
                 </Link>

@@ -50,14 +50,14 @@ see [ADR-0008](../decisions/0008-brand-tokens-and-cta-rule.md).
 
 ### Ink ground (seller side nav, 1e/2f)
 
-The desktop seller nav is an ink panel. Sogan fails on ink (2.1 : 1), so on this ground its "brand & links" role
+The seller nav is an ink panel — the desktop side nav and the phone bottom bar alike. Sogan fails on ink (2.1 : 1), so on this ground its "brand & links" role
 moves to **gold-soft** — text and small marks only, never a button fill ([ADR-0036](../decisions/0036-ink-ground-side-nav-and-seat-bar-colours.md), proposed).
 
 | Token | Hex | Use on ink | Contrast on ink |
 |---|---|---|---|
 | Sand | `#D8C9B6` | Resting nav items | 10.8 : 1 |
 | Gading | `#F4EFE6` | Wordmark, current nav item (on a Sogan fill, 7.2 : 1) | 15.3 : 1 |
-| Gold-soft | `#D9AE5C` | "Booking" kicker, monogram accent node, Pembayaran count | 8.5 : 1 |
+| Gold-soft | `#D9AE5C` | "Booking" kicker, monogram accent node, Perlu tindakan count (Pembayaran on desktop, Pesanan on the phone); gading instead on the Sogan-filled current item (gold-soft is 3.9 : 1 there) | 8.5 : 1 |
 
 ### Product mark
 
