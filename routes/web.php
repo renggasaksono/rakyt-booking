@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Bookings\SellerBookingController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\Onboarding\OnboardingController;
 use App\Http\Controllers\PublicPages\BookingController;
@@ -25,15 +26,10 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Inertia\Inertia;
 
-Route::get('/', fn () => Inertia::render('Home', [
-    'tagline' => __('home.tagline'),
-    'links' => [
-        'register' => ['label' => __('account.register.submit'), 'url' => route('register')],
-        'login' => ['label' => __('account.login.submit'), 'url' => route('login')],
-    ],
-]))->name('home');
+// Public marketing landing page (F-017). Not a `/<slug>` fallback — it resolves
+// no tenant; head tags are server-rendered for link previews (ADR-0024).
+Route::get('/', HomeController::class)->name('home');
 
 /*
 | Every first path segment below is on the reserved-slug list
