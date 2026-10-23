@@ -108,7 +108,7 @@ Times below are in the organization's time zone (see Data & rules → Time). UI 
 
 ### Quick edit (1g)
 
-- [x] **AC-31 Entry points.** Given the seller's departures list on a phone (and "Edit cepat" on Hari ini, F-007), when they tap a departure, then a bottom sheet opens titled with trip + dates ("Karimunjawa · 24–26 Okt") containing only: Harga / orang, Total kursi (stepper), Buka / Tutup pemesanan toggle, and a gold "Simpan".
+- [x] **AC-31 Entry points.** Given the seller's departures list on a phone (and "Edit cepat" on Hari ini, F-007), when they tap a departure, then a bottom sheet opens titled with trip + dates ("Karimunjawa · 24–26 Okt") containing only: Harga / orang, Kuota peserta (stepper), Buka / Tutup pemesanan toggle, and a gold "Simpan".
   *Note:* the phone list (`/keberangkatan`) and the editor's departure cards open the sheet. The "Edit cepat" entry on Hari ini comes with F-007.
 - [x] **AC-32 Price in quick edit.** The price field is prefilled with the effective price; saving a different value sets the departure's price override. The sheet always shows "Harga baru hanya berlaku untuk pesanan berikutnya. n pesanan yang ada tidak berubah." (n = active bookings on the departure; sentence omitted when n = 0).
 - [x] **AC-33 Seats floor.** Given 14 seats taken, then the seats stepper cannot go below 14 and shows "14 terisi — tidak bisa di bawah 14". If bookings arrived after the sheet opened and the new total is below the current seats taken, then the server rejects it and the sheet refreshes to the current number with the same message — nothing is saved.
@@ -276,3 +276,4 @@ None of these block building; each has a default that the builder implements unl
   added migration `2026_10_22_000001_drop_day_trip_type` (relabel `day_trip` → `open_trip`, then tighten
   `trips_type_check` to `('open_trip','private')`). Tests updated to the two-type enum (`day_trip` now 422); AC-1
   re-ticked. All gates green
+- 2026-10-23 — UI copy says "kuota" instead of "kursi" (ADR-0037): quoted strings updated to the new `lang/id` copy and the tests that assert them. Behaviour unchanged; status unchanged

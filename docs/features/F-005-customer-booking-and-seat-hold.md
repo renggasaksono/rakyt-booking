@@ -87,14 +87,14 @@ Test names: `test_ac_<n>_…`.
   "Pilih tanggal lain →" linking to the trip page.
 - [x] **AC-4 Fields.** The form has, in this order: **Nama lengkap** (`autocomplete="name"`); **Nomor WhatsApp** with a
   fixed "+62" prefix, `inputmode="tel"`, `autocomplete="tel-national"` and the helper "Konfirmasi & info keberangkatan
-  dikirim ke sini."; **Jumlah peserta** stepper with the helper "Sisa n kursi"; **Catatan (opsional)** (multi-line,
+  dikirim ke sini."; **Jumlah peserta** stepper with the helper "Sisa kuota n"; **Catatan (opsional)** (multi-line,
   counter "n/500" once 400 characters are typed). Labels are visible text, not placeholders.
 - [x] **AC-5 Participant stepper.** Starts at 1; "−" is disabled at 1 and "+" at the seats left when the page loaded;
   a typed value is clamped to 1…seats left; both buttons are ≥ 44 × 44 px and have Bahasa `aria-label`s.
 - [x] **AC-6 Live total.** Below the fields the form shows "2 × Rp1.250.000" and the total "Rp2.500.000"
   (participants × the departure's effective price, integer rupiah, the F-003 formatter), updated on every stepper
   change without a request.
-- [x] **AC-7 Hold policy before submit.** Directly above "Kirim pesanan" the form says "Kursi ditahan 2 jam sampai
+- [x] **AC-7 Hold policy before submit.** Directly above "Kirim pesanan" the form says "Kuota ditahan 2 jam sampai
   dibayar, lalu dilepas." (shortened to one line on mobile, Q11). The number of hours comes from the same constant the
   server uses (`config('rakyt.booking.hold_minutes')` = 120, ADR-0006; not settable per seller).
 - [x] **AC-8 Privacy line.** Under the button: "Data Anda hanya diteruskan ke :name untuk mengurus pesanan ini." with a
@@ -124,7 +124,7 @@ Test names: `test_ac_<n>_…`.
   ini berubah menjadi Rp1.300.000 per orang. Periksa total lalu kirim lagi." with the total recomputed; the next
   submit at the new price succeeds (ADR-0026 §4, Q9).
 - [x] **AC-14 Seats changed since the form loaded.** Given participants > seats left at submit time, then no booking is
-  created; when seats left > 0 the form shows "Sisa kursi tinggal n. Kurangi jumlah peserta." and the stepper maximum
+  created; when seats left > 0 the form shows "Sisa kuota tinggal n. Kurangi jumlah peserta." and the stepper maximum
   becomes n; when seats left = 0 it shows AC-3's state with "Penuh".
 - [x] **AC-15 Bookability re-checked under the lock.** Given the departure was closed, its deadline passed, its trip
   was unpublished or switched to `request_date`, or it started, after the form loaded, then the submit creates
@@ -155,7 +155,7 @@ Test names: `test_ac_<n>_…`.
   moment from separate database connections, then exactly one booking is created, the other customer gets AC-14's
   "Penuh" state, `seats_taken` = capacity, and there is one `booking.created` event.
 - [x] **AC-20 Last seats, larger groups.** Given 3 seats left, when two customers submit for 2 participants each at the
-  same moment, then exactly one succeeds and the other gets "Sisa kursi tinggal 1. Kurangi jumlah peserta."
+  same moment, then exactly one succeeds and the other gets "Sisa kuota tinggal 1. Kurangi jumlah peserta."
 - [x] **AC-21 Booking against a capacity cut.** F-003 AC-39's two tests run against the real booking path instead of
   the `take_seats.php` simulation: customer first → the seller's cut is refused; seller first → the booking is refused;
   never `seats_taken > capacity`.
@@ -193,14 +193,14 @@ Test names: `test_ac_<n>_…`.
 
 - [x] **AC-29 Content.** Given a booking in `awaiting_payment`, when its link is opened, then the page shows "Pesanan
   terkirim", the reference in large type, the status pill "◷ Menunggu pembayaran" (tint + glyph + word), the countdown
-  ("1 j 52 m"; "52 m" under an hour; "< 1 m" under a minute) and "Kursi ditahan s.d. 16.40. Setelah itu kursi dilepas
+  ("1 j 52 m"; "52 m" under an hour; "< 1 m" under a minute) and "Kuota ditahan s.d. 16.40. Setelah itu kuota dilepas
   otomatis." ("s.d. besok 01.10" when the release is on the next local day); and a summary: trip name, date line,
   meeting point and time, Nama, Nomor WhatsApp, "2 peserta × Rp1.250.000" and "Total Rp2.500.000".
 - [x] **AC-30 Countdown without a trusted phone clock.** The page receives the server's current time and
   `hold_expires_at`; the countdown runs on the offset between them, so a wrong phone clock does not change it. At zero
   the page switches to the expired state (AC-31) without a reload.
 - [x] **AC-31 Expired.** Given a booking cancelled with `hold_expired` — or `awaiting_payment` past `hold_expires_at`
-  before the job has run — then the page shows "– Dibatalkan", "Waktu pembayaran habis. Kursi sudah dilepas." and,
+  before the job has run — then the page shows "– Dibatalkan", "Waktu pembayaran habis. Kuota sudah dilepas." and,
   while the trip is still published, an ink link "Pesan lagi" to the trip page. No countdown.
 - [x] **AC-32 Other statuses.** Given any other status, the page shows its pill from the glossary status set (glyph +
   word, never colour alone) and no countdown; F-006 adds its own content for `needs_review`, `paid` and `rejected`.
@@ -470,8 +470,9 @@ change before the pilot at the cost of test data only.
 - [ ] **Q10 Booking page before F-006.** *Recommended:* F-005 ships the page without payment instructions or upload;
   F-006 (week 4) adds them before any pilot customer books. Alternative: show the seller's accounts read-only now.
   — Rengga · *not blocking*
-- [x] **Q11 Seat-hold wording on the form.** Decided 2026-10-20: shortened to one line on mobile — "Kursi ditahan 2 jam
-  sampai dibayar, lalu dilepas." (was the longer mockup text). — Rengga
+- [x] **Q11 Seat-hold wording on the form.** Decided 2026-10-20: shortened to one line on mobile — "Kuota ditahan 2 jam
+  sampai dibayar, lalu dilepas." (was the longer mockup text). — Rengga.
+  Reworded 2026-10-23: "Kursi ditahan…" became "Kuota ditahan…" (ADR-0037). — Rengga
 - [ ] **Q12 Holds that outlast the departure.** A booking just before a same-day deadline is held 2 h, possibly past the
   meeting time. *Recommended:* keep ADR-0006's exact 2 h; the seller confirms or cancels by hand. Alternative (needs a
   new ADR): cap the hold at the meeting time. — Rengga · *not blocking*
@@ -500,3 +501,4 @@ booking route; **R20** is AC-40; **R17** applies only if a queued job is added. 
 - 2026-10-19 — Built (builder): AC-1…AC-42 and AC-17b covered by tests; F-009 R1 and R20 fixed; real `DepartureBookings` bound; F-003 AC-39 on the real booking path; ADR-0028 proposed (booking page without a session, booking-code insert, form-time hold release). Status → `done`
 - 2026-10-19 — Review fixes: `total_amount` bigint (overflow above Rp2,1 miliar), booking page keeps the session with encrypted session payloads (Rengga's decision; ADR-0028 §1 revised), submission keys bound to their departure, clock read under the lock, two-connection same-key test, AC-15 reworded
 - 2026-10-19 — ADR-0028 accepted by Rengga
+- 2026-10-23 — UI copy says "kuota" instead of "kursi" (ADR-0037): quoted strings updated to the new `lang/id` copy and the tests that assert them. Behaviour unchanged; status unchanged

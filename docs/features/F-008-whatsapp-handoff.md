@@ -143,7 +143,7 @@ seller → customer messages that ride on the booking's own customer number.
   active hold) builds via `toNumber(customer number, trans('whatsapp.reminder', […]))` with placeholders `:name`,
   `:reference`, `:trip`, `:date`, `:n`, `:total`, `:time`, `:url` (`:url` = the customer's booking link; `:time` uses
   the `tomorrow` fragment "besok :time" when the hold releases tomorrow):
-  "Halo :name, pesanan :reference untuk :trip tanggal :date (:n orang) menunggu pembayaran :total. Kursi ditahan
+  "Halo :name, pesanan :reference untuk :trip tanggal :date (:n orang) menunggu pembayaran :total. Kuota ditahan
   sampai :time. Detail pesanan: :url". Served through the `bookings.remind` 302 redirect so the customer token stays
   out of Hari ini's props (ADR-0029 §1).
 - [x] **AC-B7 Seller → customer, cancellation.** "Kabari pelanggan via WA" after a seller cancellation (F-007 AC-29)
@@ -329,3 +329,4 @@ none blocking):
   consequence records it. Scheduled-trip behaviour unchanged; `organization.whatsapp_url` prop still emitted (AC-A3)
 - 2026-10-22 — Rengga: real-device review passed (Android Chrome, iOS Safari, Instagram/TikTok in-app browsers) — AC-A11
   and AC-B12 ticked; all 24 ACs now covered; status `in-progress` → `done`
+- 2026-10-23 — UI copy says "kuota" instead of "kursi" (ADR-0037): quoted strings updated to the new `lang/id` copy and the tests that assert them. Behaviour unchanged; status unchanged

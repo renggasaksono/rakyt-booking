@@ -87,7 +87,7 @@ class VerifyPaymentTest extends TestCase
         $this->actingAsTenant($this->a)
             ->post(route('bookings.reject', $booking), ['alasan' => '  Nominal   tidak sesuai '])
             ->assertRedirect()
-            ->assertSessionHas('toast', 'Bukti ditolak. 2 kursi dibuka lagi.');
+            ->assertSessionHas('toast', 'Bukti ditolak. Kuota 2 orang dibuka lagi.');
 
         $this->assertSame(BookingStatus::Rejected, $booking->refresh()->status);
         $this->assertSame($seatsBefore - 2, $this->departure->refresh()->seats_taken);

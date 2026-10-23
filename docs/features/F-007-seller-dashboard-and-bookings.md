@@ -144,7 +144,7 @@ F-005 AC-23 invariant still holds.
   equals the departure's `seats_taken` (a test asserts it). The bar itself is `aria-hidden`; the text is what screen
   readers get. Colour is never the only signal (the text is always shown).
 - [x] **AC-13 Edit cepat.** Given a row in Keberangkatan terdekat, when the seller taps "Edit cepat", then F-003's
-  quick-edit sheet (AC-31–AC-35 there: Harga / orang, Total kursi, Buka / Tutup pemesanan, gold "Simpan") opens for
+  quick-edit sheet (AC-31–AC-35 there: Harga / orang, Kuota peserta, Buka / Tutup pemesanan, gold "Simpan") opens for
   that departure — the sheet's "Simpan" is the screen's gold button while the sheet is open — and after saving the
   seller stays on Hari ini with F-003's toast and the row updated. All F-003 rules apply unchanged (capacity never below
   seats taken, concurrency-safe).
@@ -186,7 +186,7 @@ F-005 AC-23 invariant still holds.
 
 - [x] **AC-23 Content.** Given a booking, the detail shows: "←" back to the list (keeping its filters, AC-19); the
   reference in large type and the status pill; "Dibuat Jum 16 Okt 09.12"; for `awaiting_payment` with an active hold
-  "Kursi ditahan s.d. 16.40" (AC-7 wording); for `cancelled` the reason — "Waktu pembayaran habis, kursi dilepas
+  "Kuota ditahan s.d. 16.40" (AC-7 wording); for `cancelled` the reason — "Waktu pembayaran habis, kuota dilepas
   otomatis." (`hold_expired`) or "Dibatalkan oleh Anda." (`seller`); **Pemesan**: Nama, Nomor WhatsApp
   (formatted "+62 812-3456-7890"), Catatan (as plain text, line breaks kept, or "—"); **Trip**: trip name (link to
   the trip editor), date line and meeting point/time as on the customer page; **Pembayaran**: "2 peserta ×
@@ -198,7 +198,7 @@ F-005 AC-23 invariant still holds.
 - [x] **AC-25 WhatsApp actions.** "Chat WhatsApp" (every status) opens `https://wa.me/<customer digits>` with no text.
   "Ingatkan via WA" (only `awaiting_payment` with an active hold; also on Perlu tindakan rows) opens
   `https://wa.me/<customer digits>?text=…` with `lang/id/bookings.php → whatsapp.reminder`, URL-encoded: "Halo :name,
-  pesanan :reference untuk :trip tanggal :date (:n orang) menunggu pembayaran :total. Kursi ditahan sampai :time.
+  pesanan :reference untuk :trip tanggal :date (:n orang) menunggu pembayaran :total. Kuota ditahan sampai :time.
   Detail pesanan: :url" — `:url` is the customer link (AC-24). Both open in a new tab/app with
   `rel="noopener noreferrer"`. Nothing is sent by Rakyt and nothing is recorded (F-008 later moves the template).
 - [x] **AC-26 Not found.** An unknown or malformed `public_id`, the numeric id, the reference, or the access token in
@@ -210,14 +210,14 @@ F-005 AC-23 invariant still holds.
   `needs_review` or `paid`), the detail shows an ink-outline, destructive-styled (Ditolak deep text) **"Batalkan
   pesanan"**. For any other status it is not shown.
 - [x] **AC-28 Confirm.** Tapping it opens a confirmation (bottom sheet on a phone, dialog on desktop) titled
-  "Batalkan pesanan RKB-…?" with: "n kursi di keberangkatan 24 Okt akan dibuka lagi." and "Pelanggan tidak diberi tahu
+  "Batalkan pesanan RKB-…?" with: "Kuota n orang di keberangkatan 24 Okt akan dibuka lagi." and "Pelanggan tidak diberi tahu
   otomatis. Kabari lewat WhatsApp." — and for `paid` also "Pesanan ini sudah lunas. Pengembalian dana diurus langsung
   antara Anda dan pelanggan." (ADR-0003). Buttons: "Batalkan pesanan" (Ditolak-styled, not gold) and "Kembali".
 - [x] **AC-29 Cancel.** Given the seller confirms, then in **one** transaction, locking the departure row then the
   booking row (ADR-0026 §3; no organization lock — no reference is taken), the booking is re-read; if it is still in a
   holding status it becomes `cancelled` with `cancel_reason = seller`, the departure's `seats_taken` drops by its
   participants, and one `booking.cancelled` audit event is written (actor: the seller user; `before`/`after`: `status`,
-  `cancel_reason`). The response returns to the detail with the toast "Pesanan dibatalkan. n kursi dibuka lagi." and an
+  `cancel_reason`). The response returns to the detail with the toast "Pesanan dibatalkan. Kuota n orang dibuka lagi." and an
   ink-outline "Kabari pelanggan via WA" (opens `whatsapp.cancelled`: "Halo :name, pesanan :reference untuk :trip
   tanggal :date dibatalkan. Hubungi kami jika ada pertanyaan."). The change goes through `BookingService`, never a
   direct `seats_taken` update. `hold_expires_at` is unchanged.
@@ -472,3 +472,4 @@ review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spe
 - 2026-10-23 — Desktop: the link card sits right under Keberangkatan terdekat instead of waiting for the left column's rows (big gap when Pesanan terbaru is long); phone order unchanged (AC-6). Status stays `done`
 - 2026-10-23 — Q9 raised: full name or first name in the AC-5 greeting (review of "Nama Anda", F-001 A14). Status stays `done`
 - 2026-10-23 — Rengga: Q9 decided — the greeting uses the full name, as built; AC-5 wording made explicit. Status stays `done`
+- 2026-10-23 — UI copy says "kuota" instead of "kursi" (ADR-0037): quoted strings updated to the new `lang/id` copy and the tests that assert them. Behaviour unchanged; status unchanged

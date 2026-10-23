@@ -115,7 +115,7 @@ class BookingConcurrencyTest extends TestCase
         $other->wait();
 
         $this->assertStringContainsString('booked:1', $other->getOutput());
-        $response->assertSessionHasErrors(['participants' => 'Sisa kursi tinggal 1. Kurangi jumlah peserta.']);
+        $response->assertSessionHasErrors(['participants' => 'Sisa kuota tinggal 1. Kurangi jumlah peserta.']);
         $this->assertSame(15, $this->freshDeparture($departure)->seats_taken);
     }
 

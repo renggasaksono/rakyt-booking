@@ -92,7 +92,7 @@ class CancelBookingTest extends TestCase
 
         $this->assertSame([
             'title' => 'Batalkan pesanan :reference?',
-            'seats' => ':n kursi di keberangkatan :date akan dibuka lagi.',
+            'seats' => 'Kuota :n orang di keberangkatan :date akan dibuka lagi.',
             'no_notice' => 'Pelanggan tidak diberi tahu otomatis. Kabari lewat WhatsApp.',
             'paid' => 'Pesanan ini sudah lunas. Pengembalian dana diurus langsung antara Anda dan pelanggan.',
             'confirm' => 'Batalkan pesanan',
@@ -116,7 +116,7 @@ class CancelBookingTest extends TestCase
 
             $this->cancel($booking)
                 ->assertRedirect('/pesanan/'.$booking->public_id)
-                ->assertSessionHas('toast', 'Pesanan dibatalkan. 2 kursi dibuka lagi.');
+                ->assertSessionHas('toast', 'Pesanan dibatalkan. Kuota 2 orang dibuka lagi.');
 
             $fresh = $this->fresh($booking);
             $this->assertSame([BookingStatus::Cancelled, CancelReason::Seller], [$fresh->status, $fresh->cancel_reason], $status->value);
@@ -206,7 +206,7 @@ class CancelBookingTest extends TestCase
         $past = $this->departureFor($this->a, $this->trip, '2024-10-01');
         $booking = $this->bookingFor($this->a, $past, 3, BookingStatus::Paid);
 
-        $this->cancel($booking)->assertSessionHas('toast', 'Pesanan dibatalkan. 3 kursi dibuka lagi.');
+        $this->cancel($booking)->assertSessionHas('toast', 'Pesanan dibatalkan. Kuota 3 orang dibuka lagi.');
 
         $this->assertSame(BookingStatus::Cancelled, $this->fresh($booking)->status);
         $this->assertSame(0, $this->freshDeparture($past)->seats_taken);

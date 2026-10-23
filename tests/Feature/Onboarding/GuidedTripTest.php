@@ -187,7 +187,7 @@ class GuidedTripTest extends TestCase
         $post(['base_price' => 999])->assertSessionHasErrors('base_price');
         $post(['base_price' => 100_000_001])->assertSessionHasErrors('base_price');
         $post(['capacity' => 0])->assertSessionHasErrors('capacity');
-        $post(['capacity' => 501])->assertSessionHasErrors(['capacity' => 'Jumlah kursi 1–500.']);
+        $post(['capacity' => 501])->assertSessionHasErrors(['capacity' => 'Kuota peserta 1–500.']);
         $post(['start_date' => '2024-10-09'])->assertSessionHasErrors('start_date');
         $post(['start_date' => ''])->assertSessionHasErrors('start_date');
 

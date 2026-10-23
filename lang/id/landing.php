@@ -11,7 +11,7 @@ return [
     'head' => [
         'title' => 'Booking rapi untuk operator trip',
         'og_title' => 'Rakyt Booking',
-        'description' => 'Satu link booking untuk pesanan dari Instagram dan WhatsApp. Atur tanggal dan kursi, '
+        'description' => 'Satu link booking untuk pesanan dari Instagram dan WhatsApp. Atur tanggal dan kuota, '
             .'pantau pembayaran — uangnya langsung masuk ke rekening Anda. Gratis untuk mulai.',
     ],
 
@@ -34,7 +34,7 @@ return [
 
     'hero' => [
         'headline' => 'Trip Anda. Pelanggan Anda. Booking jadi rapi.',
-        'subheadline' => 'Satu link booking untuk pesanan dari Instagram dan WhatsApp. Atur tanggal dan kursi, '
+        'subheadline' => 'Satu link booking untuk pesanan dari Instagram dan WhatsApp. Atur tanggal dan kuota, '
             .'pantau pembayaran — uangnya langsung masuk ke rekening Anda.',
         'cta' => 'Buat akun gratis',
         'cta_authenticated' => 'Buka dashboard',
@@ -64,8 +64,8 @@ return [
             'includes' => 'Kapal · Homestay · Makan 6× · Snorkeling',
             'pick' => 'Pilih keberangkatan',
             'departures' => [
-                ['date' => 'Kam, 24–26 Okt', 'seats' => 'Sisa 6 kursi', 'state' => 'open'],
-                ['date' => 'Kam, 31 Okt – 2 Nov', 'seats' => 'Sisa 12 kursi', 'state' => 'open'],
+                ['date' => 'Kam, 24–26 Okt', 'seats' => 'Sisa kuota 6', 'state' => 'open'],
+                ['date' => 'Kam, 31 Okt – 2 Nov', 'seats' => 'Sisa kuota 12', 'state' => 'open'],
                 ['date' => 'Kam, 7–9 Nov', 'seats' => 'Penuh', 'state' => 'full'],
             ],
             'price' => 'Rp1.250.000',
@@ -83,7 +83,7 @@ return [
             'participants_value' => '2 orang',
             'note_label' => 'Catatan · opsional',
             'note_value' => 'Vegetarian 1 orang',
-            'hold' => 'Kursi ditahan 2 jam setelah pesanan dikirim. Selesaikan transfer dalam waktu itu.',
+            'hold' => 'Kuota ditahan 2 jam setelah pesanan dikirim. Selesaikan transfer dalam waktu itu.',
             'total_label' => 'Total',
             'total_value' => 'Rp2.500.000',
             'cta' => 'Kirim pesanan',
@@ -100,7 +100,7 @@ return [
             'amount_label' => 'Jumlah',
             'amount_value' => 'Rp2.500.000',
             'note' => 'Pembayaran langsung ke Kencana Trip. Rakyt tidak memotong biaya transaksi.',
-            'countdown_label' => 'Sisa waktu tahan kursi',
+            'countdown_label' => 'Sisa waktu tahan kuota',
             'upload' => 'Unggah bukti transfer',
             'whatsapp' => 'Kabari operator via WhatsApp',
         ],
@@ -112,8 +112,8 @@ return [
         'items' => [
             [
                 'myth' => 'Dashboard toko online yang ribet',
-                'title' => 'Cukup trip, tanggal, dan kursi.',
-                'body' => 'Tanpa pelatihan. Ubah harga atau sisa kursi dari HP dalam hitungan detik.',
+                'title' => 'Cukup trip, tanggal, dan kuota.',
+                'body' => 'Tanpa pelatihan. Ubah harga atau sisa kuota dari HP dalam hitungan detik.',
             ],
             [
                 'myth' => 'Potongan per transaksi & biaya tarik dana',
@@ -136,7 +136,7 @@ return [
             ['n' => '1', 'title' => 'Buat akun', 'body' => 'Daftar dengan email. Gratis, tanpa kartu kredit.'],
             ['n' => '2', 'title' => 'Isi usaha', 'body' => 'Nama usaha, kota, dan link booking Anda.'],
             ['n' => '3', 'title' => 'Tambah trip', 'body' => 'Judul, harga, dan yang termasuk.'],
-            ['n' => '4', 'title' => 'Atur jadwal', 'body' => 'Tanggal keberangkatan dan jumlah kursi.'],
+            ['n' => '4', 'title' => 'Atur jadwal', 'body' => 'Tanggal keberangkatan dan kuota peserta.'],
             ['n' => '5', 'title' => 'Isi rekening', 'body' => 'Rekening atau e-wallet tujuan transfer pelanggan.'],
         ],
         'loop_kicker' => 'Lalu berputar',
@@ -162,8 +162,8 @@ return [
                     'body' => 'Cek bukti transfer, tandai lunas, selesai. Semua dari HP.',
                 ],
                 [
-                    'title' => 'Ubah harga & kursi kapan saja',
-                    'body' => 'Buka atau tutup tanggal, atur sisa kursi tanpa menunggu siapa pun.',
+                    'title' => 'Ubah harga & kuota kapan saja',
+                    'body' => 'Buka atau tutup tanggal, atur sisa kuota tanpa menunggu siapa pun.',
                 ],
             ],
         ],
@@ -206,16 +206,16 @@ return [
             .'tandai lunas, selesai. Rakyt tidak memegang dana dan tidak memotong biaya transaksi.',
         'points' => [
             [
-                'title' => 'Kursi ditahan 2 jam',
-                'body' => 'Kalau tidak dibayar, kursi kembali terbuka otomatis. Unggah bukti menghentikan jam.',
+                'title' => 'Kuota ditahan 2 jam',
+                'body' => 'Kalau tidak dibayar, kuota kembali terbuka otomatis. Unggah bukti menghentikan jam.',
             ],
             [
                 'title' => 'Bukti transfer tersimpan di pesanan',
                 'body' => 'Tidak perlu scroll chat untuk mencari foto struk.',
             ],
             [
-                'title' => 'Tidak pernah dobel jual kursi',
-                'body' => 'Dua pelanggan memesan kursi terakhir bersamaan? Hanya satu yang masuk.',
+                'title' => 'Kuota tidak pernah terjual dobel',
+                'body' => 'Dua pelanggan memesan kuota terakhir bersamaan? Hanya satu yang masuk.',
             ],
         ],
     ],

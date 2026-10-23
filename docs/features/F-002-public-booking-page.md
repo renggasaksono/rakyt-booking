@@ -117,7 +117,7 @@ zone (ADR-0014). *Bookable* is the single server-side rule from F-003 (`TripDepa
   two groups newest `published_at` first.
 - [x] **AC-14 Trip card.** Each card shows the cover photo (400 px variant, `srcset` with 800), trip name,
   "Mulai Rp1.150.000 /orang" and one status line:
-  - scheduled trip with a bookable departure → "Sisa n kursi · 24 Okt" for the earliest bookable departure;
+  - scheduled trip with a bookable departure → "Sisa kuota n · 24 Okt" for the earliest bookable departure;
   - `request_date` trip → "Ajukan tanggal";
   - scheduled trip with no bookable departure → "Belum ada tanggal".
   The whole card links to the trip page; tap target ≥ 44 px.
@@ -140,8 +140,8 @@ zone (ADR-0014). *Bookable* is the single server-side rule from F-003 (`TripDepa
   started are not listed. The first 10 are shown; "Lihat n tanggal lainnya" reveals the rest on the page.
 - [x] **AC-19 Bookable row.** A bookable departure row shows the dates ("24–26 Okt"; "31 Okt – 2 Nov" across months;
   one date "24 Okt" for 1-day trips; the year is added when it is not the current year, e.g. "2–4 Jan 2027"), the seats
-  line and the effective price "Rp1.250.000". The seats line is "Tinggal n dari m kursi" when seats left ≤ 5, else
-  "Sisa n kursi" (Q4), followed by the closing date when AC-19a asks for it. Seat counts carry no status colour (2c).
+  line and the effective price "Rp1.250.000". The seats line is "Kuota tinggal n dari m" when seats left ≤ 5, else
+  "Sisa kuota n" (Q4), followed by the closing date when AC-19a asks for it. Seat counts carry no status colour (2c).
 - [x] **AC-19a Closing date without repetition (Q5).** Given the listed bookable departures:
   - when they all use the **same relative preset** (`h1`, `h3`, `h7` or `same_day`), then one line under the list says
     it once — "Pemesanan ditutup 3 hari sebelum keberangkatan." (`h1`: "1 hari sebelum keberangkatan"; `h7`: "7 hari
@@ -294,7 +294,7 @@ models. `PublicTenancyTest::test_ac_8_…` asserts exactly these keys.
 - **Listed departures:** `start_date ≥ today` (organization time zone), any state; started ones are hidden.
 - **From-price:** lowest effective price over bookable departures, else `base_price` (AC-15). One function shared with
   `TripPreview` (F-003 AC-13).
-- **Low-seat wording:** seats left ≤ 5 → "Tinggal n dari m kursi" (config `rakyt.public.low_seats`, default 5).
+- **Low-seat wording:** seats left ≤ 5 → "Kuota tinggal n dari m" (config `rakyt.public.low_seats`, default 5).
 - **Closing date:** shared-preset summary line vs per-row dates as in AC-19a; "urgent" = deadline within
   `rakyt.public.deadline_urgent_days` (default 7) of now, in the organization's time zone.
 - **Seat counts are read at request time**; no page or query cache (AC-34). A customer can still lose the last seat
@@ -343,7 +343,7 @@ All decided by Rengga on 2026-10-19: Q3 rejected (page live immediately), Q5 ref
 - [x] **Q3 Seller page before the first publish.** *Recommended was:* 404 until the first publish. **Rejected:** the
   seller page is live as soon as the organization exists (onboarding step 1), published or not; with no published trip
   it shows the header and the empty-state message (AC-1, AC-16). — Rengga
-- [x] **Q4 "Tinggal n dari m kursi" threshold.** Seats left ≤ 5; configurable. — Rengga
+- [x] **Q4 "Kuota tinggal n dari m" threshold.** Seats left ≤ 5; configurable. — Rengga
 - [x] **Q5 When to show "tutup <tanggal>".** Agreed to show closing dates, with Rengga's concern that the same date
   pattern on every row tells customers nothing. Refined in AC-19a: one summary line when all bookable departures share a
   relative preset; per-row dates only when presets differ or the deadline is within 7 days. — Rengga
@@ -390,3 +390,4 @@ All decided by Rengga on 2026-10-19: Q3 rejected (page live immediately), Q5 ref
   `urls.request_date` now holds a WhatsApp `date_request` handoff (or null), not the removed `/ajukan-tanggal` route; the
   gold "Ajukan tanggal →" styling is the ADR-0032 exception. The `urls.request_date` key is unchanged. F-004's builder
   updates the AC-24/AC-25 URL and tests
+- 2026-10-23 — UI copy says "kuota" instead of "kursi" (ADR-0037): quoted strings updated to the new `lang/id` copy and the tests that assert them. Behaviour unchanged; status unchanged

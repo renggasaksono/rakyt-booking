@@ -82,8 +82,8 @@ class BookingPageTest extends TestCase
         $this->assertSame('Pesanan terkirim', $copy['page']['sent']);
         $this->assertSame('Menunggu pembayaran', $copy['status']['awaiting_payment']);
         $this->assertSame([':h j :m m', ':m m', '< 1 m'], array_values($copy['page']['countdown']));
-        $this->assertSame('Kursi ditahan s.d. :time. Setelah itu kursi dilepas otomatis.', $copy['page']['hold_until']);
-        $this->assertSame('Kursi ditahan s.d. besok :time. Setelah itu kursi dilepas otomatis.', $copy['page']['hold_until_tomorrow']);
+        $this->assertSame('Kuota ditahan s.d. :time. Setelah itu kuota dilepas otomatis.', $copy['page']['hold_until']);
+        $this->assertSame('Kuota ditahan s.d. besok :time. Setelah itu kuota dilepas otomatis.', $copy['page']['hold_until_tomorrow']);
         $this->assertSame([':n peserta × :price', 'Total :amount'], [$copy['page']['line'], $copy['page']['total']]);
     }
 
@@ -103,7 +103,7 @@ class BookingPageTest extends TestCase
         $props = $this->pageOf($released);
         $this->assertSame(['cancelled', 'hold_expired'], [$props['booking']['status'], $props['booking']['cancel_reason']]);
         $this->assertSame(url('/kencana/karimunjawa-3h2m'), $props['trip']['url']);
-        $this->assertSame('Waktu pembayaran habis. Kursi sudah dilepas.', $props['copy']['page']['expired']);
+        $this->assertSame('Waktu pembayaran habis. Kuota sudah dilepas.', $props['copy']['page']['expired']);
         $this->assertSame('Pesan lagi', $props['copy']['page']['book_again']);
 
         // Past its hold before the job ran: the page decides from the server clock (AC-30).
