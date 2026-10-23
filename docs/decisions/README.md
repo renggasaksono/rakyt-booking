@@ -45,3 +45,4 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0033](0033-public-landing-open-self-serve-signup.md) | Public landing drives open self-serve sign-up; marketing reuses app tokens | accepted | 2026-10-23 |
 | [0034](0034-landing-funnel-analytics-ga4-consent-mode.md) | Landing-funnel analytics — GA4 with Consent Mode v2 (default-denied) + opt-in | accepted | 2026-10-23 |
 | [0035](0035-sogan-cerah-landing-reskin.md) | "Sogan Cerah" landing reskin (scoped via `.cerah`), WCAG review of the brighter brown | proposed | 2026-10-23 |
+| [0036](0036-ink-ground-side-nav-and-seat-bar-colours.md) | Ink-ground side nav, "Rakyt \| Booking" lockup and solid seat-bar colours | proposed | 2026-10-23 |

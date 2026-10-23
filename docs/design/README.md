@@ -48,6 +48,24 @@ sticky bottom CTA bar). **Where the two conflict on colour, Cerah wins.** These 
 Prada alternatives tested: A `#B8862F` (dull), B `#C48A1E`, C `#D99A1E`. **D is confirmed** —
 see [ADR-0008](../decisions/0008-brand-tokens-and-cta-rule.md).
 
+### Ink ground (seller side nav, 1e/2f)
+
+The desktop seller nav is an ink panel. Sogan fails on ink (2.1 : 1), so on this ground its "brand & links" role
+moves to **gold-soft** — text and small marks only, never a button fill ([ADR-0036](../decisions/0036-ink-ground-side-nav-and-seat-bar-colours.md), proposed).
+
+| Token | Hex | Use on ink | Contrast on ink |
+|---|---|---|---|
+| Sand | `#D8C9B6` | Resting nav items | 10.8 : 1 |
+| Gading | `#F4EFE6` | Wordmark, current nav item (on a Sogan fill, 7.2 : 1) | 15.3 : 1 |
+| Gold-soft | `#D9AE5C` | "Booking" kicker, monogram accent node, Pembayaran count | 8.5 : 1 |
+
+### Product mark
+
+**Rakyt | BOOKING** everywhere: the monogram, the "Rakyt" wordmark (Poppins 20px, `-0.03em`), a hairline, and
+"Booking" as the 11px uppercase kicker (`.14em`). One component, `resources/js/components/ProductMark.vue`:
+`tone="ink"` on light grounds (kicker in Sogan; the landing nav), `tone="reverse"` on ink (kicker in gold-soft; the
+seller side nav). Don't rebuild the lockup by hand.
+
 ### Status set
 
 Every status = tint + deep text + its own glyph + a word. Never colour alone; never brown or gold.
@@ -60,6 +78,10 @@ Every status = tint + deep text + its own glyph + a word. Never colour alone; ne
 | Ditolak | ✕ | `#A1281E` |
 | Dibatalkan | – | `#4F4741` |
 | Selesai | ☑ | `#2F6B3A` (ADR-0028 §10) |
+
+The Hari ini **seat bar** (F-007 AC-12, mockup 2f) is a thin square bar of solid segments with 3 px gaps: Lunas
+`status-paid`, ditahan `status-waiting-bar` `#D9963A`, kosong `ink/12`. It is decoration (`aria-hidden`); its text
+summary ("12 lunas · **2 ditahan** · 2 kosong · tutup 21 Okt") carries the numbers.
 
 Departure statuses (F-003 AC-27) follow the same rule with their own glyphs: Buka ● (Lunas green), Tutup ○
 (`#4F4741`), Penuh ◼ (nila), Sudah lewat ◁ (`#4F4741`). Tints are tokens in `resources/css/app.css`
@@ -80,7 +102,9 @@ in it are the phone-frame bezel and dev-tooling chips). Keep it that way:
   input uses 2px Sogan). Avoid `border-2` as the default outline — it reads too bold.
 - **Section headers** are an uppercase kicker, not a sentence-case heading: Poppins 11px, `font-weight:600`,
   `letter-spacing:.16em`, uppercase, with a **2px `#211710` bottom border** (`padding-bottom:8px`). Used for
-  "Trip tersedia", "Pilih keberangkatan", "Termasuk", "Tidak termasuk", "Kumpul & jadwal", "Ketentuan".
+  "Trip tersedia", "Pilih keberangkatan", "Termasuk", "Tidak termasuk", "Kumpul & jadwal", "Ketentuan", and the
+  seller Hari ini sections ("Perlu tindakan · n pembayaran", "Keberangkatan terdekat", "Pesanan terbaru"). Use the
+  `section-header` utility; a "Semua …" link on the same line is plain Sogan body text, right-aligned.
 - **Kickers/subtitles** above a title (e.g. "Open trip · 3 hari 2 malam") are Poppins 11px, `font-weight:600`,
   uppercase, `letter-spacing:.14em`, in **Sogan `#6E4527`** — not `secondary`, and not the tight `tracking-wide`.
 
