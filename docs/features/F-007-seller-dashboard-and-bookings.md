@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-weeks-2-4
 mockups: [1e, 2f, 1g]
 decisions: ["0003", "0004", "0006", "0007", "0008", "0014", "0017", "0021", "0026", "0027", "0029"]
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 
 # F-007 · Seller dashboard ("Hari ini") & booking list
@@ -383,7 +383,7 @@ the F-001 time-zone change.
 
 ## Open questions
 
-All decided 2026-10-19 (Rengga: "all as recommended").
+Q1–Q8 decided 2026-10-19 (Rengga: "all as recommended").
 
 - [x] **Q1 Mobile Hari ini without a mockup.** 1e/2f are desktop only. Decided 2026-10-19 as recommended: build phone-first from the same
   sections, stacked Perlu tindakan → Keberangkatan terdekat → Pesanan terbaru → link card (tasks first, AC-6); device
@@ -411,6 +411,11 @@ All decided 2026-10-19 (Rengga: "all as recommended").
   (AC-25), so the customer can reopen the payment page; the token goes only to the customer's own number through the
   seller's WhatsApp. — Rengga
 - [x] **Q8 Support/admin view for Rakyt staff** (blueprint week 4) — separate feature? Yes: F-010–F-015. — Rengga
+- [ ] **Q9 Full name or first name in the greeting?** AC-5 shows "Selamat pagi, Agus." but greets with the whole
+  `users.name`, and the sign-up placeholder ("mis. Agus Santoso") invites a full name, so most sellers will see
+  "Selamat pagi, Agus Santoso." `HariIniTest` only passes because its fixture name is the single word "Agus".
+  *Recommend:* greet with the first word of the name (as the mockup does); keep the full name in emails ("Halo :name,").
+  Either way, make the AC-5 fixture a two-word name. Raised in review 2026-10-23 (with F-001 A14).
 
 ## Build notes (2026-10-19)
 
@@ -464,3 +469,4 @@ review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spe
 - 2026-10-23 — Phone bottom nav on the same ink panel as the side nav (AC-3 wording). Status stays `done`
 - 2026-10-23 — AC-5 to the mockup: date kicker, larger greeting, roomier page padding; business name and plan moved from the Hari ini header to the foot of the desktop side nav (Rengga). Status stays `done`
 - 2026-10-23 — Button sizes to 2f: gold "+ Trip baru" is the biggest (48px phone / 44px desktop); Konfirmasi, Tolak, Ingatkan via WA, Salin link and Bagikan use the 36px secondary size on desktop (44px tap target on a phone); link card title as a Sogan kicker. Status stays `done`
+- 2026-10-23 — Q9 raised: full name or first name in the AC-5 greeting (review of "Nama Anda", F-001 A14). Status stays `done`
