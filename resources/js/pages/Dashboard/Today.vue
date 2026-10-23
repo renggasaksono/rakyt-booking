@@ -19,7 +19,6 @@ import { t } from '../../lib/text.js';
  */
 const props = defineProps({
     greeting: { type: Object, required: true },
-    organization: { type: Object, required: true },
     // eslint-disable-next-line vue/prop-name-casing
     public_url: { type: String, required: true },
     // eslint-disable-next-line vue/prop-name-casing
@@ -51,32 +50,29 @@ function refresh() {
 <template>
     <Head :title="t(copy, 'title')" />
     <SellerLayout>
-        <div class="mx-auto max-w-5xl px-4 py-6">
+        <div class="mx-auto max-w-5xl px-4 pb-10 pt-8 sm:px-6 lg:px-11 lg:pt-9">
+            <!-- 1e/2f: the date as a Sogan kicker over a large greeting; business and plan live in the side nav. -->
             <header
                 data-section="header"
-                class="flex flex-wrap items-start justify-between gap-3"
+                class="flex flex-wrap items-end justify-between gap-x-6 gap-y-5"
             >
                 <div class="min-w-0">
-                    <p class="text-sm text-secondary">
+                    <p class="font-heading text-[11px] font-semibold uppercase tracking-[0.16em] text-sogan">
                         {{ greeting.date }}
                     </p>
-                    <h1 class="font-heading text-xl font-semibold text-ink">
+                    <h1 class="mt-1.5 font-heading text-2xl font-semibold leading-tight tracking-[-0.02em] text-ink lg:text-[30px]">
                         {{ greeting.text }}
                     </h1>
-                    <p class="mt-1 flex flex-wrap items-center gap-2 text-sm text-ink">
-                        <span class="truncate">{{ organization.name }}</span>
-                        <span class="rounded-full border border-ink/20 bg-surface px-2 py-0.5 text-xs font-semibold text-ink">{{ organization.plan_label }}</span>
-                    </p>
                 </div>
                 <Link
                     :href="urls.new_trip"
-                    class="inline-flex min-h-12 items-center rounded-lg bg-prada px-4 font-heading text-sm font-semibold text-ink"
+                    class="inline-flex min-h-11 items-center bg-prada px-5 font-heading text-sm font-semibold text-ink"
                 >
                     {{ t(copy, 'new_trip') }}
                 </Link>
             </header>
 
-            <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-x-11">
                 <section
                     data-section="action_needed"
                     class="min-w-0 lg:col-start-1"

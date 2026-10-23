@@ -152,9 +152,9 @@ class DashboardTenancyTest extends TestCase
     {
         $props = $this->todayProps($this->a);
 
-        $this->assertSame(['greeting', 'organization', 'public_url', 'action_needed', 'recent', 'departures', 'context', 'copy', 'urls'], array_values(array_diff(array_keys($props), ['errors', 'flash', 'seller', 'account', 'admin'])));
+        $this->assertSame(['greeting', 'public_url', 'action_needed', 'recent', 'departures', 'context', 'copy', 'urls'], array_values(array_diff(array_keys($props), ['errors', 'flash', 'seller', 'account', 'admin'])));
         $this->assertSame(['text', 'date'], array_keys($props['greeting']));
-        $this->assertSame(['name', 'slug', 'plan_label'], array_keys($props['organization']));
+        $this->assertSame(['name', 'plan_label'], array_keys($props['seller']['organization']));
         $this->assertSame(['count', 'items'], array_keys($props['action_needed']));
         $this->assertSame(['new_trip', 'bookings', 'action_needed', 'departures', 'trips', 'public_page'], array_keys($props['urls']));
         $this->assertSame([

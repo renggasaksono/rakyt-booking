@@ -59,6 +59,8 @@ moves to **gold-soft** — text and small marks only, never a button fill ([ADR-
 | Gading | `#F4EFE6` | Wordmark, current nav item (on a Sogan fill, 7.2 : 1) | 15.3 : 1 |
 | Gold-soft | `#D9AE5C` | "Booking" kicker, monogram accent node, Perlu tindakan count (Pembayaran on desktop, Pesanan on the phone); gading instead on the Sogan-filled current item (gold-soft is 3.9 : 1 there) | 8.5 : 1 |
 
+The side nav's foot carries the business name (Poppins 14px, gading) and the plan ("Paket Gratis", sand), as in 1e/2f.
+
 ### Product mark
 
 **Rakyt | BOOKING** everywhere: the monogram, the "Rakyt" wordmark (Poppins 20px, `-0.03em`), a hairline, and

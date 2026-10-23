@@ -147,6 +147,11 @@ class HandleInertiaRequests extends Middleware
             ],
             'brand' => __('trips.nav.brand'),
             'brand_suffix' => __('trips.nav.brand_suffix'),
+            // AC-5: business name and plan sit at the foot of the desktop side nav (1e/2f), on every seller page.
+            'organization' => [
+                'name' => $organization->name,
+                'plan_label' => __('dashboard.plan.free'),
+            ],
             'menu_label' => __('trips.nav.menu'),
             'close_label' => __('trips.nav.close'),
             'external_mark' => __('dashboard.nav.external'),

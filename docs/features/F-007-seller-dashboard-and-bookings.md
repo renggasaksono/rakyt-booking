@@ -105,7 +105,9 @@ F-005 AC-23 invariant still holds.
 - [x] **AC-5 Header.** Given seller Agus of "Kencana Trip" opens Hari ini at 08.15 local on Friday 16 Oktober, then the
   page shows the date "Jumat, 16 Oktober" (year added when not the current year — never needed for today), the greeting
   "Selamat pagi, Agus." using `users.name` (pagi 04.00–10.59, siang 11.00–14.59, sore 15.00–17.59, malam 18.00–03.59,
-  local time), the business name and the plan badge "Paket Gratis" (Q3), and "+ Trip baru" linking to `/trip/baru`.
+  local time), and "+ Trip baru" linking to `/trip/baru`. As in 1e/2f the date is an uppercase Sogan kicker over a
+  30 px greeting (24 px on a phone). The business name and the plan "Paket Gratis" (Q3) sit at the foot of the desktop
+  side nav on every seller page (shared `seller.organization`), not in the page header; the phone shows neither.
   "+ Trip baru" is the page's one gold button (mockup 1e/2f); every other action on the page is ink or ink outline.
 - [x] **AC-6 Order on a phone.** At 360 px the sections stack in this order: header, Perlu tindakan, Keberangkatan
   terdekat, Pesanan terbaru, link card (Q1). On desktop they follow the mockup's two-column layout.
@@ -460,3 +462,4 @@ review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spe
   titles as the `section-header` kicker, departure rows and seat bar redrawn to 2f (AC-2, AC-12 wording updated;
   ADR-0036 proposed). Status stays `done`
 - 2026-10-23 — Phone bottom nav on the same ink panel as the side nav (AC-3 wording). Status stays `done`
+- 2026-10-23 — AC-5 to the mockup: date kicker, larger greeting, roomier page padding; business name and plan moved from the Hari ini header to the foot of the desktop side nav (Rengga). Status stays `done`

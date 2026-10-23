@@ -49,7 +49,14 @@ class HariIniTest extends TestCase
         $props = $this->todayProps($this->a);
 
         $this->assertSame(['text' => 'Selamat pagi, Agus.', 'date' => 'Jumat, 16 Oktober'], $props['greeting']);
-        $this->assertSame(['name' => 'Kencana Trip', 'slug' => 'kencana', 'plan_label' => 'Paket Gratis'], $props['organization']);
+        // 1e/2f: business and plan sit at the foot of the desktop side nav, not in the page header.
+        $this->assertArrayNotHasKey('organization', $props);
+        $this->assertSame(['name' => 'Kencana Trip', 'plan_label' => 'Paket Gratis'], $props['seller']['organization']);
+        $layout = file_get_contents(resource_path('js/layouts/SellerLayout.vue'));
+        $this->assertMatchesRegularExpression('/<aside class="hidden [^"]*lg:flex/', $layout);
+        $this->assertStringContainsString('{{ seller.organization.plan_label }}', $layout);
+        $page = file_get_contents(resource_path('js/pages/Dashboard/Today.vue'));
+        $this->assertMatchesRegularExpression('/class="[^"]*uppercase[^"]*text-sogan">\s*\{\{ greeting\.date \}\}/', $page);
         $this->assertSame(url('/trip/baru'), $props['urls']['new_trip']);
         $this->assertSame('+ Trip baru', $props['copy']['new_trip']);
     }

@@ -24,7 +24,7 @@ const phoneNav = computed(() => nav.value.filter((item) => item.phone));
 
 <template>
     <div class="min-h-screen bg-gading lg:flex">
-        <aside class="hidden w-60 shrink-0 bg-ink px-5 py-7 lg:sticky lg:top-0 lg:block lg:h-screen lg:overflow-y-auto">
+        <aside class="hidden w-60 shrink-0 flex-col bg-ink px-5 py-7 lg:sticky lg:top-0 lg:flex lg:h-screen lg:overflow-y-auto">
             <div class="px-3">
                 <ProductMark
                     :brand="seller?.brand ?? ''"
@@ -69,6 +69,17 @@ const phoneNav = computed(() => nav.value.filter((item) => item.phone));
                     </Link>
                 </template>
             </nav>
+            <div
+                v-if="seller?.organization"
+                class="mt-auto px-3 pt-8"
+            >
+                <p class="truncate font-heading text-sm font-semibold text-gading">
+                    {{ seller.organization.name }}
+                </p>
+                <p class="mt-1 text-xs text-sand">
+                    {{ seller.organization.plan_label }}
+                </p>
+            </div>
         </aside>
 
         <div
