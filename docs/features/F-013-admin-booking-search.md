@@ -1,12 +1,12 @@
 ---
 id: F-013
 title: Admin cross-seller booking search & details
-status: draft
+status: ready
 priority: P0
 roadmap: mvp-week-4
 mockups: []
 decisions: ["0003", "0004", "0011"]
-updated: 2026-10-17
+updated: 2026-10-23
 ---
 
 # F-013 · Admin cross-seller booking search & details
@@ -39,6 +39,11 @@ F-010 · F-005 · F-006 · F-009 (audit events for history) · F-012 (links to s
 - [ ] A seller session cannot reach these pages or endpoints (test); a seller still cannot read another seller's bookings (existing cross-tenant tests stay green).
 - [ ] Usable at phone width.
 
+## Open questions
+
+None.
+
 ## Changelog
 
 - 2026-10-17 — created
+- 2026-10-23 — **ready.** No open questions; dependencies (F-005/F-006 statuses, F-009 audit events) are shipped. Booking statuses and the `BookingStatus` enum, E.164 phone normalisation and the signed-URL payment evidence it references all exist.
