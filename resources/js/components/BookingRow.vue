@@ -111,7 +111,7 @@ function verify(url) {
                 :href="b.whatsapp_reminder_url"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex min-h-11 items-center rounded-lg border-2 border-ink px-3 font-heading text-sm font-semibold text-ink"
+                class="inline-flex min-h-11 items-center px-3.5 font-heading text-[13px] font-semibold text-ink ring-[1.5px] ring-ink ring-inset lg:min-h-9"
             >
                 {{ t(copy, 'show.remind') }}
             </a>
@@ -139,7 +139,7 @@ function verify(url) {
             <div class="flex flex-1 gap-2">
                 <button
                     type="button"
-                    class="min-h-11 flex-1 rounded-lg bg-ink px-3 font-heading text-sm font-semibold text-surface disabled:bg-ink/60"
+                    class="min-h-11 flex-1 bg-ink px-3.5 font-heading text-[13px] font-semibold text-surface disabled:bg-ink/60 lg:min-h-9 lg:flex-none"
                     :disabled="verifying"
                     @click="verify(b.urls.confirm)"
                 >
@@ -147,7 +147,7 @@ function verify(url) {
                 </button>
                 <button
                     type="button"
-                    class="min-h-11 flex-1 rounded-lg border-2 border-ink px-3 font-heading text-sm font-semibold text-ink"
+                    class="min-h-11 flex-1 px-3 text-[13px] text-ink ring-1 ring-ink/25 ring-inset lg:min-h-9 lg:flex-none"
                     :disabled="verifying"
                     @click="verify(b.urls.reject)"
                 >

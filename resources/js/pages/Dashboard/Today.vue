@@ -66,7 +66,7 @@ function refresh() {
                 </div>
                 <Link
                     :href="urls.new_trip"
-                    class="inline-flex min-h-11 items-center bg-prada px-5 font-heading text-sm font-semibold text-ink"
+                    class="inline-flex min-h-12 items-center bg-prada px-5.5 font-heading text-sm font-semibold text-ink lg:min-h-11"
                 >
                     {{ t(copy, 'new_trip') }}
                 </Link>

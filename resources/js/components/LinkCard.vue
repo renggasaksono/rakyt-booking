@@ -5,8 +5,9 @@ import { t } from '../lib/text.js';
 
 /**
  * "Link booking Anda" (F-007 AC-14): F-001 D5's share behaviour — native share
- * sheet, else copy + "Link disalin" — with ink-outline buttons (the page's
- * gold button is "+ Trip baru", AC-5).
+ * sheet, else copy + "Link disalin". Buttons are the 2f secondary size, smaller
+ * than the page's gold "+ Trip baru" (AC-5): Salin link in the 1.5px ink
+ * outline, Bagikan in the quiet 1px one.
  */
 const props = defineProps({
     url: { type: String, required: true },
@@ -33,20 +34,20 @@ async function run(kind) {
 </script>
 
 <template>
-    <section class="rounded-xl border border-ink/10 bg-surface p-4">
+    <section class="border border-ink/10 bg-surface p-5">
         <h2
             v-if="showTitle"
-            class="font-heading text-base font-semibold text-ink"
+            class="font-heading text-[11px] font-semibold uppercase tracking-[0.16em] text-sogan"
         >
             {{ t(copy, 'title') }}
         </h2>
-        <p class="mt-1 break-all font-heading text-base text-ink">
+        <p class="mt-2 break-all font-heading text-lg font-semibold text-ink">
             {{ url.replace(/^https?:\/\//, '') }}
         </p>
-        <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+        <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <button
                 type="button"
-                class="min-h-11 flex-1 rounded-lg border-2 border-ink px-4 font-heading text-sm font-semibold text-ink disabled:text-secondary"
+                class="min-h-11 px-3.5 font-heading text-[13px] font-semibold text-ink ring-[1.5px] ring-ink ring-inset disabled:text-secondary lg:min-h-9"
                 :disabled="busy !== null"
                 :aria-busy="busy === 'copy' ? 'true' : 'false'"
                 @click="run('copy')"
@@ -55,7 +56,7 @@ async function run(kind) {
             </button>
             <button
                 type="button"
-                class="min-h-11 flex-1 rounded-lg border-2 border-ink px-4 font-heading text-sm font-semibold text-ink disabled:text-secondary"
+                class="min-h-11 px-3.5 text-[13px] text-ink ring-1 ring-ink/25 ring-inset disabled:text-secondary lg:min-h-9"
                 :disabled="busy !== null"
                 :aria-busy="busy === 'share' ? 'true' : 'false'"
                 @click="run('share')"

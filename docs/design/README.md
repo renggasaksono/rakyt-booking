@@ -114,6 +114,12 @@ in it are the phone-frame bezel and dev-tooling chips). Keep it that way:
 
 - **One gold button per screen**, for the step that moves the booking forward. Everything else is ink outline.
   Label is always ink, never cream. (On the payment screen, "Unggah bukti transfer" is gold; WhatsApp is secondary.)
+- **The gold button is the biggest one.** On a screen with several buttons (e.g. Hari ini, 2f) the gold CTA is 44px
+  tall, 14px Poppins; every other button is the smaller secondary size, 36px tall, 13px. Secondary buttons have three
+  weights: ink fill (Konfirmasi), 1.5px ink outline (Ingatkan via WA, Salin link), and a quiet 1px `ink/25` outline in
+  body text (Tolak, Bagikan). On a phone the 44px tap target wins, so the secondary buttons are 44px and the gold one
+  grows to 48px to stay the biggest. In seller views, draw outlines as `ring-inset` rings on the ink token, not
+  `border-2`.
 - **Type floor:** 11 px for uppercase kickers, 12 px for helper text and metadata. Nothing smaller on a phone.
 - **No opacity for disabled rows** (e.g. "Penuh" departures): full-strength secondary text, replace price with the word.
 - **Structured inputs over free text** for durasi and tutup pesan: presets + "Atur sendiri"; show the deadline as a real date.

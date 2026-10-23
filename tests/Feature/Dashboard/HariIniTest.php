@@ -298,7 +298,9 @@ class HariIniTest extends TestCase
         // F-001 D5's behaviour, reused: native share, else copy.
         $this->assertStringContainsString("import { copyLink, shareOrCopy } from '../lib/onboarding.js'", $card);
         $this->assertMatchesRegularExpression('/:href="viewUrl"\s+target="_blank"\s+rel="noopener"/', $card);
-        $this->assertStringContainsString('border-2 border-ink', $card);
+        // 2f: Salin link in the 1.5px ink outline, Bagikan in the quiet 1px one.
+        $this->assertStringContainsString('ring-[1.5px] ring-ink ring-inset', $card);
+        $this->assertStringContainsString('ring-1 ring-ink/25 ring-inset', $card);
     }
 
     public function test_ac_15_the_query_count_does_not_grow_with_bookings(): void

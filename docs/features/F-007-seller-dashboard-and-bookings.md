@@ -463,3 +463,4 @@ review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spe
   ADR-0036 proposed). Status stays `done`
 - 2026-10-23 — Phone bottom nav on the same ink panel as the side nav (AC-3 wording). Status stays `done`
 - 2026-10-23 — AC-5 to the mockup: date kicker, larger greeting, roomier page padding; business name and plan moved from the Hari ini header to the foot of the desktop side nav (Rengga). Status stays `done`
+- 2026-10-23 — Button sizes to 2f: gold "+ Trip baru" is the biggest (48px phone / 44px desktop); Konfirmasi, Tolak, Ingatkan via WA, Salin link and Bagikan use the 36px secondary size on desktop (44px tap target on a phone); link card title as a Sogan kicker. Status stays `done`
