@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
-    <title>@yield('title') · Rakyt</title>
+    <title>@yield('title') · Rakyt Booking</title>
     {{-- Poppins for the headings when the build is there; a missing font manifest must never break an error page. --}}
     @php
         try {

@@ -82,7 +82,7 @@ return [
 
     // Server-rendered <head> (AC-29, AC-30).
     'head' => [
-        'seller_title' => ':name · Rakyt',
+        'seller_title' => ':name · Rakyt Booking',
         'seller_description' => ':n trip · :city',
         'trip_title' => ':trip · :name',
         'trip_from' => 'Mulai :price/orang',
