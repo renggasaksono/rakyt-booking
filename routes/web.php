@@ -66,6 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/verifikasi/kirim-ulang', [EmailVerificationController::class, 'send'])->middleware('throttle:verification-resend')->name('verification.send');
 
     Route::get('/pengaturan/akun', [AccountController::class, 'edit'])->name('settings.account');
+    Route::put('/pengaturan/akun/nama', [AccountController::class, 'updateName'])->middleware('throttle:account-change')->name('settings.account.name');
     Route::put('/pengaturan/akun/email', [AccountController::class, 'updateEmail'])->middleware('throttle:account-change')->name('settings.account.email');
     Route::put('/pengaturan/akun/password', [AccountController::class, 'updatePassword'])->middleware('throttle:account-change')->name('settings.account.password');
 

@@ -9,10 +9,10 @@ import SellerLayout from '../../layouts/SellerLayout.vue';
 import { t } from '../../lib/text.js';
 
 /**
- * Pengaturan → Akun (F-001 A11, A12, F3). Both changes ask for the current
- * password. Past onboarding it sits in the seller layout like the other
- * Pengaturan pages; during onboarding (no seller nav yet) it keeps a bare
- * frame. "Keluar" lives on Pengaturan and in the onboarding header (A6).
+ * Pengaturan → Akun (F-001 A14, A11, A12, F3). The email and password
+ * changes ask for the current password; the name (A14) does not. Past
+ * onboarding it sits in the seller layout like the other Pengaturan pages;
+ * during onboarding (no seller nav yet) it keeps a bare frame. "Keluar" lives on Pengaturan and in the onboarding header (A6).
  */
 const props = defineProps({
     copy: { type: Object, required: true },
@@ -25,8 +25,16 @@ const props = defineProps({
 
 const BareFrame = (_, { slots }) => h('div', { class: 'min-h-screen bg-gading' }, [h(VerificationBanner), slots.default?.(), h(FlashMessages)]);
 
+const nameForm = useForm({ name: props.account.name });
 const emailForm = useForm({ email: '', current_password: '' });
 const passwordForm = useForm({ current_password: '', password: '' });
+
+function changeName() {
+    if (!nameForm.processing) {
+        // Keep the saved (trimmed) name as the form's new baseline.
+        nameForm.put(props.urls.name, { preserveScroll: true, onSuccess: () => nameForm.defaults({ name: props.account.name }).reset() });
+    }
+}
 
 function changeEmail() {
     if (!emailForm.processing) {
@@ -57,6 +65,34 @@ function changePassword() {
             <h1 class="font-heading text-xl font-semibold text-ink">
                 {{ t(copy, 'settings.title') }}
             </h1>
+
+            <form
+                class="mt-4 rounded-xl bg-surface p-4"
+                novalidate
+                @submit.prevent="changeName"
+            >
+                <h2 class="font-heading text-base font-semibold text-ink">
+                    <label for="account-name">{{ t(copy, 'settings.name_section') }}</label>
+                </h2>
+                <input
+                    id="account-name"
+                    v-model="nameForm.name"
+                    type="text"
+                    autocomplete="name"
+                    autocapitalize="words"
+                    class="mt-2 min-h-12 w-full rounded-lg border bg-surface px-3 text-base text-ink"
+                    :class="nameForm.errors.name ? 'border-status-rejected' : 'border-ink/20'"
+                >
+                <FieldError :message="nameForm.errors.name ?? nameForm.errors.rate_limit" />
+
+                <button
+                    type="submit"
+                    class="mt-4 min-h-12 w-full rounded-lg border-2 border-ink px-4 font-heading text-base font-semibold text-ink disabled:border-ink/30 disabled:text-secondary"
+                    :disabled="nameForm.processing"
+                >
+                    {{ t(copy, 'settings.save_name') }}
+                </button>
+            </form>
 
             <form
                 class="mt-4 rounded-xl bg-surface p-4"

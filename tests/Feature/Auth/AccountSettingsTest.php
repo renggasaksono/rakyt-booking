@@ -16,13 +16,13 @@ use Tests\Support\InteractsWithTenants;
 use Tests\TestCase;
 
 /**
- * F-001 A11, A12, F3, T6: Pengaturan → Akun.
+ * F-001 A11, A12, A14, F3, T6: Pengaturan → Akun.
  */
 class AccountSettingsTest extends TestCase
 {
     use BuildsOnboarding, InteractsWithTenants, RefreshDatabase;
 
-    public function test_ac_f3_akun_is_its_own_page_with_email_and_password_in_the_seller_layout(): void
+    public function test_ac_f3_akun_is_its_own_page_with_name_email_and_password_in_the_seller_layout(): void
     {
         $tenant = $this->createTenant();
 
@@ -30,7 +30,11 @@ class AccountSettingsTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Settings/Account')
+                ->where('account.name', $tenant->owner->name)
                 ->where('account.email', $tenant->owner->email)
+                ->where('urls.name', route('settings.account.name'))
+                ->where('urls.email', route('settings.account.email'))
+                ->where('urls.password', route('settings.account.password'))
                 ->where('urls.back', route('settings.index'))
                 ->missing('urls.logout')
                 ->where('backLabel', '← Pengaturan')
@@ -48,6 +52,112 @@ class AccountSettingsTest extends TestCase
         $vue = file_get_contents(resource_path('js/pages/Settings/Account.vue'));
         $this->assertStringContainsString('inApp ? SellerLayout : BareFrame', $vue);
         $this->assertStringNotContainsString('logout', $vue);
+
+        // Name first, then email, then password (A14).
+        $name = strpos($vue, "t(copy, 'settings.name_section')");
+        $email = strpos($vue, "t(copy, 'settings.email_section')");
+        $password = strpos($vue, "t(copy, 'settings.password_section')");
+        $this->assertNotFalse($name);
+        $this->assertTrue($name < $email && $email < $password);
+    }
+
+    public function test_ac_a14_the_name_section_shows_the_current_name_in_an_editable_field(): void
+    {
+        $vue = file_get_contents(resource_path('js/pages/Settings/Account.vue'));
+
+        $this->assertMatchesRegularExpression('/useForm\(\{ name: props\.account\.name \}\)/', $vue);
+        $this->assertMatchesRegularExpression('/<input\s+id="account-name"\s+v-model="nameForm\.name"\s+type="text"\s+autocomplete="name"/', $vue);
+        $this->assertStringContainsString('<FieldError :message="nameForm.errors.name ?? nameForm.errors.rate_limit" />', $vue);
+
+        $copy = __('account.settings');
+        $this->assertSame('Nama Anda', $copy['name_section']);
+        $this->assertSame('Simpan nama', $copy['save_name']);
+        $this->assertSame('Nama disimpan.', $copy['name_changed']);
+    }
+
+    public function test_ac_a14_simpan_nama_is_ink_outline_and_the_page_has_no_gold_button(): void
+    {
+        $vue = file_get_contents(resource_path('js/pages/Settings/Account.vue'));
+
+        $this->assertMatchesRegularExpression('/class="[^"]*border-2 border-ink[^"]*"\s+:disabled="nameForm\.processing"\s*>\s*\{\{ t\(copy, \'settings\.save_name\'\) \}\}/', $vue);
+        $this->assertStringNotContainsString('bg-prada', $vue);
+    }
+
+    public function test_ac_a14_saving_the_name_stores_it_trimmed_without_a_password_or_audit_event(): void
+    {
+        $tenant = $this->createTenant();
+        $user = $tenant->owner;
+        $hash = $user->password;
+        $email = $user->email;
+
+        $this->actingAsTenant($tenant)->put(route('settings.account.name'), ['name' => '  Sri Wahyuni  '])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('toast', 'Nama disimpan.');
+
+        $user->refresh();
+        $this->assertSame('Sri Wahyuni', $user->name);
+        $this->assertSame($hash, $user->password);
+        $this->assertSame($email, $user->email);
+        $this->assertDatabaseCount('audit_events', 0);
+    }
+
+    public function test_ac_a14_the_name_is_validated_like_sign_up_and_errors_keep_the_input(): void
+    {
+        $tenant = $this->createTenant();
+        $old = $tenant->owner->name;
+
+        foreach (['', '   ', 'A', str_repeat('a', 81)] as $name) {
+            $this->actingAsTenant($tenant)->from(route('settings.account'))
+                ->put(route('settings.account.name'), ['name' => $name])
+                ->assertRedirect(route('settings.account'))
+                ->assertSessionHasErrors('name');
+        }
+
+        $this->actingAsTenant($tenant)->from(route('settings.account'))
+            ->put(route('settings.account.name'), ['name' => 'A'])
+            ->assertSessionHasErrors(['name' => 'Nama Anda minimal 2 karakter.']);
+
+        $this->assertSame($old, $tenant->owner->refresh()->name);
+
+        // The bounds are sign-up's (A2).
+        $this->actingAsTenant($tenant)->put(route('settings.account.name'), ['name' => 'Al'])->assertSessionHasNoErrors();
+        $this->actingAsTenant($tenant)->put(route('settings.account.name'), ['name' => str_repeat('a', 80)])->assertSessionHasNoErrors();
+        $this->assertSame(str_repeat('a', 80), $tenant->owner->refresh()->name);
+    }
+
+    public function test_ac_a14_the_new_name_greets_on_the_next_hari_ini_load_and_in_auth_mail(): void
+    {
+        Notification::fake();
+        $tenant = $this->createTenant();
+
+        $this->actingAsTenant($tenant)->put(route('settings.account.name'), ['name' => 'Sri Wahyuni'])->assertSessionHasNoErrors();
+
+        $this->actingAsTenant($tenant)->get('/hari-ini')
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Dashboard/Today')
+                ->where('greeting.text', fn (string $text) => str_ends_with($text, ', Sri Wahyuni.')));
+
+        $user = $tenant->owner->refresh();
+        $this->assertSame('Halo Sri Wahyuni,', (new VerifyEmailNotification)->toMail($user)->greeting);
+    }
+
+    public function test_ac_a14_the_shared_account_prop_no_longer_carries_the_name(): void
+    {
+        $tenant = $this->createTenant();
+
+        $this->actingAsTenant($tenant)->get('/hari-ini')
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('account')
+                ->missing('account.name'));
+    }
+
+    public function test_ac_a14_the_name_change_shares_the_account_change_limiter(): void
+    {
+        $route = app('router')->getRoutes()->getByName('settings.account.name');
+
+        $this->assertSame('PUT', $route->methods()[0]);
+        $this->assertContains('throttle:account-change', $route->gatherMiddleware());
+        $this->assertContains('auth', $route->gatherMiddleware());
     }
 
     public function test_ac_f3_during_onboarding_akun_keeps_its_bare_frame(): void
@@ -160,9 +270,13 @@ class AccountSettingsTest extends TestCase
 
         $this->actingAsTenant($a)->put(route('settings.account.email'), ['email' => 'baru@example.com', 'current_password' => 'password', 'user_id' => $b->owner->id, 'id' => $b->owner->id]);
         $this->actingAsTenant($a)->put(route('settings.account.password'), ['current_password' => 'password', 'password' => 'baru12345', 'user_id' => $b->owner->id]);
+        $bName = $b->owner->name;
+        $this->actingAsTenant($a)->put(route('settings.account.name'), ['name' => 'Nama Baru', 'user_id' => $b->owner->id, 'id' => $b->owner->id]);
 
         $this->assertSame('baru@example.com', $a->owner->refresh()->email);
+        $this->assertSame('Nama Baru', $a->owner->name);
         $this->assertSame($bEmail, $b->owner->refresh()->email);
+        $this->assertSame($bName, $b->owner->name);
         $this->assertSame($bHash, $b->owner->password);
     }
 
@@ -170,5 +284,6 @@ class AccountSettingsTest extends TestCase
     {
         $this->get(route('settings.account'))->assertRedirect(route('login'));
         $this->putJson(route('settings.account.password'), ['current_password' => 'x', 'password' => 'y'])->assertUnauthorized();
+        $this->putJson(route('settings.account.name'), ['name' => 'Siapa Saja'])->assertUnauthorized();
     }
 }

@@ -101,7 +101,7 @@ from the rate-limit table in F-009; tests read the configured values rather than
 - [x] **A11** Given Pengaturan → Akun, when the seller changes their email, then the current password is required; the new email is validated as in A2; on success the email is updated, `email_verified_at` is reset to null, a verification email goes to the new address, a notification "Email akun Rakyt Anda diganti ke <new, masked>" goes to the **old** address, and an `auth.email_changed` audit event is written. Wrong current password → "Password salah." and nothing changes.
 - [x] **A12** Given Pengaturan → Akun, the seller can change the password by entering the current password and a new one (≥ 8 chars); other sessions are invalidated.
 - [x] **A13** In local and testing environments mail uses the `log` / array mailer; no provider credentials are needed. Passwords, reset tokens and verification URLs are never written to application logs.
-- [ ] **A14** Given Pengaturan → Akun, then the first section "Nama Anda" shows the seller's current name in an
+- [x] **A14** Given Pengaturan → Akun, then the first section "Nama Anda" shows the seller's current name in an
   editable field (`autocomplete="name"`). When the seller saves, the name is validated as in A2 (required, 2–80 chars,
   stored trimmed) and stored on `users.name`; no current password is asked (the name grants no access) and no audit
   event is written. Success shows the toast "Nama disimpan."; errors appear inline and keep the input. The save button
@@ -165,7 +165,7 @@ from the rate-limit table in F-009; tests read the configured values rather than
 - [x] **F1** The owner can edit "Nama usaha", "Kota basis", "Nomor WhatsApp usaha" (same validation as B3, not verified), "Logo" (JPG/PNG/WebP, ≤ 2 MB, shown square) and "Bio singkat" (≤ 160 chars). Changes appear on the public page (F-002) immediately.
   *Covered:* editing, validation and the logo are tested here; the public page shows changes on the next load (F-002 AC-10).
 - [x] **F2** The slug is shown read-only after first publish with "Hubungi Rakyt untuk mengganti link." (Q3). Before first publish it is editable with the B5–B7, B10 rules.
-- [ ] **F3** Account settings (name, email, password) live in Pengaturan → Akun (A14, A11, A12), separate from the business profile. Past onboarding Akun sits in the seller layout like the other Pengaturan pages; "Keluar" (A6) is on Pengaturan itself and in the onboarding header, not repeated on Akun.
+- [x] **F3** Account settings (name, email, password) live in Pengaturan → Akun (A14, A11, A12), separate from the business profile. Past onboarding Akun sits in the seller layout like the other Pengaturan pages; "Keluar" (A6) is on Pengaturan itself and in the onboarding header, not repeated on Akun.
 - [x] **F4** Given an organization with future departures that use a relative deadline preset (`same_day`, `h1`, `h3`, `h7`), when the owner changes the time zone in Profil usaha, then those deadlines are recomputed in the new zone with F-003's `DeadlineCalculator`, inside the same transaction, each change audited as `departure.deadline_changed`; custom deadlines keep their instant (ADR-0014, F-003 Q15).
 
 - [x] **F5** Pengaturan → Rekening (`/pengaturan/rekening`, route `payment-methods.index`) lists the organization's bank / e-wallet accounts with the step 4 fields and rules (C10, max 5, at least one kept) and saves them with the same service (own limiter `throttle:payment-change`, 10 per 15 min per user): one `payment_instructions.changed` audit event with before/after values per real change, none when nothing changed. It is on the Pengaturan index and linked from the F-003 editor's publish checklist, at phone width too (the list under "Pratinjau"). Page visits during the guided flow resume it (E2). QRIS and cash stay in F-006. No mockup; built from the 4e block.
@@ -179,7 +179,7 @@ from the rate-limit table in F-009; tests read the configured values rather than
   *Covered:* A's draft and payment details never reach B's onboarding pages (tested here) or any public page (F-002 AC-5, AC-7, AC-8, `PublicTenancyTest`).
 - [x] **T4** Uploaded trip photos and logos are stored under A's organization prefix; B cannot delete or replace them.
 - [x] **T5** Given a user with no membership in an organization, policies deny every seller action on it, even if UI links are crafted by hand.
-- [ ] **T6** Account endpoints (name change, email change, password change) act only on the signed-in user; a user ID in the request is ignored.
+- [x] **T6** Account endpoints (name change, email change, password change) act only on the signed-in user; a user ID in the request is ignored.
 
 ### Overbooking
 
@@ -290,3 +290,7 @@ None block building. The spec uses the recommended default for each; override an
   Pengaturan → Akun, drop the unused `name` from the shared `account` prop); F3 and T6 extended to the name and
   **unticked** for the builder; Q13 updated. Status stays `in-progress`
 - 2026-10-23 — Rengga: Q13 decided (keep "Nama Anda" at sign-up, editable via A14). Status stays `in-progress`
+- 2026-10-23 — Builder: A14 built — Pengaturan → Akun opens with "Nama Anda" (`PUT /pengaturan/akun/nama`,
+  `throttle:account-change`, sign-up's rule via `RegisterRequest::nameRules()`, no password, no audit, toast "Nama
+  disimpan."); the shared `account` prop drops `name`. `AccountSettingsTest` covers A14, F3 (name → email → password)
+  and T6 (name change ignores a user id). A14, F3, T6 ticked (64/66). Status stays `in-progress`
