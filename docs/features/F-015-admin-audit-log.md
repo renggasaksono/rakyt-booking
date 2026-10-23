@@ -1,12 +1,12 @@
 ---
 id: F-015
 title: Audit logging for admin actions
-status: draft
+status: ready
 priority: P0
 roadmap: mvp-week-4
 mockups: []
 decisions: ["0011"]
-updated: 2026-10-17
+updated: 2026-10-23
 ---
 
 # F-015 · Audit logging for admin actions
@@ -24,7 +24,9 @@ filterable by organization, actor and action; organization detail (F-012) and bo
 Admin actions audited in the MVP: seller suspension, seller reactivation, platform-admin flag grant/revoke. Any
 sensitive admin change added later must be audited too.
 
-**Out (explicitly):** logging page views or searches; editing or deleting audit events; SIEM/export integrations.
+**Out (explicitly):** logging page views or searches; editing or deleting audit events; SIEM/export integrations;
+**surfacing admin actions in the seller's own audit history** — admin events are platform-internal and never shown in
+the seller app in P0 (resolved 2026-10-23). A suspended seller is informed out-of-band, not via an in-app notice.
 
 ## Dependencies
 
@@ -37,11 +39,13 @@ F-009 (`audit_events` table and writer) · F-010.
 - [ ] Events never contain passwords, OTP codes, 2FA secrets, tokens or payment evidence contents; customer data limited to IDs.
 - [ ] Audit events are append-only through the app (no update/delete routes); tested.
 - [ ] Admin audit view is behind the F-010 gate; sellers cannot read admin events (test).
+- [ ] Admin events are not exposed in any seller-facing audit view or page in P0 (test, if a seller audit view exists).
 
 ## Open questions
 
-- [ ] Do sellers ever see admin actions on their own organization (e.g. suspension notice in their audit history)? — Rengga
+None — seller visibility resolved 2026-10-23 (see changelog).
 
 ## Changelog
 
 - 2026-10-17 — created
+- 2026-10-23 — **ready.** Sellers do **not** see admin actions on their org in P0 (Rengga); admin audit events stay platform-internal. Moved to scope "Out" with an AC.
