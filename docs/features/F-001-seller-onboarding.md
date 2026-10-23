@@ -190,7 +190,7 @@ booking or seat hold happens here. Capacity changes after publish go through F-0
 ### Phone width & design rules
 
 - [ ] **P1** Every screen in this feature works at 360 × 640 with no horizontal scroll; on the sign-up, sign-in and onboarding screens the gold CTA is sticky at the bottom, while Pengaturan pages (Profil usaha, Akun) keep the seller layout's bottom nav and put their save button under the form; all tap targets ≥ 44 px; the on-screen keyboard does not cover the focused field.
-  *Partly verified:* browser smoke test at 375 × 812 on 2026-10-18 (sign-up → steps 1–4 → 4f → Profil usaha): no horizontal scroll, sticky gold CTA, 44 px targets. Not in CI; device review at 360 × 640 still to do.
+  *Partly verified:* browser smoke test at 375 × 812 on 2026-10-18 (sign-up → steps 1–4 → 4f → Profil usaha): no horizontal scroll, sticky gold CTA, 44 px targets. Profil usaha saves inline since 2026-10-23 (P1 narrowed); its 360 px browser check that day found no horizontal scroll with the bottom nav kept. Not in CI; device review at 360 × 640 still to do.
 - [x] **P2** One gold button per screen ("Daftar", "Masuk", "Kirim link", "Simpan password", 4b–4e "Lanjut…"/"Terbitkan trip", 4f "↗ Bagikan ke WA / IG"); everything else ink outline or link (ADR-0008). Helper text ≥ 12 px; kickers ≥ 11 px.
 - [x] **P3** Correct keyboards and autofill: `type="email"` for email, `autocomplete="current-password"` / `new-password` for passwords (password managers work), `inputmode="numeric"` for phone, price, seats and account number.
 - [x] **P4** All UI strings, including auth emails, come from `lang/id/` (ADR-0007); money shown as `Rp1.250.000`, dates as `Kam, 24 Okt 2026`, times as `23.59`.
