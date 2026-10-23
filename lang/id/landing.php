@@ -9,7 +9,7 @@
 return [
     // Server-rendered <head> (AC-15, ADR-0024).
     'head' => [
-        'title' => 'Rakyt — booking rapi untuk operator trip',
+        'title' => 'Booking rapi untuk operator trip',
         'og_title' => 'Rakyt Booking',
         'description' => 'Satu link booking untuk pesanan dari Instagram dan WhatsApp. Atur tanggal dan kursi, '
             .'pantau pembayaran — uangnya langsung masuk ke rekening Anda. Gratis untuk mulai.',
