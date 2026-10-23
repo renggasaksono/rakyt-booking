@@ -12,6 +12,7 @@ import { CONSENT_KEY, createAnalytics } from './analytics.js';
 
 let instance = null;
 let booted = false;
+let pendingEvent = null;
 const promptOpen = ref(false);
 
 function storage() {
@@ -75,6 +76,9 @@ export function bootAnalytics(config) {
     }
 
     booted = true;
+    // Keep any event flashed before GA finishes loading, so the first funnel
+    // milestone is not dropped in the gap before the idle callback runs.
+    pendingEvent = config.event ?? null;
 
     // After first paint so GA never blocks the landing on a mid-range phone.
     whenIdle(() => {
@@ -82,13 +86,24 @@ export function bootAnalytics(config) {
         instance = createAnalytics({ measurementId: config.measurementId, gtag, storage: storage() });
         instance.start();
         promptOpen.value = instance.needsPrompt();
-        fireServerEvent(config.event);
+
+        if (pendingEvent) {
+            instance.trackServerEvent(pendingEvent);
+            pendingEvent = null;
+        }
     });
 }
 
 export function fireServerEvent(name) {
-    if (instance && name) {
+    if (!name) {
+        return;
+    }
+
+    // Queue until GA has booted; flushed when the instance is created.
+    if (instance) {
         instance.trackServerEvent(name);
+    } else {
+        pendingEvent = name;
     }
 }
 

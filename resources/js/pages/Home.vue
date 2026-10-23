@@ -58,7 +58,7 @@ const sectionWrap = 'mx-auto max-w-5xl px-4';
                             :class="goldCta"
                             @click="trackCta('hero')"
                         >
-                            {{ cta.label }}
+                            {{ authenticated ? copy.hero.cta_authenticated : copy.hero.cta }}
                         </Link>
                     </div>
                     <ul class="mt-6 space-y-1.5">
@@ -295,7 +295,7 @@ const sectionWrap = 'mx-auto max-w-5xl px-4';
                         :class="goldCta"
                         @click="trackCta('closing')"
                     >
-                        {{ cta.label }}
+                        {{ authenticated ? copy.closing.cta_authenticated : copy.closing.cta }}
                     </Link>
                 </div>
             </div>
