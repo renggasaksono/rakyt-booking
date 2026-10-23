@@ -469,5 +469,6 @@ review is still to do with F-002/F-003/F-005's, as the AC says). Choices the spe
 - 2026-10-23 — Phone bottom nav on the same ink panel as the side nav (AC-3 wording). Status stays `done`
 - 2026-10-23 — AC-5 to the mockup: date kicker, larger greeting, roomier page padding; business name and plan moved from the Hari ini header to the foot of the desktop side nav (Rengga). Status stays `done`
 - 2026-10-23 — Button sizes to 2f: gold "+ Trip baru" is the biggest (48px phone / 44px desktop); Konfirmasi, Tolak, Ingatkan via WA, Salin link and Bagikan use the 36px secondary size on desktop (44px tap target on a phone); link card title as a Sogan kicker. Status stays `done`
+- 2026-10-23 — Desktop: the link card sits right under Keberangkatan terdekat instead of waiting for the left column's rows (big gap when Pesanan terbaru is long); phone order unchanged (AC-6). Status stays `done`
 - 2026-10-23 — Q9 raised: full name or first name in the AC-5 greeting (review of "Nama Anda", F-001 A14). Status stays `done`
 - 2026-10-23 — Rengga: Q9 decided — the greeting uses the full name, as built; AC-5 wording made explicit. Status stays `done`
