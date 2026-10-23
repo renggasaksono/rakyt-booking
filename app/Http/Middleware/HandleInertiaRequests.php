@@ -52,6 +52,9 @@ class HandleInertiaRequests extends Middleware
             ],
             // Seller navigation (F-007 AC-2–AC-4): desktop side nav, phone bottom nav, Perlu tindakan counts.
             'seller' => fn () => $request->user() === null || ! app(CurrentOrganization::class)->check() ? null : $this->sellerNav($request),
+            // F-010: admin shell navigation. Only ever present for a platform admin;
+            // F-011–F-015 add their items here.
+            'admin' => fn () => $request->user()?->is_platform_admin ? $this->adminNav($request) : null,
             // F-001 A6, A10: account menu and the non-blocking verification banner.
             'account' => fn () => $request->user() === null ? null : [
                 'name' => $request->user()->name,
@@ -113,6 +116,34 @@ class HandleInertiaRequests extends Middleware
             'close_label' => __('trips.nav.close'),
             'external_mark' => __('dashboard.nav.external'),
             'new_tab' => __('dashboard.nav.new_tab'),
+        ];
+    }
+
+    /**
+     * Admin shell navigation (F-010). A separate boundary from the seller nav:
+     * the admin is not a tenant and sees none of a seller's menu. F-011–F-015
+     * add their sections to this list.
+     *
+     * @return array<string, mixed>
+     */
+    private function adminNav(Request $request): array
+    {
+        return [
+            'brand' => __('admin.brand'),
+            'menu_label' => __('admin.nav.menu'),
+            'signed_in_as' => __('admin.nav.signed_in_as', ['name' => $request->user()->name]),
+            'nav' => [
+                [
+                    'key' => 'overview',
+                    'label' => __('admin.nav.overview'),
+                    'url' => route('admin.dashboard'),
+                    'active' => $request->routeIs('admin.dashboard'),
+                ],
+            ],
+            'logout' => [
+                'label' => __('admin.nav.logout'),
+                'url' => route('logout'),
+            ],
         ];
     }
 }

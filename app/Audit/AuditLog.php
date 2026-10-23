@@ -57,7 +57,15 @@ class AuditLog
             'ip' => $actor->hasIp() ? request()?->ip() : null,
         ]);
 
-        $event->setAttribute('organization_id', $this->organizationIdFor($subject));
+        $organizationId = $this->organizationIdFor($subject, $action);
+
+        if ($organizationId === null) {
+            // A platform-level action (F-010) belongs to no organization.
+            $event->markPlatformLevel();
+        } else {
+            $event->setAttribute('organization_id', $organizationId);
+        }
+
         $event->save();
 
         return $event;
@@ -77,9 +85,10 @@ class AuditLog
     /**
      * The subject's organization. A user (auth events) is found through their
      * membership, so a guest's password reset can be audited (F-009 R4). It
-     * must match the current organization when one is set.
+     * must match the current organization when one is set. Platform-level
+     * actions (F-010) belong to no organization and store a null id.
      */
-    private function organizationIdFor(Model $subject): int
+    private function organizationIdFor(Model $subject, AuditAction $action): ?int
     {
         $current = $this->current->id();
 
@@ -91,6 +100,11 @@ class AuditLog
         };
 
         if ($id === null) {
+            // The platform admin has no organization; everything else must.
+            if ($action->isPlatformLevel()) {
+                return null;
+            }
+
             throw new LogicException('Cannot audit a change without an organization.');
         }
 

@@ -75,6 +75,12 @@ final class RateLimits
         RateLimiter::for('payment-change', fn (Request $request) => [
             self::limit('payment_change.per_user', 'payment:'.$request->user()?->getKey()),
         ]);
+
+        // F-010: the admin TOTP challenge is authenticated, so keyed on the user and the IP.
+        RateLimiter::for('admin-2fa', fn (Request $request) => [
+            self::limit('admin_two_factor.per_user', 'admin-2fa:'.$request->user()?->getKey()),
+            self::limit('admin_two_factor.per_ip', 'admin-2fa-ip:'.$request->ip()),
+        ]);
     }
 
     /**

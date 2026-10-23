@@ -30,6 +30,12 @@ final class OnboardingProgress
      */
     public function landingUrl(User $user): string
     {
+        // F-010: a platform admin has no organization; they land in the admin
+        // area, where the gate then requires the TOTP challenge.
+        if ($user->is_platform_admin) {
+            return route('admin.dashboard');
+        }
+
         $organization = $this->current->get() ?? ResolveCurrentOrganization::membershipOf($user)?->organization;
 
         if ($organization === null) {

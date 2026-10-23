@@ -1,5 +1,9 @@
 <?php
 
+use App\Admin\Console\GrantPlatformAdminCommand;
+use App\Admin\Console\RevokePlatformAdminCommand;
+use App\Admin\Middleware\EnsurePendingPlatformAdmin;
+use App\Admin\Middleware\EnsurePlatformAdmin;
 use App\Http\Middleware\EnsureOnboardingFinished;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\PublicPages\Middleware\ResolvePublicOrganization;
@@ -28,6 +32,11 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withCommands([
+        // F-010: platform-admin grant/revoke (constructor-injected services).
+        GrantPlatformAdminCommand::class,
+        RevokePlatformAdminCommand::class,
+    ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignRequestId::class);
         $middleware->append(SecurityHeaders::class);
@@ -65,6 +74,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'organization' => EnsureCurrentOrganization::class,
             'onboarded' => EnsureOnboardingFinished::class,
             'public-organization' => ResolvePublicOrganization::class,
+            // F-010, ADR-0011: the platform-admin gate and its TOTP challenge guard.
+            'platform-admin' => EnsurePlatformAdmin::class,
+            'platform-admin.pending' => EnsurePendingPlatformAdmin::class,
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));
