@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\TwoFactorChallengeController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -81,6 +83,29 @@ Route::middleware('auth')->group(function () {
     Route::get('/mulai/pembayaran', [OnboardingController::class, 'payment'])->name('onboarding.payment');
     Route::post('/mulai/pembayaran', [OnboardingController::class, 'storePayment']);
     Route::get('/mulai/selesai', [OnboardingController::class, 'done'])->name('onboarding.done');
+});
+
+/*
+| Platform admin (F-010, ADR-0011). A module of this app, not a tenant: no
+| `organization`/`onboarded`. Every route sits behind `auth` plus a server-side
+| gate; a seller, whatever URL they type, is forbidden. `admin` is a reserved
+| slug, so these never collide with a seller's booking link.
+|
+| The TOTP challenge sits behind `platform-admin.pending` (admin, not yet
+| challenged); everything else behind `platform-admin` (admin, past TOTP, inside
+| the shorter admin session window).
+*/
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::middleware(['auth', 'platform-admin.pending'])->group(function () {
+        Route::get('/dua-faktor', [TwoFactorChallengeController::class, 'create'])->name('two-factor.challenge');
+        Route::post('/dua-faktor', [TwoFactorChallengeController::class, 'store'])
+            ->middleware('throttle:admin-2fa')
+            ->name('two-factor.verify');
+    });
+
+    Route::middleware(['auth', 'platform-admin'])->group(function () {
+        Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+    });
 });
 
 /*

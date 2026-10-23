@@ -26,6 +26,14 @@ trait BelongsToOrganization
         static::addGlobalScope(new OrganizationScope);
 
         static::creating(function (Model $model) {
+            // A platform-level record (F-010) intentionally has no organization,
+            // whatever the current context: never stamp it with one.
+            if ($model instanceof OrganizationOptional && $model->belongsToNoOrganization()) {
+                $model->setAttribute('organization_id', null);
+
+                return;
+            }
+
             $current = app(CurrentOrganization::class)->id();
 
             if ($current !== null) {

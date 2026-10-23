@@ -40,4 +40,18 @@ enum AuditAction: string
     case AuthPasswordChanged = 'auth.password_changed';
     case AuthEmailChanged = 'auth.email_changed';
     case AuthAccountRecovered = 'auth.account_recovered';
+
+    // F-010 AC-4: platform-admin access granted or revoked (by seeder/command).
+    case PlatformAdminGranted = 'platform_admin.granted';
+    case PlatformAdminRevoked = 'platform_admin.revoked';
+
+    /**
+     * Platform-level actions belong to no organization (F-010): the platform
+     * admin is not a member of any seller. Their audit events are stored with a
+     * null organization_id; every other action must resolve one.
+     */
+    public function isPlatformLevel(): bool
+    {
+        return in_array($this, [self::PlatformAdminGranted, self::PlatformAdminRevoked], true);
+    }
 }

@@ -20,7 +20,7 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0008](0008-brand-tokens-and-cta-rule.md) | Rakyt Sogan tokens, status set, one-gold-CTA rule | accepted | 2026-10-17 |
 | [0009](0009-whatsapp-otp-authentication.md) | WhatsApp OTP sign-in for sellers | rejected (replaced by 0012) | 2026-10-17 |
 | [0010](0010-freemium-subscription-no-transaction-fee.md) | Freemium + subscription; no mandatory transaction fee | accepted (limit check deferred: 0019) | 2026-10-15 |
-| [0011](0011-platform-admin-access.md) | Platform admin inside the same app, explicitly authorised, no impersonation | proposed | 2026-10-17 |
+| [0011](0011-platform-admin-access.md) | Platform admin inside the same app, explicitly authorised, no impersonation | accepted | 2026-10-23 |
 | [0012](0012-email-password-authentication.md) | Email + password sign-in for sellers | accepted | 2026-10-17 |
 | [0013](0013-database-postgresql.md) | PostgreSQL as the database engine | accepted | 2026-10-17 |
 | [0014](0014-timezones-utc-storage.md) | Store times in UTC; deadlines in the organization's time zone | accepted | 2026-10-17 |
