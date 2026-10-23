@@ -17,6 +17,9 @@ return [
 
     'nav' => [
         'brand' => 'Rakyt',
+        // The product lockup: "Rakyt | Booking" (AC-6). This defines the product;
+        // it sits beside the monogram in the nav and must not be dropped.
+        'brand_suffix' => 'Booking',
         'anchors' => [
             ['id' => 'cara-kerja', 'label' => 'Cara kerja'],
             ['id' => 'fitur', 'label' => 'Fitur'],
@@ -263,7 +266,9 @@ return [
     'footer' => [
         'terms' => 'Syarat',
         'privacy' => 'Privasi',
-        'made_with' => 'Dibuat dengan Rakyt',
+        // Rakyt's own site carries the brand wordmark, not the "Dibuat dengan
+        // Rakyt" attribution badge (that belongs on seller public pages, F-002).
+        'brand' => 'Rakyt',
         'company' => 'PT Rakyt Teknologi · Jakarta',
         'email' => 'hai@rakyt.id',
     ],

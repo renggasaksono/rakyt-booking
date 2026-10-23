@@ -121,7 +121,7 @@ const cardBase = 'bg-surface p-3 shadow-[inset_0_0_0_1px_rgba(33,23,16,0.12)]';
             >
                 <p class="font-heading text-sm font-semibold text-ink">
                     {{ demo.step1.trip_name }}
-                    <span class="ml-1 bg-prada/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink">{{ demo.step1.trip_tag }}</span>
+                    <span class="ml-1 bg-prada/20 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink">{{ demo.step1.trip_tag }}</span>
                 </p>
                 <p class="mt-1 text-xs text-secondary">
                     {{ demo.step1.includes }}
@@ -221,7 +221,7 @@ const cardBase = 'bg-surface p-3 shadow-[inset_0_0_0_1px_rgba(33,23,16,0.12)]';
                         <span aria-hidden="true">◷</span> {{ demo.step3.status }}
                     </span>
                 </div>
-                <ol class="mt-3 flex items-center gap-1 text-[10px]">
+                <ol class="mt-3 flex items-center gap-1 text-[11px]">
                     <li
                         v-for="(s, i) in demo.step3.steps"
                         :key="i"
