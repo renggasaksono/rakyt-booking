@@ -100,7 +100,6 @@ return [
         'new_password' => 'Password baru',
         'save_password' => 'Simpan password',
         'password_changed' => 'Password diganti. Perangkat lain sudah dikeluarkan.',
-        'logout_section' => 'Keluar',
         'logout' => 'Keluar',
         'wrong_password' => 'Password salah.',
         'same_email' => 'Email baru sama dengan email sekarang.',

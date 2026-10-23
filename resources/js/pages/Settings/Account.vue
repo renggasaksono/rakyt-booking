@@ -1,14 +1,18 @@
 <script setup>
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { h } from 'vue';
 import FieldError from '../../components/FieldError.vue';
+import FlashMessages from '../../components/FlashMessages.vue';
 import PasswordInput from '../../components/PasswordInput.vue';
 import VerificationBanner from '../../components/VerificationBanner.vue';
-import FlashMessages from '../../components/FlashMessages.vue';
+import SellerLayout from '../../layouts/SellerLayout.vue';
 import { t } from '../../lib/text.js';
 
 /**
- * Pengaturan → Akun (F-001 A6, A11, A12, F3). Both changes ask for the
- * current password. Available during onboarding too, so it has its own frame.
+ * Pengaturan → Akun (F-001 A11, A12, F3). Both changes ask for the current
+ * password. Past onboarding it sits in the seller layout like the other
+ * Pengaturan pages; during onboarding (no seller nav yet) it keeps a bare
+ * frame. "Keluar" lives on Pengaturan and in the onboarding header (A6).
  */
 const props = defineProps({
     copy: { type: Object, required: true },
@@ -16,7 +20,10 @@ const props = defineProps({
     urls: { type: Object, required: true },
     limits: { type: Object, required: true },
     backLabel: { type: String, required: true },
+    inApp: { type: Boolean, required: true },
 });
+
+const BareFrame = (_, { slots }) => h('div', { class: 'min-h-screen bg-gading' }, [h(VerificationBanner), slots.default?.(), h(FlashMessages)]);
 
 const emailForm = useForm({ email: '', current_password: '' });
 const passwordForm = useForm({ current_password: '', password: '' });
@@ -32,16 +39,11 @@ function changePassword() {
         passwordForm.put(props.urls.password, { preserveScroll: true, onFinish: () => passwordForm.reset() });
     }
 }
-
-function logout() {
-    router.post(props.urls.logout);
-}
 </script>
 
 <template>
     <Head :title="t(copy, 'settings.title')" />
-    <div class="min-h-screen bg-gading">
-        <VerificationBanner />
+    <component :is="inApp ? SellerLayout : BareFrame">
         <main class="mx-auto max-w-md px-4 py-6">
             <Link
                 :href="urls.back"
@@ -174,20 +176,6 @@ function logout() {
                     {{ t(copy, 'settings.save_password') }}
                 </button>
             </form>
-
-            <section class="mt-4 rounded-xl bg-surface p-4">
-                <h2 class="font-heading text-base font-semibold text-ink">
-                    {{ t(copy, 'settings.logout_section') }}
-                </h2>
-                <button
-                    type="button"
-                    class="mt-3 min-h-12 w-full rounded-lg border-2 border-ink px-4 font-heading text-base font-semibold text-ink"
-                    @click="logout"
-                >
-                    {{ t(copy, 'settings.logout') }}
-                </button>
-            </section>
         </main>
-        <FlashMessages />
-    </div>
+    </component>
 </template>
