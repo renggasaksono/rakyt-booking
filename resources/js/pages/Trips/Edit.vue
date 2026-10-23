@@ -319,16 +319,13 @@ const inputClass = (field) => [
     <SellerLayout hide-bottom-nav>
         <div class="mx-auto max-w-6xl px-4 pb-40 pt-4 lg:pb-10">
             <header class="mb-4">
-                <nav class="text-xs text-secondary">
-                    <Link
-                        :href="urls.index"
-                        class="inline-flex min-h-11 items-center text-sogan underline"
-                    >
-                        {{ t(copy, 'editor.breadcrumb') }}
-                    </Link>
-                    <span aria-hidden="true"> / </span>
-                    <span>{{ pageTitle }}</span>
-                </nav>
+                <Link
+                    :href="urls.index"
+                    class="inline-flex min-h-11 items-center text-sm text-sogan underline"
+                    :aria-label="t(copy, 'editor.back_label')"
+                >
+                    {{ t(copy, 'editor.back') }}
+                </Link>
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <h1 class="font-heading text-xl font-semibold text-ink">
                         {{ pageTitle }}
