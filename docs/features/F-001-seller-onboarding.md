@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-weeks-2-3
 mockups: [4a, 4b, 4c, 4d, 4e, 4f]
 decisions: ["0003", "0004", "0005", "0007", "0008", "0010", "0012", "0013", "0018", "0019", "0023"]
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 
 # F-001 · Seller onboarding & organization profile
@@ -38,7 +38,8 @@ must be rechecked in pilot (Q12).
 
 **In:**
 - **A. Account** (replaces the 4a code flow; no mockup for the new screens): sign-up with email + password,
-  sign-in, sign-out, password reset by expiring email link, non-blocking email verification, change of email.
+  sign-in, sign-out, password reset by expiring email link, non-blocking email verification, change of name
+  and email.
   Laravel's standard auth stack (Fortify/Breeze-style) per ADR-0012.
 - **B. Organization** (4b, "Langkah 1 dari 4 · Usaha"): business name, base city, business WhatsApp number
   (contact for customers, not verified), booking link slug with live availability check. Creates the
@@ -100,6 +101,15 @@ from the rate-limit table in F-009; tests read the configured values rather than
 - [x] **A11** Given Pengaturan → Akun, when the seller changes their email, then the current password is required; the new email is validated as in A2; on success the email is updated, `email_verified_at` is reset to null, a verification email goes to the new address, a notification "Email akun Rakyt Anda diganti ke <new, masked>" goes to the **old** address, and an `auth.email_changed` audit event is written. Wrong current password → "Password salah." and nothing changes.
 - [x] **A12** Given Pengaturan → Akun, the seller can change the password by entering the current password and a new one (≥ 8 chars); other sessions are invalidated.
 - [x] **A13** In local and testing environments mail uses the `log` / array mailer; no provider credentials are needed. Passwords, reset tokens and verification URLs are never written to application logs.
+- [x] **A14** Given Pengaturan → Akun, then the first section "Nama Anda" shows the seller's current name in an
+  editable field (`autocomplete="name"`). When the seller saves, the name is validated as in A2 (required, 2–80 chars,
+  stored trimmed) and stored on `users.name`; no current password is asked (the name grants no access) and no audit
+  event is written. Success shows the toast "Nama disimpan."; errors appear inline and keep the input. The save button
+  "Simpan nama" is ink outline like the email and password buttons (P2). The new name is used from the next page load
+  by the Hari ini greeting (F-007 AC-5) and the auth email greeting "Halo :name,". The route shares
+  `throttle:account-change` with A11/A12. The shared `account` Inertia prop no longer carries `name` — no shared
+  component reads it; Akun gets the name through its own page prop, named so it does not shadow the shared `account`
+  prop that the verification banner reads (A10).
 
 ### B. Organization — "Langkah 1 dari 4 · Usaha" (4b, adapted)
 
@@ -156,7 +166,7 @@ from the rate-limit table in F-009; tests read the configured values rather than
 - [x] **F1** The owner can edit "Nama usaha", "Kota basis", "Nomor WhatsApp usaha" (same validation as B3, not verified), "Logo" (JPG/PNG/WebP, ≤ 2 MB, shown square) and "Bio singkat" (≤ 160 chars). Changes appear on the public page (F-002) immediately.
   *Covered:* editing, validation and the logo are tested here; the public page shows changes on the next load (F-002 AC-10).
 - [x] **F2** The slug is shown read-only after first publish with "Hubungi Rakyt untuk mengganti link." (Q3). Before first publish it is editable with the B5–B7, B10 rules.
-- [x] **F3** Account settings (email, password) live in Pengaturan → Akun (A11, A12), separate from the business profile. Past onboarding Akun sits in the seller layout like the other Pengaturan pages; "Keluar" (A6) is on Pengaturan itself and in the onboarding header, not repeated on Akun.
+- [x] **F3** Account settings (name, email, password) live in Pengaturan → Akun (A14, A11, A12), separate from the business profile. Past onboarding Akun sits in the seller layout like the other Pengaturan pages; "Keluar" (A6) is on Pengaturan itself and in the onboarding header, not repeated on Akun.
 - [x] **F4** Given an organization with future departures that use a relative deadline preset (`same_day`, `h1`, `h3`, `h7`), when the owner changes the time zone in Profil usaha, then those deadlines are recomputed in the new zone with F-003's `DeadlineCalculator`, inside the same transaction, each change audited as `departure.deadline_changed`; custom deadlines keep their instant (ADR-0014, F-003 Q15).
 
 - [x] **F5** Pengaturan → Rekening (`/pengaturan/rekening`, route `payment-methods.index`) lists the organization's bank / e-wallet accounts with the step 4 fields and rules (C10, max 5, at least one kept) and saves them with the same service (own limiter `throttle:payment-change`, 10 per 15 min per user): one `payment_instructions.changed` audit event with before/after values per real change, none when nothing changed. It is on the Pengaturan index and linked from the F-003 editor's publish checklist, at phone width too (the list under "Pratinjau"). Page visits during the guided flow resume it (E2). QRIS and cash stay in F-006. No mockup; built from the 4e block.
@@ -170,7 +180,7 @@ from the rate-limit table in F-009; tests read the configured values rather than
   *Covered:* A's draft and payment details never reach B's onboarding pages (tested here) or any public page (F-002 AC-5, AC-7, AC-8, `PublicTenancyTest`).
 - [x] **T4** Uploaded trip photos and logos are stored under A's organization prefix; B cannot delete or replace them.
 - [x] **T5** Given a user with no membership in an organization, policies deny every seller action on it, even if UI links are crafted by hand.
-- [x] **T6** Account endpoints (email change, password change) act only on the signed-in user; a user ID in the request is ignored.
+- [x] **T6** Account endpoints (name change, email change, password change) act only on the signed-in user; a user ID in the request is ignored.
 
 ### Overbooking
 
@@ -179,8 +189,8 @@ booking or seat hold happens here. Capacity changes after publish go through F-0
 
 ### Phone width & design rules
 
-- [ ] **P1** Every screen in this feature works at 360 × 640 with no horizontal scroll; the gold CTA is sticky at the bottom; all tap targets ≥ 44 px; the on-screen keyboard does not cover the focused field.
-  *Partly verified:* browser smoke test at 375 × 812 on 2026-10-18 (sign-up → steps 1–4 → 4f → Profil usaha): no horizontal scroll, sticky gold CTA, 44 px targets. Not in CI; device review at 360 × 640 still to do.
+- [ ] **P1** Every screen in this feature works at 360 × 640 with no horizontal scroll; on the sign-up, sign-in and onboarding screens the gold CTA is sticky at the bottom, while Pengaturan pages (Profil usaha, Akun) keep the seller layout's bottom nav and put their save button under the form; all tap targets ≥ 44 px; the on-screen keyboard does not cover the focused field.
+  *Partly verified:* browser smoke test at 375 × 812 on 2026-10-18 (sign-up → steps 1–4 → 4f → Profil usaha): no horizontal scroll, sticky gold CTA, 44 px targets. Profil usaha saves inline since 2026-10-23 (P1 narrowed); its 360 px browser check that day found no horizontal scroll with the bottom nav kept. Not in CI; device review at 360 × 640 still to do.
 - [x] **P2** One gold button per screen ("Daftar", "Masuk", "Kirim link", "Simpan password", 4b–4e "Lanjut…"/"Terbitkan trip", 4f "↗ Bagikan ke WA / IG"); everything else ink outline or link (ADR-0008). Helper text ≥ 12 px; kickers ≥ 11 px.
 - [x] **P3** Correct keyboards and autofill: `type="email"` for email, `autocomplete="current-password"` / `new-password` for passwords (password managers work), `inputmode="numeric"` for phone, price, seats and account number.
 - [x] **P4** All UI strings, including auth emails, come from `lang/id/` (ADR-0007); money shown as `Rp1.250.000`, dates as `Kam, 24 Okt 2026`, times as `23.59`.
@@ -245,7 +255,7 @@ None block building. The spec uses the recommended default for each; override an
 - [ ] **Q10 — Sellers who only take QRIS or cash.** *Recommend:* onboarding asks for bank / e-wallet only; QRIS-only or cash-only sellers save as draft, add the method in Pengaturan → Pembayaran (F-006), then publish. Revisit if pilots hit it. *Update 2026-10-19:* a seller who saved a draft without any account was stuck until F-006 (manual test). Pengaturan → Rekening (F5) now lets them add a bank / e-wallet account and publish from the editor; QRIS-only and cash-only sellers still wait on F-006.
 - [x] **Q11 — Is a description required to publish?** Decided 2026-10-17: no; F-003 checklist item is "Nama". Onboarding has no description field.
 - [ ] **Q12 — Recheck the time budget.** The ±9/±8/±4/±2 values assumed a 1-minute code sign-in. *Recommend:* keep them for build (config, C1), time 3–5 target users in week 1 prototype tests, and retune before pilot.
-- [ ] **Q13 — Ask "Nama Anda" at sign-up?** *Recommend: yes* — the dashboard greets by name ("Selamat pagi, Agus.") and support needs a person's name; it is one short field. Alternative: drop it and greet with the business name.
+- [x] **Q13 — Ask "Nama Anda" at sign-up?** *Decided 2026-10-23 (Rengga): yes, editable in Pengaturan → Akun (A14).* *Recommend: yes* — the dashboard greets by name ("Selamat pagi, Agus.") and support needs a person's name; it is one short field. Alternative: drop it and greet with the business name. *Update 2026-10-23:* the name was asked but could never be seen outside the greeting or corrected; A14 adds it to Pengaturan → Akun. The greeting uses the full name (F-007 Q9).
 - [ ] **Q14 — Sign-up form: password confirmation field?** *Recommend: no*, use a show/hide toggle (A1) — faster on a phone, same error protection. Reset is always available.
 - [x] **Q15 — Email change: now, or after verifying the new address?** *Decided 2026-10-19 (Rengga): at once, as built (A11); F-009 B12 reworded.* A11 (built) changes the email at once and resets verification; F-009 B12 says the change takes effect only after the new address is verified. *Recommend:* keep A11 for P0 (the current password is required, the old address is told, other devices are signed out) and reword F-009 B12; switch to verify-first if pilots show takeover attempts. Raised by the builder 2026-10-18.
 - [ ] **Q16 — ADR-0018's 24-hour block and change notice for payment instructions.** Not built in F-001: after a reset or email change, step 4 / later edits are not blocked, and the sign-in email is not notified of an account change (every change *is* audited as `payment_instructions.changed`). *Recommend:* build both with F-006's Pengaturan → Pembayaran. Pengaturan → Rekening (F5, 2026-10-19) is a second write path through the same `PaymentMethodService::sync`, so the block and notice must cover it too. Recorded as a pre-pilot gate in the roadmap (blocks "Pilot go"). Raised by the builder 2026-10-18.
@@ -277,3 +287,18 @@ None block building. The spec uses the recommended default for each; override an
   set and the new hint. C2 re-ticked. All gates green
 - 2026-10-23 — F3: Akun uses the seller layout once onboarding is done and no longer repeats "Keluar" (it stays on
   Pengaturan and in the onboarding header). Status unchanged
+- 2026-10-23 — Review: "Nama Anda" (A1–A2) could not be seen or changed after sign-up. A14 added (edit the name in
+  Pengaturan → Akun, drop the unused `name` from the shared `account` prop); F3 and T6 extended to the name and
+  **unticked** for the builder; Q13 updated. Status stays `in-progress`
+- 2026-10-23 — Rengga: Q13 decided (keep "Nama Anda" at sign-up, editable via A14). Status stays `in-progress`
+- 2026-10-23 — Builder: A14 built — Pengaturan → Akun opens with "Nama Anda" (`PUT /pengaturan/akun/nama`,
+  `throttle:account-change`, sign-up's rule via `RegisterRequest::nameRules()`, no password, no audit, toast "Nama
+  disimpan."); the shared `account` prop drops `name`. `AccountSettingsTest` covers A14, F3 (name → email → password)
+  and T6 (name change ignores a user id). A14, F3, T6 ticked (64/66). Status stays `in-progress`
+- 2026-10-23 — Rengga: P1 narrowed — the sticky gold CTA is for sign-up, sign-in and onboarding. Profil usaha drops
+  its sticky "Simpan profil" bar for an inline button under the form, like Pembayaran, Pemesanan and Akun: the phone
+  bottom nav comes back, and the viewport-wide bar no longer covers the desktop side nav's business/plan footer.
+  `ProfileTest` asserts it. P1 stays open for the device review
+- 2026-10-23 — Review fix: Akun's page prop `account` shadowed the shared `account` prop (Inertia merges them
+  shallowly), so the verification banner (A10) broke on Akun for an unverified seller. Renamed to `user`; a test checks
+  the banner props on Akun in the seller layout and in the onboarding frame

@@ -20,7 +20,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Pengaturan → Akun (F-001 A6, A11, A12, F3). Acts only on the signed-in
+ * Pengaturan → Akun (F-001 A6, A11, A12, A14, F3). Acts only on the signed-in
  * user; any user id in the request is ignored (T6).
  */
 class AccountController extends Controller
@@ -32,12 +32,14 @@ class AccountController extends Controller
 
         return Inertia::render('Settings/Account', [
             'copy' => __('account'),
-            'account' => [
+            // Not `account`: that shared prop (A6, A10) feeds the verification banner.
+            'user' => [
                 'name' => $user->name,
                 'email' => $user->email,
                 'verified' => $user->hasVerifiedEmail(),
             ],
             'urls' => [
+                'name' => route('settings.account.name'),
                 'email' => route('settings.account.email'),
                 'password' => route('settings.account.password'),
                 'back' => $current->check() ? route('settings.index') : route('onboarding'),
@@ -47,6 +49,21 @@ class AccountController extends Controller
             // Past onboarding the page sits in the seller layout; during it, a bare frame (no seller nav yet).
             'inApp' => $organization !== null && ! $organization->isOnboarding(),
         ]);
+    }
+
+    /**
+     * A14: the name grants no access, so no current password and no audit event.
+     */
+    public function updateName(Request $request): RedirectResponse
+    {
+        $name = $request->input('name');
+        $request->merge(['name' => is_string($name) ? trim($name) : $name]);
+
+        $data = $request->validate(['name' => RegisterRequest::nameRules()], attributes: ['name' => __('account.register.name')]);
+
+        $request->user()->update(['name' => $data['name']]);
+
+        return back()->with('toast', __('account.settings.name_changed'));
     }
 
     /**

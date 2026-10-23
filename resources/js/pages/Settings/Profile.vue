@@ -2,7 +2,6 @@
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import FieldError from '../../components/FieldError.vue';
-import StickyAction from '../../components/StickyAction.vue';
 import SellerLayout from '../../layouts/SellerLayout.vue';
 import { formatNational, nationalDigits } from '../../lib/phone.js';
 import { normalizeSlugInput } from '../../lib/slug.js';
@@ -10,7 +9,9 @@ import { t } from '../../lib/text.js';
 
 /**
  * Pengaturan → Profil usaha (F-001 F1, F2, F4). No mockup yet: built from the
- * 4b patterns. The link is read-only after the first publish (Q3).
+ * 4b patterns. The link is read-only after the first publish (Q3). Like the
+ * other Pengaturan pages, the save button sits under the form and the phone
+ * bottom nav stays (P1).
  */
 const props = defineProps({
     profile: { type: Object, required: true },
@@ -94,8 +95,8 @@ function removeLogo() {
 
 <template>
     <Head :title="t(copy, 'title')" />
-    <SellerLayout hide-bottom-nav>
-        <div class="mx-auto max-w-md px-4 pb-32 pt-6">
+    <SellerLayout>
+        <div class="mx-auto max-w-md px-4 py-6">
             <Link
                 :href="urls.back"
                 class="inline-flex min-h-11 items-center text-sm text-sogan underline"
@@ -313,17 +314,14 @@ function removeLogo() {
 
                 <FieldError :message="form.errors.rate_limit" />
             </form>
-        </div>
-
-        <StickyAction>
             <button
                 type="submit"
                 form="profile-form"
-                class="min-h-12 w-full rounded-lg bg-prada px-4 font-heading text-base font-semibold text-ink disabled:bg-prada/40"
+                class="mt-4 min-h-12 w-full rounded-lg bg-prada px-4 font-heading text-base font-semibold text-ink disabled:bg-prada/40"
                 :disabled="form.processing"
             >
                 {{ t(copy, 'save') }}
             </button>
-        </StickyAction>
+        </div>
     </SellerLayout>
 </template>

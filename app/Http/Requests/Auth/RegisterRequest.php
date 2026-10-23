@@ -32,7 +32,7 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'min:'.self::NAME_MIN, 'max:'.self::NAME_MAX],
+            'name' => self::nameRules(),
             'email' => ['required', 'string', 'email', 'max:255', self::unusedEmail()],
             'password' => ['required', 'string', 'min:'.self::PASSWORD_MIN, 'max:255'],
             'terms' => ['accepted'],
@@ -55,6 +55,16 @@ class RegisterRequest extends FormRequest
     public function attributes(): array
     {
         return ['name' => __('account.register.name')];
+    }
+
+    /**
+     * "Nama Anda" (A2), shared with the name change in Pengaturan → Akun (A14).
+     *
+     * @return list<string>
+     */
+    public static function nameRules(): array
+    {
+        return ['required', 'string', 'min:'.self::NAME_MIN, 'max:'.self::NAME_MAX];
     }
 
     /**

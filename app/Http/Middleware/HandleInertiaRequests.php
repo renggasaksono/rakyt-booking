@@ -70,7 +70,6 @@ class HandleInertiaRequests extends Middleware
             'admin' => fn () => $request->user()?->is_platform_admin ? $this->adminNav($request) : null,
             // F-001 A6, A10: account menu and the non-blocking verification banner.
             'account' => fn () => $request->user() === null ? null : [
-                'name' => $request->user()->name,
                 'verified' => $request->user()->hasVerifiedEmail(),
                 'copy' => [
                     'banner' => __('account.verify.banner'),
