@@ -94,6 +94,11 @@ class HariIniTest extends TestCase
         $this->assertSame(['header', 'action_needed', 'departures', 'recent', 'link'], $matches[1]);
         // Desktop: two columns (1e/2f).
         $this->assertStringContainsString('lg:grid-cols-', $page);
+        // Desktop: the link card sits right under Keberangkatan terdekat in the right column; the phone
+        // copy (last, AC-6) is hidden there, so only one is ever displayed.
+        $this->assertMatchesRegularExpression('/data-section="departures".*?<\/section>\s*<LinkCard\s+class="hidden lg:block"/s', $page);
+        $this->assertMatchesRegularExpression('/data-section="link"\s+class="[^"]*\blg:hidden\b/', $page);
+        $this->assertSame(2, substr_count($page, '<LinkCard'));
     }
 
     public function test_ac_7_perlu_tindakan_rows_carry_their_fields_and_link_to_the_detail(): void

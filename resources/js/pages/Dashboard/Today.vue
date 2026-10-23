@@ -116,91 +116,105 @@ function refresh() {
                     </ul>
                 </section>
 
-                <section
-                    data-section="departures"
-                    class="min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1"
-                    aria-labelledby="departures-title"
-                >
-                    <div class="section-header flex items-center justify-between gap-2">
-                        <h2 id="departures-title">
-                            {{ t(copy, 'departures.title') }}
-                        </h2>
-                        <Link
-                            :href="urls.departures"
-                            class="-my-3 inline-flex min-h-11 shrink-0 items-center font-sans text-sm font-normal normal-case tracking-normal text-sogan hover:underline"
-                        >
-                            {{ t(copy, 'departures.all') }}
-                        </Link>
-                    </div>
-                    <ul
-                        v-if="departures.length"
-                        class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-secondary"
-                        :aria-hidden="true"
+                <!--
+                    Desktop right column: Keberangkatan terdekat with the link card right under it, so the card
+                    never waits for the left column's rows. On a phone the card comes last instead (AC-6), from
+                    the lg:hidden copy below; only one copy is ever displayed.
+                -->
+                <div class="flex min-w-0 flex-col gap-8 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+                    <section
+                        data-section="departures"
+                        class="min-w-0"
+                        aria-labelledby="departures-title"
                     >
-                        <li
-                            v-for="item in legend"
-                            :key="item.key"
-                            class="inline-flex items-center gap-1.5"
+                        <div class="section-header flex items-center justify-between gap-2">
+                            <h2 id="departures-title">
+                                {{ t(copy, 'departures.title') }}
+                            </h2>
+                            <Link
+                                :href="urls.departures"
+                                class="-my-3 inline-flex min-h-11 shrink-0 items-center font-sans text-sm font-normal normal-case tracking-normal text-sogan hover:underline"
+                            >
+                                {{ t(copy, 'departures.all') }}
+                            </Link>
+                        </div>
+                        <ul
+                            v-if="departures.length"
+                            class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-secondary"
+                            :aria-hidden="true"
                         >
-                            <span
-                                class="inline-block h-2.5 w-2.5"
-                                :class="SEAT_SEGMENT_CLASSES[item.key]"
-                            />
-                            <span>{{ item.glyph }} {{ t(copy, `departures.legend.${item.key}`) }}</span>
-                        </li>
-                    </ul>
-                    <div
-                        v-if="!departures.length"
-                        class="mt-3 rounded-xl border border-ink/10 bg-surface p-4 text-sm text-ink"
-                    >
-                        <p>{{ t(copy, 'departures.empty') }}</p>
-                        <Link
-                            :href="urls.trips"
-                            class="mt-1 inline-flex min-h-11 items-center text-sm text-sogan underline"
+                            <li
+                                v-for="item in legend"
+                                :key="item.key"
+                                class="inline-flex items-center gap-1.5"
+                            >
+                                <span
+                                    class="inline-block h-2.5 w-2.5"
+                                    :class="SEAT_SEGMENT_CLASSES[item.key]"
+                                />
+                                <span>{{ item.glyph }} {{ t(copy, `departures.legend.${item.key}`) }}</span>
+                            </li>
+                        </ul>
+                        <div
+                            v-if="!departures.length"
+                            class="mt-3 rounded-xl border border-ink/10 bg-surface p-4 text-sm text-ink"
                         >
-                            {{ t(copy, 'departures.add') }}
-                        </Link>
-                    </div>
-                    <!-- 2f: plain rows on the page ground — title · date with "Edit cepat" on the right, the bar, its summary. -->
-                    <ul
-                        v-else
-                        class="mt-1 flex flex-col divide-y divide-ink/10"
-                    >
-                        <li
-                            v-for="departure in departures"
-                            :key="departure.id"
-                            class="py-3"
+                            <p>{{ t(copy, 'departures.empty') }}</p>
+                            <Link
+                                :href="urls.trips"
+                                class="mt-1 inline-flex min-h-11 items-center text-sm text-sogan underline"
+                            >
+                                {{ t(copy, 'departures.add') }}
+                            </Link>
+                        </div>
+                        <!-- 2f: plain rows on the page ground — title · date with "Edit cepat" on the right, the bar, its summary. -->
+                        <ul
+                            v-else
+                            class="mt-1 flex flex-col divide-y divide-ink/10"
                         >
-                            <div class="flex items-center justify-between gap-3">
-                                <p class="min-w-0 truncate font-heading text-[15px] font-semibold text-ink">
-                                    {{ departure.trip.name }} · {{ dayMonth(departure.start_date, context.today, calendar) }}
-                                </p>
-                                <div class="flex shrink-0 items-center gap-3">
-                                    <StatusBadge
-                                        v-if="departure.display_status === 'closed' || departure.display_status === 'full'"
-                                        :status="departure.display_status"
-                                        :label="t(copy.trips, `status.${departure.display_status}`)"
-                                    />
-                                    <button
-                                        type="button"
-                                        class="-my-3 inline-flex min-h-11 items-center font-heading text-xs font-semibold text-sogan hover:underline"
-                                        @click="selectedId = departure.id"
-                                    >
-                                        {{ t(copy, 'departures.quick_edit') }}
-                                    </button>
+                            <li
+                                v-for="departure in departures"
+                                :key="departure.id"
+                                class="py-3"
+                            >
+                                <div class="flex items-center justify-between gap-3">
+                                    <p class="min-w-0 truncate font-heading text-[15px] font-semibold text-ink">
+                                        {{ departure.trip.name }} · {{ dayMonth(departure.start_date, context.today, calendar) }}
+                                    </p>
+                                    <div class="flex shrink-0 items-center gap-3">
+                                        <StatusBadge
+                                            v-if="departure.display_status === 'closed' || departure.display_status === 'full'"
+                                            :status="departure.display_status"
+                                            :label="t(copy.trips, `status.${departure.display_status}`)"
+                                        />
+                                        <button
+                                            type="button"
+                                            class="-my-3 inline-flex min-h-11 items-center font-heading text-xs font-semibold text-sogan hover:underline"
+                                            @click="selectedId = departure.id"
+                                        >
+                                            {{ t(copy, 'departures.quick_edit') }}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            <SeatBar
-                                class="mt-2"
-                                :seats="departure.seats"
-                                :closes-on="departure.closes_on"
-                                :today="context.today"
-                                :copy="copy"
-                                :calendar="calendar"
-                            />
-                        </li>
-                    </ul>
-                </section>
+                                <SeatBar
+                                    class="mt-2"
+                                    :seats="departure.seats"
+                                    :closes-on="departure.closes_on"
+                                    :today="context.today"
+                                    :copy="copy"
+                                    :calendar="calendar"
+                                />
+                            </li>
+                        </ul>
+                    </section>
+
+                    <LinkCard
+                        class="hidden lg:block"
+                        :url="public_url"
+                        :view-url="urls.public_page"
+                        :copy="copy.link"
+                    />
+                </div>
 
                 <section
                     data-section="recent"
@@ -246,7 +260,7 @@ function refresh() {
 
                 <div
                     data-section="link"
-                    class="min-w-0 lg:col-start-2"
+                    class="min-w-0 lg:hidden"
                 >
                     <LinkCard
                         :url="public_url"
