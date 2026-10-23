@@ -68,6 +68,8 @@ class RegisterController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->to($progress->landingUrl($user));
+        // Landing sign-up funnel (F-017 AC-21): the client fires `sign_up` once,
+        // after the redirect. Carries no PII — just the milestone name.
+        return redirect()->to($progress->landingUrl($user))->with('analytics_event', 'sign_up');
     }
 }

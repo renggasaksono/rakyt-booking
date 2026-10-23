@@ -25,10 +25,11 @@ Status flow: `draft` → `ready` → `in-progress` → `done` (or `parked`). Kee
 | [F-014](F-014-seller-suspension.md) | Seller account suspension & reactivation | P0 | draft | MVP wk 4 |
 | [F-015](F-015-admin-audit-log.md) | Audit logging for admin actions | P0 | draft | MVP wk 4 |
 | [F-016](F-016-booking-confirmation-retrieval.md) | Booking confirmation — copy link & print-friendly proof | P0 | ready | MVP wk 4 |
+| [F-017](F-017-public-landing-page.md) | Public landing page | P0 | in-progress | MVP pilot prep |
 
 F-010–F-015 form the internal admin panel for the sole platform admin during MVP/pilot (ADR-0011).
 
-Next free ID: **F-017**
+Next free ID: **F-018**
 
 ## Backlog (P1 — not specced yet)
 
