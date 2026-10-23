@@ -40,7 +40,8 @@ return [
 
     'editor' => [
         'title_new' => 'Trip baru',
-        'breadcrumb' => 'Trip & keberangkatan',
+        'back' => '← Trip & keberangkatan',
+        'back_label' => 'Kembali ke daftar trip',
         'saved_at' => 'Draf tersimpan :time',
         'saving' => 'Menyimpan…',
         'unsaved' => 'Belum tersimpan',

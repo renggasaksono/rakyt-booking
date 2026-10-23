@@ -162,7 +162,7 @@ class SellerPagesTest extends TestCase
     {
         $copy = __('trips');
 
-        foreach (['index.title', 'editor.saved_at', 'editor.unsaved', 'editor.retry', 'editor.leave_confirm', 'checklist.publish', 'checklist.remaining', 'quick_edit.floor', 'quick_edit.reopen', 'deadline.confirm', 'calendar.months_short', 'status.open', 'status.closed', 'status.full', 'status.past'] as $key) {
+        foreach (['index.title', 'editor.back', 'editor.back_label', 'editor.saved_at', 'editor.unsaved', 'editor.retry', 'editor.leave_confirm', 'checklist.publish', 'checklist.remaining', 'quick_edit.floor', 'quick_edit.reopen', 'deadline.confirm', 'calendar.months_short', 'status.open', 'status.closed', 'status.full', 'status.past'] as $key) {
             $this->assertNotNull(data_get($copy, $key), "lang/id/trips.php is missing {$key}");
         }
     }
