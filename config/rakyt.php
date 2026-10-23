@@ -25,6 +25,16 @@ return [
     'admin_query_path' => 'app/Admin/Queries',
 
     /*
+    | Platform admin (F-010, ADR-0011). The admin's access window is a rolling
+    | idle timeout, deliberately shorter than the 120-minute seller session
+    | (config/session.php): once idle longer than this the admin must pass the
+    | TOTP challenge again before reaching any /admin page.
+    */
+    'admin' => [
+        'session_lifetime' => (int) env('ADMIN_SESSION_LIFETIME', 30),
+    ],
+
+    /*
     | Rate limits (F-009 Data & rules). Each entry is [max attempts, decay minutes].
     */
     'rate_limits' => [
@@ -64,6 +74,11 @@ return [
         // F-002 AC-9: public seller and trip pages (GET), per IP.
         'public_page' => [
             'per_ip' => [120, 1],
+        ],
+        // F-010 AC: the admin TOTP challenge. Tight, since the code space is small.
+        'admin_two_factor' => [
+            'per_user' => [5, 15],
+            'per_ip' => [20, 15],
         ],
     ],
 

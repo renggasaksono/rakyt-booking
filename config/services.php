@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    // Google Analytics 4 for the landing sign-up funnel (F-017, ADR-0034).
+    // Unset by default (tests and local), which disables analytics entirely:
+    // no script, no network call, no cookie.
+    'google_analytics' => [
+        'measurement_id' => env('GA_MEASUREMENT_ID'),
+    ],
+
 ];

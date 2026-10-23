@@ -42,3 +42,5 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0030](0030-payment-records-and-verification.md) | Payment records, evidence and verification lifecycle (F-006) | accepted | 2026-10-20 |
 | [0031](0031-payment-records-implementation-choices.md) | Payment-records implementation choices (F-006) | accepted | 2026-10-20 |
 | [0032](0032-gold-cta-whatsapp-handoff-for-request-date.md) | The one gold CTA may be a WhatsApp handoff on request-date trips | accepted | 2026-10-22 |
+| [0033](0033-public-landing-open-self-serve-signup.md) | Public landing drives open self-serve sign-up; marketing reuses app tokens | accepted | 2026-10-23 |
+| [0034](0034-landing-funnel-analytics-ga4-consent-mode.md) | Landing-funnel analytics — GA4 with Consent Mode v2 (default-denied) + opt-in | accepted | 2026-10-23 |

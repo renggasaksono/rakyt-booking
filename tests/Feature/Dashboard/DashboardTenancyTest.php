@@ -152,7 +152,7 @@ class DashboardTenancyTest extends TestCase
     {
         $props = $this->todayProps($this->a);
 
-        $this->assertSame(['greeting', 'organization', 'public_url', 'action_needed', 'recent', 'departures', 'context', 'copy', 'urls'], array_values(array_diff(array_keys($props), ['errors', 'flash', 'seller', 'account'])));
+        $this->assertSame(['greeting', 'organization', 'public_url', 'action_needed', 'recent', 'departures', 'context', 'copy', 'urls'], array_values(array_diff(array_keys($props), ['errors', 'flash', 'seller', 'account', 'admin'])));
         $this->assertSame(['text', 'date'], array_keys($props['greeting']));
         $this->assertSame(['name', 'slug', 'plan_label'], array_keys($props['organization']));
         $this->assertSame(['count', 'items'], array_keys($props['action_needed']));
@@ -175,7 +175,7 @@ class DashboardTenancyTest extends TestCase
     public function test_ac_36_list_and_detail_props_are_exactly_the_listed_keys(): void
     {
         $list = $this->listProps($this->a);
-        $this->assertSame(['bookings', 'filters', 'options', 'pagination', 'has_any', 'context', 'copy', 'urls'], array_values(array_diff(array_keys($list), ['errors', 'flash', 'seller', 'account'])));
+        $this->assertSame(['bookings', 'filters', 'options', 'pagination', 'has_any', 'context', 'copy', 'urls'], array_values(array_diff(array_keys($list), ['errors', 'flash', 'seller', 'account', 'admin'])));
         $this->assertSame(['cari', 'status', 'trip', 'dari', 'sampai', 'keberangkatan'], array_keys($list['filters']));
         $this->assertSame(['statuses', 'trips', 'departure'], array_keys($list['options']));
         $this->assertSame(['page', 'next_url', 'prev_url'], array_keys($list['pagination']));
@@ -190,7 +190,7 @@ class DashboardTenancyTest extends TestCase
         $this->assertNoSecrets($list, withToken: false);
 
         $detail = $this->detailProps($this->a, $this->aBooking);
-        $this->assertSame(['booking', 'trip', 'meeting', 'whatsapp', 'context', 'copy', 'urls'], array_values(array_diff(array_keys($detail), ['errors', 'flash', 'seller', 'account'])));
+        $this->assertSame(['booking', 'trip', 'meeting', 'whatsapp', 'context', 'copy', 'urls'], array_values(array_diff(array_keys($detail), ['errors', 'flash', 'seller', 'account', 'admin'])));
         $this->assertSame([
             'public_id', 'reference', 'customer_name', 'participants', 'total_amount', 'status', 'hold_expires_at',
             'created_at', 'trip', 'departure', 'urls', 'customer_phone', 'notes', 'unit_price', 'cancel_reason',

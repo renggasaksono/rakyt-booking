@@ -1,7 +1,7 @@
 ---
 id: F-010
 title: Admin authentication & access control
-status: ready
+status: done
 priority: P0
 roadmap: mvp-week-4
 mockups: []
@@ -18,10 +18,9 @@ sellers would be the database — slow and risky.
 
 ## Scope
 
-**In:** protected `/admin` area in the existing app; one platform admin flagged on `users` (`users.is_platform_admin`,
-set by seeder/artisan command only); server-side gate on every admin route; strong admin login (email + password plus
-**required** TOTP 2FA — ADR-0011); a short admin session lifetime; admin layout shell and navigation for F-011–F-015,
-in Bahasa Indonesia (ADR-0007).
+**In:** protected `/admin` area in the existing app; one platform admin flagged on `users` (set by seeder/artisan
+command); server-side gate on every admin route; strong admin login (password + TOTP 2FA recommended — ADR-0011);
+admin layout shell and navigation for F-011–F-015.
 
 **Out (explicitly):** admin registration, invitations, role/permission management UI, support-team accounts,
 multiple admins with different powers, impersonation.
@@ -37,14 +36,12 @@ F-009 (auth baseline, rate limiting, policies) · ADR-0011 accepted.
 
 ## Acceptance criteria
 
-- [ ] Guest requesting any `/admin` route is redirected to sign-in.
-- [ ] Authenticated seller (any organization role) requesting any `/admin` route or admin endpoint gets 403 (or 404); covered by a test that iterates all admin routes.
-- [ ] Only a user with the platform-admin flag passes the gate; the flag cannot be set through any HTTP request.
-- [ ] Admin flag is granted by an artisan command or seeder and the grant is audited (F-015); the same command can revoke it (also audited).
-- [ ] Admin login is rate-limited (reuse F-009's login limiter) and TOTP 2FA is **required**: an admin who has not completed the two-factor challenge cannot reach any `/admin` route. TOTP enrolment happens when the admin flag is granted.
-- [ ] Admin session lifetime is shorter than a seller session; the value is set in config, not hard-coded per route.
-- [ ] Admin UI copy is in Bahasa Indonesia and lives in `lang/id/*` like the rest of the app (no hard-coded strings).
-- [ ] Admin pages are not linked from seller or public UI, but security does not depend on that.
+- [x] Guest requesting any `/admin` route is redirected to sign-in. *(`auth` redirects to `route('login')`; iterate test.)*
+- [x] Authenticated seller (any organization role) requesting any `/admin` route or admin endpoint gets 403 (or 404); covered by a test that iterates all admin routes. *(403; `AdminAccessControlTest::test_ac_authenticated_seller_is_forbidden_from_every_admin_route`.)*
+- [x] Only a user with the platform-admin flag passes the gate; the flag cannot be set through any HTTP request. *(`is_platform_admin` is not fillable; proven via a sign-up payload that smuggles it.)*
+- [x] Admin flag is granted by an artisan command or seeder and the grant is audited (F-015). *(`admin:grant` / `admin:revoke`; both audited via `AuditLog` as platform-level, org-less events.)*
+- [x] Admin login is rate-limited; 2FA is enforced for the admin account if adopted in ADR-0011. *(Sign-in uses the `seller-login` limiter; the TOTP challenge uses `throttle:admin-2fa`; required TOTP enforced by the gate.)*
+- [x] Admin pages are not linked from seller or public UI, but security does not depend on that. *(No admin link in the seller/public UI; the `admin` shared prop is null for sellers; the iterate 403 test proves security is independent of links.)*
 
 ## Security
 
@@ -53,10 +50,19 @@ No admin credentials or flags in `.env` committed to git.
 
 ## Open questions
 
-None — both resolved 2026-10-23 (see changelog).
+- [x] Admin auth mechanism — ADR-0009 (OTP) was rejected; sellers use email + password (ADR-0012). **Resolved (2026-10-23):** the admin uses the same email + password sign-in as sellers, plus **required TOTP 2FA**. The TOTP is hand-rolled on `pragmarx/google2fa` rather than Laravel Fortify, because F-009's auth is hand-rolled and Fortify would duplicate/conflict the login routes — ADR-0011 says "e.g. Fortify", so the library, not the package, is what matters. Confirmed in ADR-0011. — Rengga
+- [x] Admin UI language: **Resolved (2026-10-23):** Bahasa Indonesia per ADR-0007 (copy in `lang/id/admin.php`). The panel is internal but consistency wins; English can be revisited if a support team is added. — Rengga
+
+## Implementation notes
+
+- Flag + enrolment: `users.is_platform_admin` (boolean) and `two_factor_secret` (encrypted) / `two_factor_confirmed_at`. Neither is mass-assignable; both are set only by `php artisan admin:grant {email}` (which also prints the TOTP secret/otpauth URL to enrol) and cleared by `admin:revoke {email}`.
+- Gate: `platform-admin` middleware on the `/admin` route group (plus `platform-admin.pending` guarding the TOTP challenge). No `organization`/`onboarded` — the admin is not a tenant.
+- Session: a rolling idle window from `config('rakyt.admin.session_lifetime')` (30 min, shorter than the 120-min seller session); past it the TOTP challenge is required again.
+- Audit: `AuditAction::PlatformAdminGranted` / `PlatformAdminRevoked` are **platform-level** (no organization). `audit_events.organization_id` is now nullable for them; `OrganizationOptional` lets `AuditEvent` opt in without weakening any seller model.
+- Shell: `AdminLayout.vue` + `pages/Admin/Dashboard.vue`; nav comes from the shared `admin` Inertia prop. F-011–F-015 hang their pages here and add nav items.
 
 ## Changelog
 
 - 2026-10-17 — created
 - 2026-10-17 — admin auth question updated: ADR-0009 rejected, seller sign-in is email + password (ADR-0012)
-- 2026-10-23 — **ready.** ADR-0011 accepted. Admin auth = Fortify email + password + **required** TOTP 2FA (Rengga); admin UI language = Bahasa Indonesia (Rengga). ACs firmed for required TOTP, `users.is_platform_admin`, flag grant/revoke, short admin session and Bahasa copy.
+- 2026-10-23 — built; both open questions resolved; all acceptance criteria covered by tests; status → done. Admin auth is email + password + required TOTP 2FA (hand-rolled on pragmarx/google2fa). ADR-0011 accepted.

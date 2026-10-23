@@ -90,7 +90,9 @@ class OnboardingController extends Controller
 
         $this->onboarding->saveOrganization($request->user(), $data);
 
-        return redirect()->route('onboarding.trip');
+        // Landing sign-up funnel (F-017 AC-21): the seller has committed to
+        // onboarding by creating their usaha.
+        return redirect()->route('onboarding.trip')->with('analytics_event', 'onboarding_start');
     }
 
     /**
@@ -329,7 +331,8 @@ class OnboardingController extends Controller
             return $this->toFirstFailingStep($trip, $missing);
         }
 
-        return redirect()->route('onboarding.done');
+        // Landing sign-up funnel (F-017 AC-21): the seller's first trip is live.
+        return redirect()->route('onboarding.done')->with('analytics_event', 'onboarding_publish');
     }
 
     /**

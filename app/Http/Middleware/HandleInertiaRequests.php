@@ -39,19 +39,35 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        // Public pages show nothing of the signed-in seller (F-002 AC-7, AC-8).
+        // Customer booking pages show nothing of the signed-in seller and no
+        // analytics — the sign-up funnel is for sellers (F-002 AC-7, AC-8; F-017).
         if (ResolvePublicOrganization::isPublicPage($request)) {
             return parent::share($request);
         }
 
+        // Landing sign-up-funnel analytics (F-017) loads only on the funnel pages
+        // (landing → register/login → onboarding), never across the seller app.
+        $shared = $request->routeIs('home', 'register', 'login', 'onboarding', 'onboarding.*')
+            ? [...parent::share($request), 'analytics' => fn () => $this->analytics($request)]
+            : parent::share($request);
+
+        // The marketing landing (F-017 AC-2): the funnel analytics prop, but
+        // none of a signed-in seller's navigation, name or action counts.
+        if ($request->routeIs('home')) {
+            return $shared;
+        }
+
         return [
-            ...parent::share($request),
+            ...$shared,
             'flash' => fn () => [
                 'toast' => $request->session()->get('toast'),
                 'notice' => $request->session()->get('notice'),
             ],
             // Seller navigation (F-007 AC-2–AC-4): desktop side nav, phone bottom nav, Perlu tindakan counts.
             'seller' => fn () => $request->user() === null || ! app(CurrentOrganization::class)->check() ? null : $this->sellerNav($request),
+            // F-010: admin shell navigation. Only ever present for a platform admin;
+            // F-011–F-015 add their items here.
+            'admin' => fn () => $request->user()?->is_platform_admin ? $this->adminNav($request) : null,
             // F-001 A6, A10: account menu and the non-blocking verification banner.
             'account' => fn () => $request->user() === null ? null : [
                 'name' => $request->user()->name,
@@ -69,6 +85,27 @@ class HandleInertiaRequests extends Middleware
                     'account' => route('settings.account'),
                 ],
             ],
+        ];
+    }
+
+    /**
+     * Landing sign-up-funnel analytics (F-017, ADR-0034). The client loads GA
+     * only when a measurement id is configured (unset in tests and local by
+     * default, so nothing is emitted — AC-19). `event` carries a server-flashed
+     * funnel milestone (sign_up, onboarding_start, onboarding_publish) so the
+     * client can fire it after the Inertia redirect; it never contains PII.
+     *
+     * @return array{measurementId: ?string, event: ?string}
+     */
+    private function analytics(Request $request): array
+    {
+        return [
+            // Null (tests and local default) disables GA entirely — no script,
+            // no network call, no cookie (AC-19).
+            'measurementId' => config('services.google_analytics.measurement_id'),
+            // A server-flashed funnel milestone the client fires after the
+            // redirect (sign_up, onboarding_start, onboarding_publish). No PII.
+            'event' => $request->hasSession() ? $request->session()->get('analytics_event') : null,
         ];
     }
 
@@ -113,6 +150,34 @@ class HandleInertiaRequests extends Middleware
             'close_label' => __('trips.nav.close'),
             'external_mark' => __('dashboard.nav.external'),
             'new_tab' => __('dashboard.nav.new_tab'),
+        ];
+    }
+
+    /**
+     * Admin shell navigation (F-010). A separate boundary from the seller nav:
+     * the admin is not a tenant and sees none of a seller's menu. F-011–F-015
+     * add their sections to this list.
+     *
+     * @return array<string, mixed>
+     */
+    private function adminNav(Request $request): array
+    {
+        return [
+            'brand' => __('admin.brand'),
+            'menu_label' => __('admin.nav.menu'),
+            'signed_in_as' => __('admin.nav.signed_in_as', ['name' => $request->user()->name]),
+            'nav' => [
+                [
+                    'key' => 'overview',
+                    'label' => __('admin.nav.overview'),
+                    'url' => route('admin.dashboard'),
+                    'active' => $request->routeIs('admin.dashboard'),
+                ],
+            ],
+            'logout' => [
+                'label' => __('admin.nav.logout'),
+                'url' => route('logout'),
+            ],
         ];
     }
 }

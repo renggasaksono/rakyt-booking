@@ -60,7 +60,7 @@ class PublicRoutingTest extends TestCase
 
         $paths = [
             '/tidak-ada',              // unknown
-            '/admin',                  // reserved, no app route
+            '/pricing',                // reserved, no app route
             '/demo',                   // reserved
             '/ke--ncana',              // fails the B5 format
             '/-kencana',

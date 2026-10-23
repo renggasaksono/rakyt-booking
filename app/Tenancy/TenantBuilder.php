@@ -174,12 +174,23 @@ class TenantBuilder extends Builder
         // One associative row or a list of rows, as Laravel accepts.
         $rows = array_is_list($values) && is_array($values[0] ?? null) ? $values : [$values];
         $current = app(CurrentOrganization::class)->id();
+        $model = $this->getModel();
 
-        return array_map(function (array $row) use ($current) {
+        // A platform-level record (F-010) intentionally has no organization,
+        // whatever the context: never stamp it, and never demand one.
+        if ($model instanceof OrganizationOptional && $model->belongsToNoOrganization()) {
+            return array_map(function (array $row) {
+                $row['organization_id'] = $row['organization_id'] ?? null;
+
+                return $row;
+            }, $rows);
+        }
+
+        return array_map(function (array $row) use ($current, $model) {
             if ($current !== null) {
                 $row['organization_id'] = $current;
             } elseif (($row['organization_id'] ?? null) === null) {
-                throw MissingOrganizationContext::forModel($this->getModel());
+                throw MissingOrganizationContext::forModel($model);
             }
 
             return $row;

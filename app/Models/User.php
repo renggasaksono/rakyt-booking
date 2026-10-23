@@ -14,12 +14,28 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+// `is_platform_admin` and `two_factor_secret` are deliberately absent: the
+// admin flag and TOTP secret are set only by the admin:grant/admin:revoke
+// commands, never through a mass-assigned HTTP payload (F-010, ADR-0011).
 #[Fillable(['name', 'email', 'password', 'terms_accepted_at', 'signup_started_at'])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'two_factor_secret'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * Defaults so the admin columns are always present on a freshly made model
+     * (e.g. a factory instance), not only when hydrated from the database —
+     * strict mode (Model::shouldBeStrict) throws on a missing attribute.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'is_platform_admin' => false,
+        'two_factor_secret' => null,
+        'two_factor_confirmed_at' => null,
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -33,7 +49,20 @@ class User extends Authenticatable implements MustVerifyEmail
             'terms_accepted_at' => 'datetime',
             'signup_started_at' => 'datetime',
             'password' => 'hashed',
+            // F-010: the platform-admin flag and TOTP enrolment.
+            'is_platform_admin' => 'boolean',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * A platform administrator (F-010, ADR-0011). Never a member of an
+     * organization; access is gated server-side by the platform-admin middleware.
+     */
+    public function isPlatformAdmin(): bool
+    {
+        return (bool) $this->is_platform_admin;
     }
 
     /**

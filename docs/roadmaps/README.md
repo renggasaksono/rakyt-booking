@@ -22,7 +22,8 @@ Plan: [`2026-q4-mvp.md`](2026-q4-mvp.md)
 | [F-006](../features/F-006-payment-instructions-and-records.md) Payment instructions & records | done — AC-1…AC-32 covered by tests (payment screen, evidence upload, Konfirmasi / Tolak inline, QRIS, ADR-0018 block); supersedes F-001's Rekening with Pengaturan → Pembayaran; closes F-009 A20/A21, R2, R19 and the Pilot-go payment-security gate; AC-32 real-device review pending; cash & DP → P1; ADR-0030 + ADR-0031 accepted |
 | [F-008](../features/F-008-whatsapp-handoff.md) WhatsApp handoff | done — built 2026-10-21 (sections A+B): `App\WhatsApp\WhatsAppLink`, `lang/id/whatsapp.php` template home, "Tanya via WhatsApp" on the trip page; `date_request` handoff + AC-B9a shipped with F-004 (2026-10-22); all 24 ACs covered — AC-A11/AC-B12 real-device review passed (Rengga 2026-10-22) |
 | [F-016](../features/F-016-booking-confirmation-retrieval.md) Booking confirmation — copy link & print proof | done — merged to `main`; AC-1…AC-10, AC-12…AC-15 covered by tests (customer "Salin tautan pesanan" + browser-native "Simpan bukti pesanan" print snapshot + `urls.self`; retrieval, content and WhatsApp CTA are regressions); AC-11/AC-16 device review passed (Rengga 2026-10-23, paid + awaiting-payment states); token revoke/regenerate deferred to P1 (Q1) |
-| Internal admin panel — [F-010](../features/F-010-admin-access-control.md) access control, [F-011](../features/F-011-admin-overview-dashboard.md) overview, [F-012](../features/F-012-admin-seller-directory.md) seller directory, [F-013](../features/F-013-admin-booking-search.md) booking search, [F-014](../features/F-014-seller-suspension.md) suspension, [F-015](../features/F-015-admin-audit-log.md) admin audit log | ready — all six specs `ready` (2026-10-23); ADR-0011 accepted; ready to build (wk 4) |
+| Internal admin panel — [F-010](../features/F-010-admin-access-control.md) access control, [F-011](../features/F-011-admin-overview-dashboard.md) overview, [F-012](../features/F-012-admin-seller-directory.md) seller directory, [F-013](../features/F-013-admin-booking-search.md) booking search, [F-014](../features/F-014-seller-suspension.md) suspension, [F-015](../features/F-015-admin-audit-log.md) admin audit log | F-010 done (`feat/F-010-admin-access-control`, PR #29): protected `/admin`, platform-admin flag + required TOTP 2FA, server-side gate, admin shell; F-011–F-015 specs `ready` (2026-10-23), ADR-0011 accepted — ready to build (wk 4) |
+| [F-017](../features/F-017-public-landing-page.md) Public landing page | in-progress — built on `feat/F-017-public-landing`; drives open self-serve sign-up (every CTA → `/daftar`, no waitlist), "Sogan Cerah" mockup adapted to app tokens + square corners, testimonials dropped; interactive hero demo + FAQ accordion (`resources/js/lib` + Vitest); GA4 sign-up-funnel analytics, config-gated, Consent Mode v2 default-denied + opt-in; AC-1…AC-13, AC-15…AC-22 covered by PHPUnit + Vitest; AC-14 device review, AC-23 `/privasi` legal copy and Lighthouse are pre-pilot manual items; ADR-0033 + ADR-0034 accepted |
 
 The admin panel is an internal tool for the sole platform admin (product owner) to onboard pilot sellers, inspect
 bookings, investigate problems and suspend/reactivate sellers — not a back office (ADR-0011).
@@ -43,7 +44,7 @@ _None open — ADR-0011 (platform admin) accepted 2026-10-23._
 |---|---|---|---|
 | Transactional email provider (SPF/DKIM) | — | [F-001](../features/F-001-seller-onboarding.md#dependencies) | Pilot |
 | **Pre-pilot gate:** ADR-0018 24-hour block on payment-instruction changes after a password reset or email change, and the change notice to the sign-in email | **Built by F-006 §E (AC-24–AC-26)** — `PaymentInstructionLock` + the change-notice email on Pengaturan → Pembayaran; onboarding's `PaymentMethodService::sync` stays unblocked | [F-006 §E](../features/F-006-payment-instructions-and-records.md) · [ADR-0018](../decisions/0018-account-recovery-and-payment-instruction-protection.md) · [ADR-0031](../decisions/0031-payment-records-implementation-choices.md) | Pilot (gate cleared) |
-| Syarat & Privasi text; PDP law (UU 27/2022) | Short Bahasa notice before pilot; formal review before launch | [F-009 Q9](../features/F-009-tenancy-security-operations.md#open-questions) | Pilot |
+| Syarat & Privasi text; PDP law (UU 27/2022) | Short Bahasa notice before pilot; formal review before launch. `/privasi` must disclose Google Analytics before the landing goes live (F-017 AC-23/Q8) | [F-009 Q9](../features/F-009-tenancy-security-operations.md#open-questions) · [F-017 Q8](../features/F-017-public-landing-page.md#open-questions) | Pilot |
 | Free-tier limits and pricing | Decide after pilot | [ADR-0019](../decisions/0019-defer-free-tier-limits.md) | After pilot |
 
 ### Ready specs — defaults in use, confirm or override
@@ -77,9 +78,8 @@ _None open — ADR-0011 (platform admin) accepted 2026-10-23._
 
 ### Draft specs — to resolve when the spec is made `ready`
 
-_None — all admin specs (F-010–F-015) made `ready` on 2026-10-23; their open questions are resolved in the spec changelogs:_
+_None — all admin specs (F-010–F-015) made `ready` on 2026-10-23 (F-010 since built & merged, PR #29); their open questions are resolved in the spec changelogs:_
 
-- _F-010 admin auth = Fortify email + password + required TOTP; admin UI in Bahasa Indonesia._
 - _F-011 status mapping pinned to the shipped `BookingStatus` enum (pending = `awaiting_payment`, verification = `needs_review`)._
 - _F-012 "last activity" = owner's last successful sign-in (`users.last_login_at`)._
 - _F-014 suspension effects: neutral "tidak tersedia" public page (not 404), seller sign-in blocked, unpaid holds expire + uploads blocked, paid bookings untouched / no auto-notify._

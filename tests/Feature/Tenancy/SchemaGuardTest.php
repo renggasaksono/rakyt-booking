@@ -27,6 +27,15 @@ class SchemaGuardTest extends TestCase
         'users',
     ];
 
+    /**
+     * Tables whose organization_id is nullable by design: audit_events also
+     * records platform-level actions that belong to no organization (F-010,
+     * ADR-0011). It still carries the foreign key and the leading index.
+     */
+    private const ORGANIZATION_OPTIONAL = [
+        'audit_events',
+    ];
+
     public function test_ac_a6_every_table_has_a_not_null_indexed_foreign_keyed_organization_id(): void
     {
         $tables = collect(DB::select("select table_name from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'"))
@@ -42,7 +51,10 @@ class SchemaGuardTest extends TestCase
                 [$table],
             );
             $this->assertNotNull($column, "Table [{$table}] has no organization_id. Add it, or allowlist the table in SchemaGuardTest.");
-            $this->assertSame('NO', $column->is_nullable, "{$table}.organization_id must be NOT NULL.");
+
+            if (! in_array($table, self::ORGANIZATION_OPTIONAL, true)) {
+                $this->assertSame('NO', $column->is_nullable, "{$table}.organization_id must be NOT NULL.");
+            }
 
             $this->assertTrue($this->hasForeignKeyToOrganizations($table), "{$table}.organization_id needs a foreign key to organizations.");
             $this->assertTrue($this->hasIndexLeadingWithOrganizationId($table), "{$table} needs an index whose first column is organization_id.");

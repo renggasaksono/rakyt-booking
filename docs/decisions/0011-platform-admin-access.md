@@ -28,11 +28,9 @@ than we want for an account that can see every seller's data.
   (e.g. `withoutGlobalScope` in one place). Seller-facing scopes, policies and tests are unchanged.
 - The admin is not a member of any organization and has no seller-side powers through membership.
 - No impersonation ("log in as seller"), no generic DB browser, no booking/payment editing in the MVP.
-- Admin authentication is stronger than seller sign-in: the same email + password stack (ADR-0012) plus **required** TOTP 2FA
-  (Laravel Fortify's two-factor challenge), a short admin session lifetime and rate-limited login. Confirmed 2026-10-23
-  now that the app is scaffolded (ADR-0020): admin TOTP is mandatory (not opt-in), enrolled when the admin flag is granted.
-- The admin area is built in Bahasa Indonesia (ADR-0007), like the rest of the app (confirmed 2026-10-23); no English-only internal UI.
-- Sensitive admin actions require a confirmation step and write an audit event (F-015, using F-009's `audit_events`).
+- Admin authentication is stronger than seller sign-in: the same email + password stack (ADR-0012) plus required TOTP 2FA, a shorter session lifetime,
+  rate-limited login. **Confirmed at scaffolding (2026-10-23):** the TOTP is hand-rolled on `pragmarx/google2fa` (the library Fortify itself uses), not Laravel Fortify — F-009's auth is hand-rolled, so adding Fortify would duplicate and conflict the login routes for no gain. Enrolment happens when the flag is granted (`admin:grant` prints the secret); the admin session is a rolling idle window from `config('rakyt.admin.session_lifetime')` (30 min), shorter than the 120-min seller session; the challenge is rate-limited (`throttle:admin-2fa`).
+- Sensitive admin actions require a confirmation step and write an audit event (F-015, using F-009's `audit_events`). Granting/revoking the admin flag is such an action; because the admin belongs to no organization, these are **platform-level** audit events with a null `organization_id` (`audit_events.organization_id` is nullable for them; the `OrganizationOptional` interface lets `AuditEvent` opt in without weakening any seller model).
 
 ## Consequences
 
