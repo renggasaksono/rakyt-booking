@@ -202,14 +202,14 @@ class SellerPageTest extends TestCase
         $cover = $this->photoFor($this->a, $trip);
 
         $this->get('/kencana')
-            ->assertSee('<title>Kencana Trip · Rakyt</title>', false)
+            ->assertSee('<title>Kencana Trip · Rakyt Booking</title>', false)
             ->assertSee('<meta property="og:title" content="Kencana Trip">', false)
             ->assertSee('<meta property="og:description" content="Open trip Karimunjawa sejak 2018.">', false)
             ->assertSee('<meta property="og:image" content="'.$cover->url(800).'">', false)
             ->assertSee('<meta property="og:url" content="https://rakyt.id/kencana">', false)
             ->assertSee('<link rel="canonical" href="https://rakyt.id/kencana">', false)
             ->assertSee('<meta property="og:type" content="website">', false)
-            ->assertSee('<meta property="og:site_name" content="Rakyt">', false)
+            ->assertSee('<meta property="og:site_name" content="Rakyt Booking">', false)
             ->assertSee('<meta property="og:locale" content="id_ID">', false);
 
         // No bio: "n trip · Kota basis"; the logo wins over the cover.

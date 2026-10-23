@@ -28,7 +28,7 @@ related: [F-002, ADR-0002, ADR-0015, ADR-0020, ADR-0021]
 1. **No Inertia SSR in P0.** Public pages are ordinary Inertia pages rendered in the browser.
 2. **Head tags are server-rendered.** Public controllers pass `<title>`, Open Graph tags and the canonical URL to the
    Blade root view (`Inertia::render()->withViewData(...)`); `app.blade.php` prints them, escaped, before any
-   JavaScript. The client-side title for public pages is set to the same string (it skips the app's " · Rakyt"
+   JavaScript. The client-side title for public pages is set to the same string (it skips the app's " · Rakyt Booking"
    suffix when the server title already ends the way F-002 specifies).
 3. **Pages are code-split.** The page resolver becomes lazy (`import.meta.glob('./pages/**/*.vue')` without
    `eager`), so a public page loads the shared runtime plus its own chunk only. Budget: ≤ 150 KB gzip of JavaScript

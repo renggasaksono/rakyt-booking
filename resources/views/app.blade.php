@@ -12,7 +12,7 @@
             @endif
             <link rel="canonical" href="{{ $publicHead['url'] }}">
             <meta property="og:type" content="website">
-            <meta property="og:site_name" content="Rakyt">
+            <meta property="og:site_name" content="Rakyt Booking">
             <meta property="og:locale" content="id_ID">
             <meta property="og:title" content="{{ $publicHead['og_title'] }}">
             @if ($publicHead['description'] !== null)

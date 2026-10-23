@@ -254,7 +254,7 @@ class TripPageTest extends TestCase
             ->assertSee('<meta property="og:url" content="https://rakyt.id/kencana/karimunjawa-3h2m-open-trip">', false)
             ->assertSee('<link rel="canonical" href="https://rakyt.id/kencana/karimunjawa-3h2m-open-trip">', false)
             ->assertSee('<meta property="og:type" content="website">', false)
-            ->assertSee('<meta property="og:site_name" content="Rakyt">', false)
+            ->assertSee('<meta property="og:site_name" content="Rakyt Booking">', false)
             ->assertSee('<meta property="og:locale" content="id_ID">', false);
 
         $this->assertStringStartsWith('http', $cover->url(800));
