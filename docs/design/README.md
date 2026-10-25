@@ -65,7 +65,7 @@ The side nav's foot carries the business name (Poppins 14px, gading) and the pla
 
 **Rakyt | BOOKING** everywhere: the monogram, the "Rakyt" wordmark (Poppins 20px, `-0.03em`), a hairline, and
 "Booking" as the 11px uppercase kicker (`.14em`). One component, `resources/js/components/ProductMark.vue`:
-`tone="ink"` on light grounds (kicker in Sogan; the landing nav), `tone="reverse"` on ink (kicker in gold-soft; the
+`tone="ink"` on light grounds (kicker in Sogan; the landing nav and the auth screens), `tone="reverse"` on ink (kicker in gold-soft; the
 seller side nav). Don't rebuild the lockup by hand.
 
 ### Status set
