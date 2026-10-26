@@ -57,7 +57,7 @@ Source of UI wording: [design mockup](../design/README.md).
 | bookable | bisa dipesan / tidak bisa dipesan | Departure that accepts bookings now: trip published and scheduled, departure open, before its deadline, seats left, not started (F-003 rule). |
 | link preview | pratinjau link | Title, text and photo WhatsApp/IG show for a shared link, from Open Graph tags (ADR-0024). |
 | booking link / slug | link booking | The `<slug>` in `rakyt.id/<slug>`; lowercase, 3–30 chars; locked after first publish in P0. |
-| audit event | riwayat perubahan | Append-only record of an important change (who, what, before/after, when). Not shown to sellers in P0. |
+| audit event | riwayat perubahan | Append-only record of an important change (who, what, before/after, when, and for admin actions why). Not shown to sellers in P0; the platform admin reads them in "Log audit" (`/admin/audit`, F-015). |
 | quick edit | edit cepat | Mobile sheet to change price, seats, open/closed in < 30 s. |
 | today | hari ini | Seller dashboard home. |
 | action needed | perlu tindakan | Bookings the seller must act on: `needs_review`, and `awaiting_payment` with an active hold. Listed first on Hari ini; its count is the nav badge (F-007). |

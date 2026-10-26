@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Auth;
  */
 final readonly class Actor
 {
+    /** Every actor type, as allowed by the audit_events CHECK constraint. */
+    public const TYPES = ['user', 'customer', 'system', 'rakyt_staff', 'platform_admin'];
+
     private function __construct(
         public string $type,
         public ?string $id,

@@ -24,12 +24,13 @@ use LogicException;
  */
 class AuditLog
 {
-    /** Never stored in before/after, whatever the caller passes. */
-    private const SECRET_KEY_PATTERN = '/password|token|secret|remember/i';
-
     public function __construct(private CurrentOrganization $current) {}
 
     /**
+     * Secrets and customer details beyond IDs are dropped from before/after,
+     * whatever the caller passes (AuditRedaction). An admin action passes
+     * Actor::platformAdmin() and, where it needs one, the admin's reason (F-015).
+     *
      * @param  array<string, mixed>  $before
      * @param  array<string, mixed>  $after
      */
@@ -39,6 +40,7 @@ class AuditLog
         array $before = [],
         array $after = [],
         ?Actor $actor = null,
+        ?string $reason = null,
     ): AuditEvent {
         if (DB::transactionLevel() === 0) {
             throw new LogicException('Write audit events inside the transaction that makes the change.');
@@ -52,8 +54,9 @@ class AuditLog
             'action' => $action->value,
             'subject_type' => $subject->getMorphClass(),
             'subject_id' => (string) $subject->getKey(),
-            'before' => $this->withoutSecrets($before) ?: null,
-            'after' => $this->withoutSecrets($after) ?: null,
+            'before' => AuditRedaction::strip($before) ?: null,
+            'after' => AuditRedaction::strip($after) ?: null,
+            'reason' => AuditRedaction::reason($reason),
             'ip' => $actor->hasIp() ? request()?->ip() : null,
         ]);
 
@@ -113,18 +116,5 @@ class AuditLog
         }
 
         return (int) $id;
-    }
-
-    /**
-     * @param  array<string, mixed>  $values
-     * @return array<string, mixed>
-     */
-    private function withoutSecrets(array $values): array
-    {
-        return array_filter(
-            $values,
-            fn (string $key) => ! preg_match(self::SECRET_KEY_PATTERN, $key),
-            ARRAY_FILTER_USE_KEY,
-        );
     }
 }
