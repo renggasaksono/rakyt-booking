@@ -70,3 +70,4 @@ None — seller visibility resolved 2026-10-23 (see changelog).
 - 2026-10-17 — created
 - 2026-10-23 — **ready.** Sellers do **not** see admin actions on their org in P0 (Rengga); admin audit events stay platform-internal. Moved to scope "Out" with an AC.
 - 2026-10-26 — **built; status → done.** Admin audit view `/admin/audit` (filters: organization incl. platform-level, actor, action), `audit_events.reason` column, shared `AuditRedaction` (writer + view), `AuditEventQueries::forOrganization/forSubject` for F-012/F-013, write-route registry test. AC-1…AC-6 numbered and covered by tests. ADR-0038 proposed.
+- 2026-10-26 — ADR-0038 accepted (Rengga).

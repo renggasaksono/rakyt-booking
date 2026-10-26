@@ -1,7 +1,7 @@
 ---
 id: 0038
 title: Admin audit trail — reason column, shared redaction, admin-only reads
-status: proposed
+status: accepted
 date: 2026-10-26
 deciders: [Rengga]
 related: [F-015, F-014, F-012, F-013, F-009, F-010, ADR-0011]
