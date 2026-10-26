@@ -7,6 +7,8 @@
 
 return [
     'brand' => 'Rakyt',
+    // The "Rakyt | Booking" product lockup, same as the landing nav (landing.nav.brand_suffix).
+    'brand_suffix' => 'Booking',
 
     'register' => [
         'title' => 'Daftar',

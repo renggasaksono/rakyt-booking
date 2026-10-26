@@ -33,7 +33,10 @@ function submit() {
 
 <template>
     <Head :title="t(copy, 'register.title')" />
-    <AuthLayout :brand="t(copy, 'brand')">
+    <AuthLayout
+        :brand="t(copy, 'brand')"
+        :suffix="t(copy, 'brand_suffix')"
+    >
         <h1 class="mt-6 font-heading text-2xl font-semibold leading-tight text-ink">
             {{ t(copy, 'register.headline') }}
         </h1>
