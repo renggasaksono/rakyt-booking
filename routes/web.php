@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminAuditController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\TwoFactorChallengeController;
 use App\Http\Controllers\Auth\EmailVerificationController;
@@ -106,6 +107,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware(['auth', 'platform-admin'])->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+        // F-015: read-only — audit events are append-only, so no write routes.
+        Route::get('/audit', [AdminAuditController::class, 'index'])->name('audit.index');
     });
 });
 

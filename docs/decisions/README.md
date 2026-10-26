@@ -47,3 +47,4 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0035](0035-sogan-cerah-landing-reskin.md) | "Sogan Cerah" landing reskin (scoped via `.cerah`), WCAG review of the brighter brown | proposed | 2026-10-23 |
 | [0036](0036-ink-ground-side-nav-and-seat-bar-colours.md) | Ink-ground side nav, "Rakyt \| Booking" lockup and solid seat-bar colours | proposed | 2026-10-23 |
 | [0037](0037-ui-term-kuota-instead-of-kursi.md) | UI term "kuota" instead of "kursi" for departure capacity | accepted | 2026-10-23 |
+| [0038](0038-admin-audit-trail-conventions.md) | Admin audit trail — reason column, shared redaction, admin-only reads | accepted | 2026-10-26 |
