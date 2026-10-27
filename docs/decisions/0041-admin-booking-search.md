@@ -1,7 +1,7 @@
 ---
 id: 0041
 title: Admin booking search — one search box, a joined cross-organization list, indexes, phone only on the detail
-status: proposed
+status: accepted
 date: 2026-10-27
 deciders: [Rengga]
 related: [F-013, F-012, F-015, F-005, F-006, F-007, ADR-0011, ADR-0021, ADR-0026, ADR-0039]
@@ -51,7 +51,7 @@ technical details open:
   tables (about 124 ms at 500 000 bookings). A `pg_trgm`
   GIN index is the follow-up when bookings reach the low millions — it needs the extension on the managed database,
   so it is not added now.
-- **One status filter.** ADR-0026 §1 keeps one status column on `bookings` for both booking and payment state
+- **One status filter** (confirmed by Rengga, 2026-10-27: no separate payment-status filter). ADR-0026 §1 keeps one status column on `bookings` for both booking and payment state
   (`awaiting_payment`, `needs_review`, `paid`, `rejected`, `cancelled`, `completed`); evidence and the seller's
   verification live in `payment_records`, not in a second status. The spec's "booking status, payment status" filters
   are therefore one select over that set. The detail shows the payment record (amount due, evidence and upload time,

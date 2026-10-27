@@ -71,3 +71,4 @@ None — "last activity" resolved 2026-10-23 (see changelog).
   `(organization_id, trip_id, start_date)` index instead of scanning every seller's departures (query-shape test);
   `last_login_at` tests now cover sign-up, password reset and remember-me as well as the login form — all stamp it,
   as ADR-0039 states.
+- 2026-10-27 — ADR-0039 accepted (Rengga).

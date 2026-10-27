@@ -69,8 +69,10 @@ cross-tenant suites (`tests/Feature/Tenancy`, `tests/Feature/Bookings`) stay gre
 
 ## Open questions
 
-None. (The spec's "payment status" filter is answered by ADR-0026 §1 — one status column for booking and payment
-state; see ADR-0041. Name search has no trigram index yet — follow-up in ADR-0041.)
+- [x] **Separate "payment status" filter?** — decided 2026-10-27 (Rengga): no. Keep the single status filter; ADR-0026
+  §1 keeps one status column for booking and payment state (ADR-0041).
+
+Name search has no trigram index yet — follow-up in ADR-0041.
 
 ## Changelog
 
@@ -90,3 +92,5 @@ state; see ADR-0041. Name search has no trigram index yet — follow-up in ADR-0
   is now a declared requirement (`Normalizer`). The detail shows the phone grouped (`+62 812 3456 7890`). Log redaction
   keeps `/admin/pesanan/<id>` (not a secret) and still redacts customer token paths. AC-7 note made explicit
   (static checks only, device review pending). ADR-0041's name-search plan corrected.
+- 2026-10-27 — Decisions (Rengga): ADR-0041 accepted; the single status filter stays — no separate payment-status
+  filter (open question closed).

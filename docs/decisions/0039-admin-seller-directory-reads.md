@@ -1,7 +1,7 @@
 ---
 id: 0039
 title: Admin seller directory — single-organization reads, app-signed evidence URLs, sign-in time, status column
-status: proposed
+status: accepted
 date: 2026-10-27
 deciders: [Rengga]
 related: [F-012, F-014, F-015, F-006, ADR-0011, ADR-0021, ADR-0030, ADR-0038]
