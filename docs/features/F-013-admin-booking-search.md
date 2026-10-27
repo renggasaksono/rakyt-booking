@@ -37,9 +37,11 @@ F-010 · F-005 · F-006 · F-009 (audit events for history) · F-012 (links to s
 - [x] AC-4 Detail page is read-only and shows status history from `audit_events` where recorded.
 - [x] AC-5 Customer phone numbers are shown only on detail pages, not in list exports or logs.
 - [x] AC-6 A seller session cannot reach these pages or endpoints (test); a seller still cannot read another seller's bookings (existing cross-tenant tests stay green).
-- [x] AC-7 Usable at phone width. (Built phone-first and checked statically; real-device review with the other admin screens.)
+- [x] AC-7 Usable at phone width. (Built phone-first; ticked on **static source checks only**
+  (`test_ac_7_…`: layout classes, tap-target sizes) — no rendered-width test. The real-device review is pending with the
+  other admin screens, as F-012 AC-8; the roadmap tracks it as "AC-7 device review pending".)
 
-Tests: `tests/Feature/Admin/AdminBookingSearchTest.php` (AC-1–AC-3, AC-5–AC-7, indexes, fixed query count, nav),
+Tests: `tests/Feature/Admin/AdminBookingSearchTest.php` (AC-1–AC-3, AC-5–AC-7, pasted terms, indexes, fixed query count, nav),
 `tests/Feature/Admin/AdminBookingDetailTest.php` (AC-4–AC-7, seats = "Hari ini", hold expiry, payment and evidence,
 fixed query count, organization-named reads), `tests/js/adminBookings.test.js` (URL filters). Existing seller
 cross-tenant suites (`tests/Feature/Tenancy`, `tests/Feature/Bookings`) stay green.
@@ -81,3 +83,10 @@ state; see ADR-0041. Name search has no trigram index yet — follow-up in ADR-0
   from `SeatBreakdown`, amounts, payment record and evidence through F-012's signed route, hold expiry and audit
   history. Four indexes for the cross-organization reads. The audit view's organization picker became a shared
   component. ADR-0041 proposed. AC-7 real-device review pending with the other admin screens.
+- 2026-10-27 — review follow-ups (`fix/F-013-search-followups`, after PR #45): search terms pasted from WhatsApp now
+  match — the shared term normaliser (`SellerDirectoryFilters::term()`, also F-012's directory and the organization
+  picker) drops invisible format characters (bidi marks, zero-width spaces, BOM), applies NFKC (full-width digits) and
+  reads Unicode dashes as hyphens before validating; references accept spaces or any dash between segments. `ext-intl`
+  is now a declared requirement (`Normalizer`). The detail shows the phone grouped (`+62 812 3456 7890`). Log redaction
+  keeps `/admin/pesanan/<id>` (not a secret) and still redacts customer token paths. AC-7 note made explicit
+  (static checks only, device review pending). ADR-0041's name-search plan corrected.
