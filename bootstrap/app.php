@@ -2,6 +2,7 @@
 
 use App\Admin\Console\GrantPlatformAdminCommand;
 use App\Admin\Console\RevokePlatformAdminCommand;
+use App\Admin\Middleware\EnsureNotPlatformAdmin;
 use App\Admin\Middleware\EnsurePendingPlatformAdmin;
 use App\Admin\Middleware\EnsurePlatformAdmin;
 use App\Http\Middleware\EnsureOnboardingFinished;
@@ -22,6 +23,7 @@ use Illuminate\Http\Exceptions\MalformedUrlException;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -68,6 +70,13 @@ return Application::configure(basePath: dirname(__DIR__))
             before: SubstituteBindings::class,
             prepend: EnsureOnboardingFinished::class,
         );
+        // The platform admin is turned away from seller routes right after `auth`:
+        // before a limiter counts the request, onboarding redirects or a
+        // seller-owned binding can answer (F-010).
+        $middleware->prependToPriorityList(
+            before: ThrottleRequests::class,
+            prepend: EnsureNotPlatformAdmin::class,
+        );
 
         $middleware->alias([
             'no-referrer' => NoReferrer::class,
@@ -77,6 +86,7 @@ return Application::configure(basePath: dirname(__DIR__))
             // F-010, ADR-0011: the platform-admin gate and its TOTP challenge guard.
             'platform-admin' => EnsurePlatformAdmin::class,
             'platform-admin.pending' => EnsurePendingPlatformAdmin::class,
+            'not-platform-admin' => EnsureNotPlatformAdmin::class,
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));
