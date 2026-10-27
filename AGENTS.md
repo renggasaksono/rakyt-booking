@@ -100,6 +100,7 @@ checkout made before the rename may still show `Pages/`: fix it once with `mv re
   `PublicPagePresenter` one by one (the exact-keys test lists them), and never show a signed-in seller's data there.
   "Mulai Rp…" is `TripPricing::fromPrice()` everywhere.
 - Test names: `test_ac_<id>_…` in lower case (Pint rewrites `test_AC_…` to `test_a_c_…`).
+- CI's gitleaks scans every commit of a PR: a random-looking literal next to a key-like name (`'submission_key' => '0b0f…'`) fails it. Generate fixture keys/tokens (`Str::uuid()`, `Str::random()`); a false positive already committed goes in `.gitleaksignore` by fingerprint.
 - Timestamps: PostgreSQL sessions run in UTC and Laravel writes Carbon values **without an offset**. Convert to UTC
   (`->utc()`) before storing or comparing in a query; compute local times with the organization's `timezone`.
 - In tests Laravel caches controller instances per route: bind fakes (`PaymentReadiness`, `DepartureBookings`) **before**

@@ -18,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
@@ -146,7 +147,7 @@ class SuspendedSellerPublicTest extends TestCase
                 'phone' => '+6281234567890',
                 'participants' => 2,
                 'notes' => null,
-                'submission_key' => '0b0f3f8e-6b4e-4a39-9c43-2a3f1c1d0e11',
+                'submission_key' => (string) Str::uuid(),
                 'price' => 1_250_000,
             ]);
             $this->fail('A suspended seller must not get a booking.');
