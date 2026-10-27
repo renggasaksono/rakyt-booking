@@ -92,6 +92,8 @@ class AdminSellerController extends Controller
                 'suspend' => route('admin.sellers.suspend', $organization->id),
                 'reactivate' => route('admin.sellers.reactivate', $organization->id),
             ],
+            // F-014: the reason limit the status actions validate, so the form matches.
+            'reason_max' => AdminSellerStatusController::REASON_MAX,
         ])->toResponse($request));
     }
 

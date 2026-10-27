@@ -224,6 +224,19 @@ class SuspendedSellerPublicTest extends TestCase
         $this->assertSame([], Storage::disk(config('rakyt.media.private_disk'))->allFiles());
     }
 
+    public function test_ac_6_a_customer_still_opens_their_own_evidence_while_the_seller_is_suspended(): void
+    {
+        $booking = $this->bookingFor($this->a, $this->departure, 1, BookingStatus::NeedsReview);
+        $path = 'org/'.$this->a->organization->public_id.'/evidence/'.$booking->public_id.'/bukti.jpg';
+        Storage::disk(config('rakyt.media.private_disk'))->put($path, 'jpg');
+        $this->asTenant($this->a, fn () => PaymentRecord::factory()->withEvidence($path)->create(['booking_id' => $booking->id]));
+        $this->suspendOrganization($this->a);
+
+        $this->get(route('public.booking.evidence.show', ['organization' => 'kencana', 'token' => $booking->access_token]))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/jpeg');
+    }
+
     public function test_ac_6_unpaid_holds_still_expire_and_free_their_seats(): void
     {
         $expired = $this->expiredHoldFor($this->a, $this->departure, 3);
@@ -265,9 +278,14 @@ class SuspendedSellerPublicTest extends TestCase
             ->assertDontSee('"account_number":', false)
             ->assertDontSee('Agus Santoso', false)
             ->assertDontSee('/qris', false)
+            ->assertDontSee('wa.me', false)
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('booking.reference', $booking->reference)
-                ->where('payment', ['methods' => [], 'paused' => true]));
+                ->where('payment', ['methods' => [], 'paused' => true])
+                // Nothing that leads to a payment or a contact: no WhatsApp, progress or "Pesan lagi".
+                ->where('organization.whatsapp_url', null)
+                ->where('progress', null)
+                ->where('trip.url', null));
 
         // The QRIS image route is no longer part of the booking record.
         $this->get($qris)
@@ -276,7 +294,11 @@ class SuspendedSellerPublicTest extends TestCase
 
         $this->reactivateOrganization($this->a);
 
-        $this->assertCount(2, $this->bookingPageProps('kencana', $booking->access_token)['payment']['methods']);
+        $restored = $this->bookingPageProps('kencana', $booking->access_token);
+        $this->assertCount(2, $restored['payment']['methods']);
+        $this->assertNotNull($restored['organization']['whatsapp_url']);
+        $this->assertSame(1, $restored['progress']);
+        $this->assertNotNull($restored['trip']['url']);
         $this->get($qris)->assertOk()->assertHeader('Content-Type', 'image/png');
     }
 

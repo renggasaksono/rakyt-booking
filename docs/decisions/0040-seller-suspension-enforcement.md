@@ -47,13 +47,15 @@ booking page (`/<slug>/pesanan/<token>`, ADR-0027) does while the seller is susp
   own evidence and the upload — are the `isBookingRecord()` allowlist: "paid booking records stay valid", so a
   customer keeps their reference, status and proof. The seller's payment instructions do not stay (F-014 Q1,
   decided before acceptance): `BookingPresenter` sends no payment methods while suspended, the QRIS image route is
-  not on the allowlist (it renders the unavailable page), and one neutral notice (`payment.paused`) replaces both the
-  instructions and the upload button. The upload endpoint refuses before storing anything.
+  not on the allowlist (it renders the unavailable page). Nor does anything else that could lead to a payment or a
+  contact: the payment countdown, the progress steps, the seller's WhatsApp link and "Pesan lagi" are left out of the
+  page props. One neutral notice per booking status replaces them (`payment.paused`, `payment.paused_review`,
+  `page.seller_unavailable`). The upload endpoint refuses before storing anything.
 - **Races are decided under the organization lock.** `BookingService::create()` already locks the organization row
   first (ADR-0026 §3); it now refuses when that locked row is suspended (after a replay check, which creates nothing).
   `uploadEvidence()` takes a **shared** lock on the organization row before the departure and booking (same lock
   order) and refuses when suspended. The suspension's `FOR UPDATE` therefore waits for an in-flight booking or upload
-  and is seen by every later one; a concurrency test covers both orders.
+  and is seen by every later one; two-process tests cover both orders for bookings and for uploads.
 - **Untouched.** The release-expired-holds job, the departure-closing job, trips, departures, bookings, payment
   records and notifications do not look at the status. Suspension never deletes, cancels or notifies.
 

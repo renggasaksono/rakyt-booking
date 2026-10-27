@@ -242,6 +242,7 @@ return [
             'suspend_effects' => [
                 'Link booking menampilkan "tidak tersedia": tanpa trip, profil, atau tombol pesan.',
                 'Pesanan baru dan unggah bukti bayar ditolak.',
+                'Pelanggan dengan pesanan yang ada tidak lagi melihat instruksi pembayaran, sisa waktu bayar, atau tombol WhatsApp penjual.',
                 'Penjual tidak bisa masuk; sesi yang sedang terbuka langsung keluar.',
                 'Pesanan yang ada tidak dibatalkan dan pelanggan tidak diberi tahu otomatis. Tahanan kuota yang belum dibayar tetap kedaluwarsa seperti biasa.',
             ],

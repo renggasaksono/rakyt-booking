@@ -15,7 +15,7 @@ import {
 } from '../../lib/booking.js';
 import { bookingLinkFeedback, openPrintDialog } from '../../lib/bookingProof.js';
 import { formatRupiah } from '../../lib/money.js';
-import { copyText, digitsOnly, progressSteps } from '../../lib/payment.js';
+import { copyText, digitsOnly, pausedNoticeKey, progressSteps } from '../../lib/payment.js';
 import { t } from '../../lib/text.js';
 
 /**
@@ -89,8 +89,10 @@ const payable = computed(() => counting.value);
 const hasMethods = computed(() => (props.payment.methods ?? []).length > 0);
 const showInstructions = computed(() => ['awaiting_payment', 'needs_review'].includes(status.value));
 const uploadable = computed(() => hasMethods.value && (payable.value || status.value === 'needs_review'));
-// F-014 AC-6, Q1: a suspended seller takes no payment — no instructions, no upload, one notice.
+// F-014 AC-6, Q1: a suspended seller takes no payment — no instructions, countdown or
+// upload, one notice. The server already leaves out WhatsApp, progress and "Pesan lagi".
 const paused = computed(() => props.payment.paused === true);
+const pausedNotice = computed(() => pausedNoticeKey(paused.value, status.value));
 const canUpload = computed(() => uploadable.value && !paused.value);
 const steps = computed(() => progressSteps(props.progress, paymentCopy.value));
 const showProgress = computed(() => props.progress != null);
@@ -172,7 +174,7 @@ function submitEvidence(event) {
         </header>
 
         <section
-            v-if="counting"
+            v-if="counting && !paused"
             class="mt-4 rounded-xl border border-ink/15 bg-surface p-3"
             aria-live="polite"
         >
@@ -203,6 +205,16 @@ function submitEvidence(event) {
                 {{ t(copy, 'page.book_again') }}
             </a>
         </section>
+
+        <!-- F-014 Q1: outside the payment section (paid, cancelled, expired) the notice stands alone. -->
+        <p
+            v-if="pausedNotice && !showInstructions"
+            class="mt-4 flex items-start gap-2 bg-status-cancelled-tint px-3 py-2 text-sm text-status-cancelled"
+            role="status"
+        >
+            <span aria-hidden="true">⏸</span>
+            <span>{{ t(copy, pausedNotice) }}</span>
+        </p>
 
         <section class="mt-6">
             <h2 class="font-heading text-base font-semibold text-ink">
@@ -433,12 +445,12 @@ function submitEvidence(event) {
             </p>
 
             <p
-                v-if="paused"
+                v-if="pausedNotice"
                 class="mt-3 flex items-start gap-2 bg-status-cancelled-tint px-3 py-2 text-sm text-status-cancelled"
                 role="status"
             >
                 <span aria-hidden="true">⏸</span>
-                <span>{{ t(copy, 'payment.paused') }}</span>
+                <span>{{ t(copy, pausedNotice) }}</span>
             </p>
 
             <template v-if="canUpload">

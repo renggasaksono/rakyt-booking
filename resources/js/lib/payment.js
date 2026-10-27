@@ -74,3 +74,24 @@ export async function copyText(text) {
         return false;
     }
 }
+
+/**
+ * F-014 Q1: the copy key of the one notice a suspended seller's booking page
+ * shows — "don't transfer yet" before payment, "your proof can't be checked
+ * yet" under review, a plain "seller unavailable" otherwise; null when active.
+ *
+ * @param {boolean} paused
+ * @param {string} status the booking status as displayed (an expired hold reads 'cancelled')
+ * @returns {string|null}
+ */
+export function pausedNoticeKey(paused, status) {
+    if (!paused) {
+        return null;
+    }
+
+    if (status === 'awaiting_payment') {
+        return 'payment.paused';
+    }
+
+    return status === 'needs_review' ? 'payment.paused_review' : 'page.seller_unavailable';
+}

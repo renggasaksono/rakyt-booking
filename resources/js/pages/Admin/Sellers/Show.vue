@@ -33,9 +33,10 @@ const props = defineProps({
     audit_events: { type: Array, required: true },
     copy: { type: Object, required: true },
     urls: { type: Object, required: true },
+    // eslint-disable-next-line vue/prop-name-casing
+    reason_max: { type: Number, required: true },
 });
 
-const REASON_MAX = 500;
 const suspended = computed(() => props.organization.status === 'suspended');
 const sheetOpen = ref(false);
 const failed = ref(false);
@@ -497,7 +498,7 @@ function submit() {
                     <textarea
                         id="suspension-reason"
                         v-model="form.alasan"
-                        :maxlength="REASON_MAX"
+                        :maxlength="reason_max"
                         rows="3"
                         required
                         class="mt-1 w-full border bg-surface p-2 text-base text-ink"
@@ -510,7 +511,7 @@ function submit() {
                         id="suspension-reason-hint"
                         class="text-xs text-secondary"
                     >
-                        {{ t(copy, 'suspension.reason_hint', { max: REASON_MAX }) }}
+                        {{ t(copy, 'suspension.reason_hint', { max: reason_max }) }}
                     </p>
                     <FieldError
                         id="suspension-reason-error"

@@ -59,7 +59,7 @@ Tests: `tests/Feature/Admin/SellerSuspensionTest.php` (admin), `tests/Feature/Au
 - [x] AC-4 While suspended, the public page returns HTTP 200 with a neutral "tidak tersedia" state via `PublicVisibility::organizationIsPublic()` — no trips, no booking CTA, no profile data, and not a 404 (test).
 - [x] AC-5 While suspended, the seller owner cannot sign in to the seller app; an authenticated session for a now-suspended org is rejected on its next request (test).
 - [x] AC-6 While suspended, a customer upload of payment evidence against a booking of that org is rejected, and the release-expired-holds job still expires that org's holds normally (test).
-- [x] AC-6a While suspended, the customer's booking page shows no payment instructions (no bank / e-wallet account, no QRIS — the QRIS image route is unavailable too), only a neutral "don't transfer yet" notice; reactivation restores them (Q1; test `test_q1_a_suspended_sellers_payment_instructions_never_reach_the_booking_page`).
+- [x] AC-6a While suspended, the customer's booking page keeps the booking record but shows nothing that could lead to a payment or a contact: no payment instructions (no bank / e-wallet account, no QRIS — the QRIS image route is unavailable too), no "Sisa waktu bayar" countdown, no 3-step progress, no "Kabari operator via WhatsApp" and no "Pesan lagi" link. One neutral notice per status instead: "jangan transfer dulu" (awaiting payment), "bukti belum bisa dicek" (under review), "penjual tidak tersedia" (otherwise). The customer can still open their own uploaded proof. Reactivation restores everything (Q1; tests `test_q1_a_suspended_sellers_payment_instructions_never_reach_the_booking_page`, `test_ac_6_a_customer_still_opens_their_own_evidence_while_the_seller_is_suspended`, Vitest `F-014 Q1 suspended seller notice`).
 - [x] AC-7 Suspension never auto-cancels or auto-notifies paid/upcoming bookings; those records are unchanged (covered by the before/after test).
 - [x] AC-8 Reactivating sets `status` back to `active`, clears the suspension columns, and restores public page, sign-in and uploads to normal — with no data changes.
 - [x] AC-9 Only the platform admin can suspend/reactivate (seller and guest attempts → denied; test).
@@ -99,3 +99,9 @@ Tests: `tests/Feature/Admin/SellerSuspensionTest.php` (admin), `tests/Feature/Au
 - 2026-10-27 — Q1 decided (Rengga): payment instructions hidden while suspended — no methods in the booking page
   props, QRIS image route unavailable, one neutral `payment.paused` notice replaces `payment.uploads_paused`; AC-6a
   added with its test. ADR-0040 accepted (Rengga).
+- 2026-10-27 — Q1 widened after the phone check and review (Rengga: "a suspended seller should have no important
+  information that could mislead the buyer"): the booking page also drops the countdown, the progress steps, the
+  seller's WhatsApp button and "Pesan lagi"; the notice is per status (`payment.paused`, `payment.paused_review`,
+  `page.seller_unavailable`; logic in `resources/js/lib/payment.js` → `pausedNoticeKey`). The suspend sheet lists this
+  effect. Two-process race tests added for the evidence upload (`tests/Support/Concurrency/upload.php`); the admin
+  reason limit is passed to the page as `reason_max`. ADR-0040 amended in the same PR before merge.

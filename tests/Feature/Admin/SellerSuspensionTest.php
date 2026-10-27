@@ -185,7 +185,8 @@ class SellerSuspensionTest extends TestCase
             ->where('urls.suspend', route('admin.sellers.suspend', $this->a->id()))
             ->where('urls.reactivate', route('admin.sellers.reactivate', $this->a->id()))
             ->where('copy.suspension.suspend', 'Tangguhkan akun')
-            ->has('copy.suspension.suspend_effects', 4)
+            ->has('copy.suspension.suspend_effects', 5)
+            ->where('reason_max', 500)
         );
 
         $vue = file_get_contents(resource_path('js/pages/Admin/Sellers/Show.vue'));

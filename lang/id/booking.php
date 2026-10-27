@@ -83,6 +83,8 @@ return [
         'link_copy_failed' => 'Gagal menyalin. Salin tautan dari bilah alamat.',
         'link_hint' => 'Simpan tautan ini untuk membuka pesanan Anda lagi — tidak perlu akun.',
         'save_proof' => 'Simpan bukti pesanan',
+        // F-014 Q1: a paid / cancelled booking of a suspended seller. Neutral; the record stays.
+        'seller_unavailable' => 'Penjual ini tidak tersedia di Rakyt untuk sementara. Pesanan Anda tetap tercatat di halaman ini.',
     ],
 
     // F-006 customer payment screen (mockups 1d/2e/3e bottom half).
@@ -117,6 +119,8 @@ return [
         'rejected_reason' => 'Alasan: :reason',
         // F-014 AC-6, Q1: the seller is suspended — no payment instructions, no upload. Neutral.
         'paused' => 'Pembayaran sedang ditutup karena penjual ini tidak tersedia di Rakyt untuk sementara. Jangan transfer dulu sampai penjual aktif kembali.',
+        // …and for a customer who already sent proof: nobody can check it for now.
+        'paused_review' => 'Penjual ini tidak tersedia di Rakyt untuk sementara, jadi bukti bayar Anda belum bisa dicek. Simpan bukti transfer Anda dan jangan transfer lagi.',
         'errors' => [
             'evidence' => 'Unggah foto/berkas gambar (JPG/PNG), maks. 5 MB.',
             'expired' => 'Waktu pembayaran sudah habis.',
