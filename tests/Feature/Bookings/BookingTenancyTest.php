@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Monolog\Handler\TestHandler;
 use Monolog\Level;
 use Monolog\LogRecord;
@@ -196,6 +197,34 @@ class BookingTenancyTest extends TestCase
 
         $this->assertSame('Lambat: https://rakyt.id/kencana/pesanan/[redacted]?x=1', $record->message);
         $this->assertSame('/kencana/pesanan/[redacted]/bukti', $record->context['referer']);
+    }
+
+    public function test_ac_40_the_admin_booking_detail_path_is_kept_and_customer_token_paths_still_redacted(): void
+    {
+        $publicId = strtolower((string) Str::ulid());
+        $token = Str::random(32);
+
+        $record = (new RedactSensitiveData)(new LogRecord(
+            datetime: new DateTimeImmutable,
+            channel: 'test',
+            level: Level::Info,
+            message: "GET https://rakyt.id/admin/pesanan/{$publicId}",
+            context: [
+                // `admin` is a reserved slug, so /admin/pesanan/… is never a customer token page (F-013).
+                'path' => "admin/pesanan/{$publicId}",
+                'json' => json_encode(['url' => "/admin/pesanan/{$publicId}"]),
+                'customer' => "/kencana/pesanan/{$token}",
+                'lookalike' => "/superadmin/pesanan/{$token}",
+                'escaped' => json_encode(['url' => "/kencana/pesanan/{$token}"]),
+            ],
+        ));
+
+        $this->assertSame("GET https://rakyt.id/admin/pesanan/{$publicId}", $record->message);
+        $this->assertSame("admin/pesanan/{$publicId}", $record->context['path']);
+        $this->assertStringContainsString($publicId, $record->context['json']);
+        $this->assertSame('/kencana/pesanan/[redacted]', $record->context['customer']);
+        $this->assertSame('/superadmin/pesanan/[redacted]', $record->context['lookalike']);
+        $this->assertStringNotContainsString($token, $record->context['escaped']);
     }
 
     public function test_ac_41_any_booking_blocks_deleting_a_departure_and_holding_ones_are_counted(): void

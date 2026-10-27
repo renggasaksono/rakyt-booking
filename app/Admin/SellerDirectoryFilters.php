@@ -7,6 +7,7 @@ use App\Models\Organization;
 use App\Organizations\OrganizationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Normalizer;
 
 /**
  * Search and filter of the admin seller directory (F-012 AC-1, AC-2): a term
@@ -39,11 +40,25 @@ final readonly class SellerDirectoryFilters
     }
 
     /**
-     * A search term as typed: whitespace collapsed, 2–100 characters, or null.
+     * A search term as typed or pasted: whitespace collapsed, 2–100 characters,
+     * or null. Also the booking search's (F-013) and the organization picker's.
+     *
+     * Text copied from WhatsApp carries invisible format characters (bidi
+     * marks around a number, zero-width spaces, a BOM) and phone keyboards type
+     * full-width digits or non-ASCII dashes; those are folded away first (NFKC,
+     * every dash a hyphen), so `+62 812‑3456‑7890` searches as typed. Any other
+     * control character still drops the term.
      */
     public static function term(mixed $value): ?string
     {
-        if (! is_string($value) || ! mb_check_encoding($value, 'UTF-8') || preg_match('/[\p{C}]/u', $value)) {
+        if (! is_string($value) || ! mb_check_encoding($value, 'UTF-8')) {
+            return null;
+        }
+
+        $value = (string) Normalizer::normalize($value, Normalizer::FORM_KC);
+        $value = (string) preg_replace(['/\p{Cf}+/u', '/[\x{2010}-\x{2015}\x{2212}]/u'], ['', '-'], $value);
+
+        if (preg_match('/\p{C}/u', $value)) {
             return null;
         }
 

@@ -137,7 +137,7 @@ class AdminBookingSearchTest extends TestCase
         $this->assertSame([], $this->ids(['cari' => 'RKB-XYZ-1107-0142']));
     }
 
-    public function test_ac_1_the_reference_lookup_uses_its_own_index(): void
+    public function test_ac_1_the_reference_lookup_indexes_exist(): void
     {
         $indexes = collect(Schema::getIndexes('bookings'))->pluck('columns')->all();
 
@@ -163,6 +163,56 @@ class AdminBookingSearchTest extends TestCase
         // Not a whole mobile number: no phone match.
         $this->assertSame([], $this->ids(['cari' => '7890']));
         $this->assertSame([], $this->ids(['cari' => '021 555 1234']));
+    }
+
+    public function test_ac_1_ac_2_terms_pasted_from_whatsapp_are_normalised_before_matching(): void
+    {
+        $match = $this->bookingFor($this->bromo, $this->sunrise, attributes: [
+            'customer_phone' => '+6281234567890',
+            'reference' => 'RKB-BRM-1107-0142',
+        ]);
+        $this->bookingFor($this->kencana, $this->karimun, attributes: ['customer_phone' => '+6285700001111']);
+
+        $phones = [
+            "\u{202A}+62 812-3456-7890\u{202C}",      // Bidi embedding WhatsApp adds on copy.
+            "\u{2066}0812 3456 7890\u{2069}\u{200B}", // Isolates and a zero-width space.
+            "\u{FEFF}0812\u{2011}3456\u{2011}7890",   // BOM and non-breaking hyphens.
+            "+62\u{00A0}812\u{2212}3456\u{2013}7890", // No-break space, minus sign, en dash.
+            '０８１２３４５６７８９０',                      // Full-width digits.
+            '＋６２ ８１２－３４５６－７８９０',
+        ];
+
+        foreach ($phones as $term) {
+            $this->assertSame([$match->public_id], $this->ids(['cari' => $term]), json_encode($term));
+        }
+
+        $this->index(['cari' => "\u{202A}+62 812-3456-7890\u{202C}"])->assertInertia(fn ($page) => $page
+            ->where('filters.cari', '+62 812-3456-7890')
+            ->where('search_kind', 'phone')
+        );
+
+        $references = [
+            'RKB BRM 1107 0142',
+            'rkb brm 1107 0142',
+            "RKB\u{2013}BRM\u{2013}1107\u{2013}0142",
+            "RKB\u{2011}BRM\u{2011}1107\u{2011}0142",
+            'RKB - BRM - 1107 - 0142',
+            "\u{202A}RKB-BRM-1107-0142\u{202C}",
+            'ＲＫＢ－ＢＲＭ－１１０７－０１４２',
+        ];
+
+        foreach ($references as $term) {
+            $this->assertSame([$match->public_id], $this->ids(['cari' => $term]), json_encode($term));
+        }
+
+        $this->index(['cari' => 'RKB BRM 1107 0142'])->assertInertia(fn ($page) => $page->where('search_kind', 'reference'));
+
+        // Separators are still required between the segments.
+        $this->index(['cari' => 'RKBBRM11070142'])->assertInertia(fn ($page) => $page->where('search_kind', 'text'));
+
+        // Other control characters still drop the term.
+        $this->index(['cari' => "0812\x003456 7890"])->assertInertia(fn ($page) => $page->where('filters.cari', null));
+        $this->index(['cari' => "siti\u{E000}"])->assertInertia(fn ($page) => $page->where('filters.cari', null));
     }
 
     public function test_search_by_customer_name_or_seller_name_or_slug(): void
