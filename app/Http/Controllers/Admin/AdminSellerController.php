@@ -19,9 +19,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * The admin seller directory (F-012): every organization, searchable and
- * filterable, and one organization's read-only detail. Behind `auth` +
- * `platform-admin` (AC-6); there is no write route. Suspend / reactivate
- * (F-014) hangs on the detail page's account-status section.
+ * filterable, and one organization's detail. Behind `auth` +
+ * `platform-admin` (AC-6). Read-only, except for F-014's suspend /
+ * reactivate (AdminSellerStatusController) on the detail page's "Akun" section.
  */
 class AdminSellerController extends Controller
 {
@@ -88,7 +88,12 @@ class AdminSellerController extends Controller
             'urls' => [
                 'index' => route('admin.sellers.index'),
                 'audit' => route('admin.audit.index', ['organisasi' => $organization->id]),
+                // F-014: the account-status actions.
+                'suspend' => route('admin.sellers.suspend', $organization->id),
+                'reactivate' => route('admin.sellers.reactivate', $organization->id),
             ],
+            // F-014: the reason limit the status actions validate, so the form matches.
+            'reason_max' => AdminSellerStatusController::REASON_MAX,
         ])->toResponse($request));
     }
 

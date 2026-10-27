@@ -82,13 +82,17 @@ final class BookingPresenter
         $now = CarbonImmutable::now();
         $departure = $booking->departure;
         $trip = $departure->trip;
+        // F-014 Q1: a suspended seller's customer sees their booking record and nothing
+        // that could lead to a payment or a contact — no instructions, countdown,
+        // progress, WhatsApp or "Pesan lagi" (the trip page is unavailable anyway).
+        $paused = $organization->isSuspended();
 
         return [
             'title' => __('booking.head.booking_title', ['name' => $organization->name]),
             'organization' => [
                 'name' => $organization->name,
                 'slug' => $organization->slug,
-                'whatsapp_url' => self::whatsappUrl($organization, $booking, $trip, $departure, $now),
+                'whatsapp_url' => $paused ? null : self::whatsappUrl($organization, $booking, $trip, $departure, $now),
             ],
             'booking' => [
                 'reference' => $booking->reference,
@@ -104,7 +108,7 @@ final class BookingPresenter
             'trip' => [
                 'name' => $trip->name,
                 // AC-31: "Pesan lagi" only while the trip is still published.
-                'url' => $trip->isPublished()
+                'url' => ! $paused && $trip->isPublished()
                     ? route('public.trip', ['organization' => $organization->slug, 'trip' => $trip->slug])
                     : null,
             ],
@@ -119,11 +123,16 @@ final class BookingPresenter
                 'timezone' => $organization->timezone,
             ],
             // F-006: payment instructions, the amount, the evidence and the 3-step progress.
-            'payment' => ['methods' => self::methods($organization, $booking)],
+            // F-014 AC-6, Q1: while the seller is suspended no payment is taken — the
+            // instructions never reach the page, uploads are refused, and the page says so.
+            'payment' => [
+                'methods' => $paused ? [] : self::methods($organization, $booking),
+                'paused' => $paused,
+            ],
             'amount_due' => $booking->total_amount,
             'evidence' => self::evidence($organization, $booking),
             'reject_reason' => $booking->status === BookingStatus::Rejected ? self::record($booking)?->reject_reason : null,
-            'progress' => self::progress($booking->status),
+            'progress' => $paused ? null : self::progress($booking->status),
             'copy' => __('booking'),
             'calendar' => __('trips.calendar'),
             'urls' => [

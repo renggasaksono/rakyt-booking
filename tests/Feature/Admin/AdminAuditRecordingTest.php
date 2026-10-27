@@ -36,6 +36,9 @@ class AdminAuditRecordingTest extends TestCase
     private const ADMIN_WRITE_ROUTES = [
         // The TOTP challenge only confirms the admin's own session (F-010).
         'admin.two-factor.verify' => null,
+        // F-014: audited in tests/Feature/Admin/SellerSuspensionTest (AC-1).
+        'admin.sellers.suspend' => 'organization.suspended',
+        'admin.sellers.reactivate' => 'organization.reactivated',
     ];
 
     /**

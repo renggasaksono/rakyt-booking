@@ -30,8 +30,8 @@ use LogicException;
  * audit event happen in one transaction, so the invariant
  * seats_taken = Σ participants of holding bookings always holds (AC-23).
  *
- * Lock order is fixed — organization row (only when a reference number is
- * taken) → departure row → booking rows — the same order as the time-zone
+ * Lock order is fixed — organization row (when a reference number is taken,
+ * or shared for an evidence upload, F-014) → departure row → booking rows — the same order as the time-zone
  * change (organization, then departures), so the two never deadlock. The
  * seller's cancellation (F-007) takes no organization lock: no reference.
  */
@@ -159,8 +159,9 @@ final class BookingService
      * Booking::holdIsActive(now): an awaiting_payment booking with an active
      * hold moves to needs_review (the hold clock stops, ADR-0006); a
      * needs_review booking keeps its status and its evidence is replaced. Any
-     * other status, or an expired hold, is refused — nothing is stored and the
-     * booking is unchanged (the freshly written file is deleted).
+     * other status, an expired hold, or a suspended seller (F-014 AC-6) is
+     * refused — nothing is stored and the booking is unchanged (the freshly
+     * written file is deleted).
      *
      * @return ?PaymentRecord the record, or null when the upload is refused
      */
@@ -173,7 +174,16 @@ final class BookingService
         $path = MediaPath::for($organization, 'evidence/'.$booking->public_id, $extension);
         Storage::disk(PrivateMedia::disk())->put($path, $file->get());
 
-        $result = DB::transaction(function () use ($booking, $path, $now) {
+        $result = DB::transaction(function () use ($organization, $booking, $path, $now) {
+            // F-014 AC-6: no evidence for a suspended seller. A shared lock on the
+            // organization row (lock order: organization → departure → booking)
+            // waits for a suspension in progress and blocks one until this commits.
+            $owner = Organization::query()->whereKey($organization->getKey())->sharedLock()->firstOrFail();
+
+            if ($owner->isSuspended()) {
+                return null;
+            }
+
             $locked = TripDeparture::query()->whereKey($booking->trip_departure_id)->lockForUpdate()->firstOrFail();
             $fresh = Booking::query()->whereKey($booking->getKey())->lockForUpdate()->first();
 
@@ -311,6 +321,13 @@ final class BookingService
 
         if ($existing !== null) {
             return $existing;
+        }
+
+        // F-014 AC-3: no new booking for a suspended seller, decided under the lock
+        // the suspension takes too — a submit racing the admin never slips through.
+        // (A replayed submit above creates nothing; it only finds the earlier booking.)
+        if ($organization->isSuspended()) {
+            throw BookingRefused::sellerUnavailable();
         }
 
         $number = $organization->last_booking_number + 1;

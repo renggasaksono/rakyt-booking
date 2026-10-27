@@ -1,0 +1,5 @@
+# gitleaks false positives, by fingerprint (<commit>:<file>:<rule>:<line>). Add only
+# test fixtures that are not secrets; a real leak gets rotated, never ignored.
+
+# F-014: a made-up booking submission_key (a UUID) in a test, since replaced by Str::uuid().
+1ffa182eb098a0345d26e9b258d34f8312c712e7:tests/Feature/PublicPages/SuspendedSellerPublicTest.php:generic-api-key:149

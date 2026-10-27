@@ -16,6 +16,15 @@ final class BookingRefused extends ValidationException
         return self::withMessages(['departure' => __('booking.form.unavailable')]);
     }
 
+    /**
+     * The seller was suspended (F-014 AC-3). The form then shows the neutral
+     * "tidak tersedia" page, so the message is only a fallback.
+     */
+    public static function sellerUnavailable(): self
+    {
+        return self::withMessages(['departure' => __('public.unavailable.message')]);
+    }
+
     public static function priceChanged(int $price): self
     {
         return self::withMessages(['price' => __('booking.errors.price_changed', ['price' => self::rupiah($price)])]);

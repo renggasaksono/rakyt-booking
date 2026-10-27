@@ -4,12 +4,12 @@ namespace Tests\Feature\Admin;
 
 use App\Http\Controllers\Admin\AdminSellerController;
 use App\Models\Organization;
-use App\Organizations\OrganizationStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\BuildsAdmins;
 use Tests\Support\BuildsPublicPages;
 use Tests\Support\BuildsTrips;
 use Tests\Support\InteractsWithTenants;
+use Tests\Support\SuspendsSellers;
 use Tests\TestCase;
 
 /**
@@ -20,7 +20,7 @@ use Tests\TestCase;
  */
 class AdminSellerDirectoryTest extends TestCase
 {
-    use BuildsAdmins, BuildsPublicPages, BuildsTrips, InteractsWithTenants, RefreshDatabase;
+    use BuildsAdmins, BuildsPublicPages, BuildsTrips, InteractsWithTenants, RefreshDatabase, SuspendsSellers;
 
     public function test_ac_6_the_directory_and_lookup_are_behind_the_admin_gate(): void
     {
@@ -132,7 +132,7 @@ class AdminSellerDirectoryTest extends TestCase
     {
         $active = $this->seller('bromo', 'Bromo Adventure');
         $suspended = $this->seller('kencana', 'Kencana Trip');
-        $suspended->organization->forceFill(['status' => OrganizationStatus::Suspended])->save();
+        $this->suspendOrganization($suspended);
         $admin = $this->platformAdmin();
 
         $this->assertSame([$active->id()], $this->ids($admin, ['status' => 'active']));

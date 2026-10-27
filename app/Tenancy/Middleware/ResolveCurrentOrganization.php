@@ -4,6 +4,7 @@ namespace App\Tenancy\Middleware;
 
 use App\Models\OrganizationMember;
 use App\Models\User;
+use App\Organizations\SuspendedSeller;
 use App\Tenancy\CurrentOrganization;
 use App\Tenancy\Exceptions\AmbiguousOrganizationMembership;
 use Closure;
@@ -15,6 +16,10 @@ use Symfony\Component\HttpFoundation\Response;
  * Sets the current organization from the signed-in user's membership — never
  * from a route parameter, query string, body or header (F-009 Data & rules).
  * Runs before route model binding so bound models are already scoped.
+ *
+ * A suspended organization is never resolved: its member is signed out on
+ * this request, whatever the route (F-014 AC-5). Public pages drop this
+ * middleware, so a signed-in visitor is never affected by the seller in the URL.
  */
 class ResolveCurrentOrganization
 {
@@ -30,6 +35,10 @@ class ResolveCurrentOrganization
             Context::add('user_id', $user->getKey());
 
             if ($membership = self::membershipOf($user)) {
+                if ($membership->organization->isSuspended()) {
+                    return SuspendedSeller::signOut($request);
+                }
+
                 $this->current->set($membership->organization);
                 Context::add('organization_id', $membership->organization_id);
             }

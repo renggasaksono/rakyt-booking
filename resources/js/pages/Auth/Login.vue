@@ -7,12 +7,14 @@ import AuthLayout from '../../layouts/AuthLayout.vue';
 import { t } from '../../lib/text.js';
 
 /**
- * "Masuk" (F-001 A4, A5). "Ingat saya" is checked by default.
+ * "Masuk" (F-001 A4, A5). "Ingat saya" is checked by default. A suspended
+ * seller lands here with a neutral notice (F-014 AC-5).
  */
 const props = defineProps({
     copy: { type: Object, required: true },
     urls: { type: Object, required: true },
     status: { type: String, default: null },
+    suspended: { type: String, default: null },
 });
 
 const form = useForm({ email: '', password: '', remember: true });
@@ -41,6 +43,14 @@ function submit() {
             role="status"
         >
             {{ status }}
+        </p>
+        <p
+            v-if="suspended"
+            class="mt-3 flex items-start gap-2 bg-status-cancelled-tint px-3 py-2 text-sm text-status-cancelled"
+            role="status"
+        >
+            <span aria-hidden="true">⏸</span>
+            <span>{{ suspended }}</span>
         </p>
 
         <form

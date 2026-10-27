@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { copyText, digitsOnly, progressSteps } from '../../resources/js/lib/payment.js';
+import { copyText, digitsOnly, pausedNoticeKey, progressSteps } from '../../resources/js/lib/payment.js';
 
 const copy = { steps: { transfer: 'Transfer', review: 'Dicek operator', done: 'Lunas' } };
 
@@ -46,5 +46,25 @@ describe('F-006 AC-3 copy values', () => {
         expect(writeText).toHaveBeenCalledWith('2500000');
 
         vi.unstubAllGlobals();
+    });
+});
+
+describe('F-014 Q1 suspended seller notice', () => {
+    it('shows nothing while the seller is active', () => {
+        expect(pausedNoticeKey(false, 'awaiting_payment')).toBeNull();
+    });
+
+    it('tells an unpaid customer not to transfer yet', () => {
+        expect(pausedNoticeKey(true, 'awaiting_payment')).toBe('payment.paused');
+    });
+
+    it('tells a customer under review their proof cannot be checked yet', () => {
+        expect(pausedNoticeKey(true, 'needs_review')).toBe('payment.paused_review');
+    });
+
+    it('says only "seller unavailable" for paid, cancelled or expired bookings', () => {
+        for (const status of ['paid', 'cancelled', 'rejected', 'completed']) {
+            expect(pausedNoticeKey(true, status)).toBe('page.seller_unavailable');
+        }
     });
 });

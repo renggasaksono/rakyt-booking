@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminAuditController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminSellerController;
+use App\Http\Controllers\Admin\AdminSellerStatusController;
 use App\Http\Controllers\Admin\TwoFactorChallengeController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\LoginController;
@@ -111,7 +112,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // F-015: read-only — audit events are append-only, so no write routes.
         Route::get('/audit', [AdminAuditController::class, 'index'])->name('audit.index');
 
-        // F-012: read-only seller directory. `cari` before `{organization}`.
+        // F-012: seller directory. `cari` before `{organization}`.
         Route::get('/penjual', [AdminSellerController::class, 'index'])->name('sellers.index');
         Route::get('/penjual/cari', [AdminSellerController::class, 'lookup'])->name('sellers.lookup');
         Route::get('/penjual/{organization}', [AdminSellerController::class, 'show'])->name('sellers.show');
@@ -121,6 +122,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/penjual/{organization}/pesanan/{booking}/bukti/lihat', [AdminSellerController::class, 'showEvidence'])
             ->middleware(['signed', 'no-referrer'])
             ->name('sellers.evidence.show');
+        // F-014: the only admin writes on a seller — its account status, with a reason, audited.
+        Route::post('/penjual/{organization}/tangguhkan', [AdminSellerStatusController::class, 'suspend'])
+            ->name('sellers.suspend');
+        Route::post('/penjual/{organization}/aktifkan', [AdminSellerStatusController::class, 'reactivate'])
+            ->name('sellers.reactivate');
     });
 });
 

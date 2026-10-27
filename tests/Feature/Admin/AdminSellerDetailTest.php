@@ -13,7 +13,6 @@ use App\Models\PaymentRecord;
 use App\Models\Trip;
 use App\Models\TripDeparture;
 use App\Models\User;
-use App\Organizations\OrganizationStatus;
 use App\Tenancy\CurrentOrganization;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +27,7 @@ use Tests\Support\BuildsDashboard;
 use Tests\Support\BuildsPublicPages;
 use Tests\Support\BuildsTrips;
 use Tests\Support\InteractsWithTenants;
+use Tests\Support\SuspendsSellers;
 use Tests\Support\Tenant;
 use Tests\TestCase;
 
@@ -40,7 +40,7 @@ use Tests\TestCase;
  */
 class AdminSellerDetailTest extends TestCase
 {
-    use BuildsAdmins, BuildsBookings, BuildsDashboard, BuildsPublicPages, BuildsTrips, InteractsWithTenants, RefreshDatabase;
+    use BuildsAdmins, BuildsBookings, BuildsDashboard, BuildsPublicPages, BuildsTrips, InteractsWithTenants, RefreshDatabase, SuspendsSellers;
 
     private Tenant $a;
 
@@ -130,7 +130,7 @@ class AdminSellerDetailTest extends TestCase
 
     public function test_ac_3_a_suspended_organization_shows_its_status(): void
     {
-        $this->a->organization->forceFill(['status' => OrganizationStatus::Suspended])->save();
+        $this->suspendOrganization($this->a);
 
         $this->showPage()->assertInertia(fn ($page) => $page
             ->where('organization.status', 'suspended')
@@ -314,16 +314,17 @@ class AdminSellerDetailTest extends TestCase
         $this->showPage()->assertDontSee('org/rahasia', false)->assertDontSee('bukti.jpg', false);
     }
 
-    public function test_ac_3_the_directory_is_read_only(): void
+    public function test_ac_3_the_directory_is_read_only_but_for_the_account_status(): void
     {
         $writes = collect(RouteFacade::getRoutes()->getRoutes())
             ->filter(fn (Route $route) => str_starts_with((string) $route->getName(), 'admin.sellers.'))
             ->reject(fn (Route $route) => $route->methods() === ['GET', 'HEAD'])
             ->map(fn (Route $route) => $route->getName())
-            ->values()
+            ->sort()->values()
             ->all();
 
-        $this->assertSame([], $writes);
+        // F-014's suspend / reactivate are the only admin writes on a seller.
+        $this->assertSame(['admin.sellers.reactivate', 'admin.sellers.suspend'], $writes);
     }
 
     public function test_the_page_runs_a_fixed_number_of_queries(): void
