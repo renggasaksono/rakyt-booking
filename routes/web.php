@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminAuditController;
+use App\Http\Controllers\Admin\AdminBookingController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminSellerController;
 use App\Http\Controllers\Admin\AdminSellerStatusController;
@@ -127,6 +128,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('sellers.suspend');
         Route::post('/penjual/{organization}/aktifkan', [AdminSellerStatusController::class, 'reactivate'])
             ->name('sellers.reactivate');
+
+        // F-013: booking search and detail across sellers. Read-only — GET only.
+        Route::get('/pesanan', [AdminBookingController::class, 'index'])->name('bookings.index');
+        Route::get('/pesanan/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
     });
 });
 

@@ -401,10 +401,10 @@ class AdminAuditLogTest extends TestCase
 
         $this->actingAsConfirmedAdmin($admin)->get(route('admin.audit.index'))
             ->assertInertia(fn ($page) => $page
-                ->where('admin.nav.2.key', 'audit')
-                ->where('admin.nav.2.label', __('admin.nav.audit'))
-                ->where('admin.nav.2.url', route('admin.audit.index'))
-                ->where('admin.nav.2.active', true)
+                ->where('admin.nav.3.key', 'audit')
+                ->where('admin.nav.3.label', __('admin.nav.audit'))
+                ->where('admin.nav.3.url', route('admin.audit.index'))
+                ->where('admin.nav.3.active', true)
                 ->where('admin.nav.0.active', false)
             );
     }
