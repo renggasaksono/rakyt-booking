@@ -34,6 +34,9 @@ return [
         'terms_required' => 'Centang persetujuan Syarat & Privasi untuk lanjut.',
     ],
 
+    // F-014 AC-5: shown on "Masuk" when the seller's organization is suspended. Neutral on purpose.
+    'suspended' => 'Akun usaha ini sedang ditangguhkan, jadi belum bisa masuk. Untuk informasi lebih lanjut, hubungi tim Rakyt.',
+
     'login' => [
         'title' => 'Masuk',
         'headline' => 'Masuk ke Rakyt',

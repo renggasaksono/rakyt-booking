@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use App\Onboarding\OnboardingProgress;
+use App\Organizations\SuspendedSeller;
 use App\Tenancy\Middleware\ResolveCurrentOrganization;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
@@ -72,6 +73,11 @@ class NewPasswordController extends Controller
 
         if ($status !== Password::PASSWORD_RESET || $resetUser === null) {
             throw ValidationException::withMessages(['token' => __('account.reset.invalid')]);
+        }
+
+        // F-014 AC-5: the new password is saved, but a suspended seller is not signed in.
+        if (SuspendedSeller::is($resetUser)) {
+            return SuspendedSeller::toSignIn();
         }
 
         Auth::login($resetUser);
