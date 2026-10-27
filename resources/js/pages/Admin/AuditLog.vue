@@ -1,11 +1,10 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
+import { computed, reactive } from 'vue';
 import AuditEventCard from '../../components/AuditEventCard.vue';
+import OrganizationPicker from '../../components/OrganizationPicker.vue';
 import AdminLayout from '../../layouts/AdminLayout.vue';
-import { activeAuditFilterCount, actorFilter, auditFilterQuery, organizationFilter, PLATFORM } from '../../lib/adminAudit.js';
-import { lookupUrl, organizationLabel } from '../../lib/adminSellers.js';
-import { sendJson } from '../../lib/http.js';
+import { activeAuditFilterCount, actorFilter, auditFilterQuery, organizationFilter } from '../../lib/adminAudit.js';
 import { t } from '../../lib/text.js';
 
 /**
@@ -29,65 +28,6 @@ const props = defineProps({
 
 const draft = reactive({ ...props.filters });
 const hasFilters = computed(() => activeAuditFilterCount(props.filters) > 0);
-
-// Organization picker: type to search, tap a result; "Ganti" clears it.
-const chosen = ref(props.selected_organization);
-const term = ref('');
-const matches = ref([]);
-const lookup = ref('idle'); // idle | loading | done | error
-let lookupTimer = null;
-let lookupSeq = 0;
-
-const chosenLabel = computed(() => {
-    if (draft.organisasi === PLATFORM) {
-        return t(props.copy, 'filters.platform');
-    }
-
-    return draft.organisasi && chosen.value ? organizationLabel(chosen.value) : null;
-});
-
-watch(term, (value) => {
-    clearTimeout(lookupTimer);
-    const url = lookupUrl(props.urls.organization_lookup, value);
-    const seq = ++lookupSeq;
-
-    if (url === null) {
-        matches.value = [];
-        lookup.value = 'idle';
-
-        return;
-    }
-
-    lookup.value = 'loading';
-    lookupTimer = setTimeout(async () => {
-        try {
-            const body = await sendJson('GET', url);
-
-            if (seq === lookupSeq) {
-                matches.value = body.organizations;
-                lookup.value = 'done';
-            }
-        } catch {
-            if (seq === lookupSeq) {
-                matches.value = [];
-                lookup.value = 'error';
-            }
-        }
-    }, 250);
-});
-
-onBeforeUnmount(() => clearTimeout(lookupTimer));
-
-function chooseOrganization(organization) {
-    draft.organisasi = organization ? organization.id : PLATFORM;
-    chosen.value = organization;
-    term.value = '';
-}
-
-function clearOrganization() {
-    draft.organisasi = null;
-    chosen.value = null;
-}
 
 function visit(filters) {
     router.get(props.urls.index, auditFilterQuery(filters), { preserveScroll: false });
@@ -120,80 +60,14 @@ function filterUrl(filters) {
                 :aria-label="t(copy, 'filters.title')"
                 @submit.prevent="apply"
             >
-                <fieldset class="flex flex-col">
-                    <legend class="font-heading text-sm font-semibold text-ink">
-                        {{ t(copy, 'filters.organization') }}
-                    </legend>
-
-                    <div
-                        v-if="chosenLabel"
-                        class="mt-1 flex min-h-12 items-center justify-between gap-2 rounded-lg border border-ink/20 bg-gading px-3"
-                    >
-                        <span class="min-w-0 break-words text-base text-ink">{{ chosenLabel }}</span>
-                        <button
-                            type="button"
-                            class="inline-flex min-h-11 shrink-0 items-center font-heading text-sm font-medium text-sogan underline"
-                            @click="clearOrganization"
-                        >
-                            {{ t(copy, 'filters.organization_change') }}
-                        </button>
-                    </div>
-
-                    <template v-else>
-                        <input
-                            v-model="term"
-                            type="search"
-                            maxlength="100"
-                            autocomplete="off"
-                            :aria-label="t(copy, 'filters.organization_search')"
-                            :placeholder="t(copy, 'filters.organization_search')"
-                            class="mt-1 min-h-12 rounded-lg border border-ink/20 bg-surface px-3 text-base font-normal"
-                            aria-describedby="organization-hint"
-                            aria-controls="organization-matches"
-                        >
-                        <p
-                            id="organization-hint"
-                            class="mt-1 text-xs text-secondary"
-                            aria-live="polite"
-                        >
-                            <template v-if="lookup === 'error'">
-                                {{ t(copy, 'filters.organization_error') }}
-                            </template>
-                            <template v-else-if="lookup === 'done' && matches.length === 0">
-                                {{ t(copy, 'filters.organization_none') }}
-                            </template>
-                            <template v-else-if="lookup === 'idle'">
-                                {{ t(copy, 'filters.organization_hint') }}
-                            </template>
-                        </p>
-                        <ul
-                            id="organization-matches"
-                            class="mt-1 flex flex-col"
-                        >
-                            <li
-                                v-for="organization in matches"
-                                :key="organization.id"
-                            >
-                                <button
-                                    type="button"
-                                    class="flex min-h-11 w-full items-center rounded-lg px-2 text-left text-sm text-ink hover:bg-gading"
-                                    @click="chooseOrganization(organization)"
-                                >
-                                    {{ organizationLabel(organization) }}
-                                </button>
-                            </li>
-                            <li>
-                                <button
-                                    type="button"
-                                    class="flex min-h-11 w-full items-center rounded-lg px-2 text-left text-sm text-secondary hover:bg-gading"
-                                    @click="chooseOrganization(null)"
-                                >
-                                    {{ t(copy, 'filters.platform') }}
-                                </button>
-                            </li>
-                        </ul>
-                    </template>
-                </fieldset>
+                <OrganizationPicker
+                    v-model="draft.organisasi"
+                    :selected="selected_organization"
+                    :lookup-url="urls.organization_lookup"
+                    :label="t(copy, 'filters.organization')"
+                    :copy="copy.filters"
+                    allow-platform
+                />
 
                 <div class="flex flex-col gap-2">
                     <label class="flex flex-col font-heading text-sm font-semibold text-ink">
