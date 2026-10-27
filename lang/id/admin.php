@@ -76,8 +76,10 @@ return [
         'subject_types' => [
             'Booking' => 'Pesanan',
             'Organization' => 'Organisasi',
+            'OrganizationMember' => 'Anggota organisasi',
             'User' => 'Pengguna',
             'Trip' => 'Trip',
+            'TripPhoto' => 'Foto trip',
             'TripDeparture' => 'Keberangkatan',
             'PaymentRecord' => 'Pembayaran',
             'PaymentMethod' => 'Metode pembayaran',

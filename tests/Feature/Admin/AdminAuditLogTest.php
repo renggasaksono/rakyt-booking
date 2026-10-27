@@ -196,6 +196,20 @@ class AdminAuditLogTest extends TestCase
         $this->assertNotSame($byAdmin->id, $byOther->id);
     }
 
+    public function test_an_organization_filter_for_an_organization_that_does_not_exist_is_ignored(): void
+    {
+        $seller = $this->createTenant();
+        $admin = $this->platformAdmin();
+        $this->record(AuditAction::OrganizationSlugChanged, $seller->organization);
+        $missing = Organization::query()->max('id') + 1;
+
+        foreach ([(string) $missing, str_repeat('9', 30)] as $organization) {
+            $this->actingAsConfirmedAdmin($admin)->get(route('admin.audit.index', ['organisasi' => $organization]))
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page->has('events', 1)->where('filters.organisasi', null));
+        }
+    }
+
     public function test_events_can_be_filtered_by_action(): void
     {
         $seller = $this->createTenant();
@@ -253,8 +267,19 @@ class AdminAuditLogTest extends TestCase
             $this->assertNotSame('admin.audit.actions.'.$action->value, __('admin.audit.actions.'.$action->value), $action->value);
         }
 
-        foreach (['user', 'customer', 'system', 'rakyt_staff', 'platform_admin'] as $type) {
+        foreach (Actor::TYPES as $type) {
             $this->assertNotSame('admin.audit.actor_types.'.$type, __('admin.audit.actor_types.'.$type), $type);
+        }
+
+        // Any model can be an audit subject, except an audit event itself.
+        foreach (glob(app_path('Models/*.php')) as $file) {
+            $class = 'App\\Models\\'.basename($file, '.php');
+            if ($class === AuditEvent::class || ! is_subclass_of($class, Model::class)) {
+                continue;
+            }
+
+            $type = class_basename((new $class)->getMorphClass());
+            $this->assertNotSame('admin.audit.subject_types.'.$type, __('admin.audit.subject_types.'.$type), $type);
         }
     }
 

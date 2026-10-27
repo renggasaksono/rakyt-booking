@@ -30,8 +30,7 @@ class AdminAuditController extends Controller
 
     public function index(Request $request): Response
     {
-        $organizations = $this->queries->organizations();
-        $filters = AuditEventFilters::fromRequest($request, $organizations->modelKeys());
+        $filters = AuditEventFilters::fromRequest($request, $this->queries->organizationExists(...));
         $query = $filters->query();
 
         $rows = $this->queries->search($filters, ($filters->page - 1) * self::PER_PAGE, self::PER_PAGE + 1);
@@ -41,7 +40,7 @@ class AdminAuditController extends Controller
             'events' => $this->presenter->rows($rows->take(self::PER_PAGE)),
             'filters' => $filters->toArray(),
             'options' => [
-                'organizations' => $organizations
+                'organizations' => $this->queries->organizations()
                     ->map(fn (Organization $organization) => ['id' => (string) $organization->id, 'name' => $organization->name, 'slug' => $organization->slug])
                     ->values()->all(),
                 'actor_types' => array_map(fn (string $type) => ['value' => $type, 'label' => __('admin.audit.actor_types.'.$type)], Actor::TYPES),
