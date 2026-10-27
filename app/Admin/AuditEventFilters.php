@@ -23,6 +23,9 @@ final readonly class AuditEventFilters
 
     private const ACTOR_ID_MAX = 100;
 
+    /** Longest organization id accepted (bigint has 19 digits). */
+    private const ORGANIZATION_ID_DIGITS = 18;
+
     public function __construct(
         public ?string $organization = null,
         public ?string $actorType = null,
@@ -32,13 +35,17 @@ final readonly class AuditEventFilters
     ) {}
 
     /**
-     * @param  list<int>  $organizationIds  the organizations that exist
+     * @param  callable(int): bool  $organizationExists
      */
-    public static function fromRequest(Request $request, array $organizationIds): self
+    public static function fromRequest(Request $request, callable $organizationExists): self
     {
         $organization = self::string($request->query('organisasi'));
 
-        if ($organization !== self::PLATFORM && ! (ctype_digit((string) $organization) && in_array((int) $organization, $organizationIds, true))) {
+        if ($organization !== self::PLATFORM && ! (
+            ctype_digit((string) $organization)
+            && strlen((string) $organization) <= self::ORGANIZATION_ID_DIGITS
+            && $organizationExists((int) $organization)
+        )) {
             $organization = null;
         }
 

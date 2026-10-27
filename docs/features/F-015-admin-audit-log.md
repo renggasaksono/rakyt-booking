@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-week-4
 mockups: []
 decisions: ["0011", "0038"]
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # F-015 · Audit logging for admin actions
@@ -50,20 +50,25 @@ None — seller visibility resolved 2026-10-23 (see changelog).
 - **View:** `/admin/audit` (`admin.audit.index`, nav "Log audit") → `AdminAuditController` → `pages/Admin/AuditLog.vue`.
   Newest first, 25 per page, filters in the URL: `organisasi` (an organization id or `platform` for org-less events),
   `aktor` (actor type), `aktor_id` (only with `aktor`), `aksi` (an `AuditAction` value), `halaman`. Unknown values are
-  dropped (`App\Admin\AuditEventFilters`). An event's organization and actor are links that filter by them.
-  `Cache-Control: no-store, private`.
+  dropped (`App\Admin\AuditEventFilters`; an organization id is checked with one `exists()` query). An event's
+  organization and actor are links that filter by them. `Cache-Control: no-store, private`. The organization filter is
+  still a dropdown of every organization; a searchable picker replaces it later (with F-012's search).
 - **Reads:** cross-organization only in `App\Admin\Queries\AuditEventQueries` — `search()` for the view,
   `forOrganization()` for F-012's organization detail and `forSubject()` for F-013's booking detail (both tested; the
-  pages themselves come with F-012 / F-013 and render rows with `App\Admin\AuditEventPresenter`).
+  pages themselves come with F-012 / F-013 and render rows with `App\Admin\AuditEventPresenter`). `forSubject()` also
+  matches the subject's organization when it has one (an organization, or a seller-owned record), so it uses the
+  `(organization_id, subject_type, subject_id)` index; a user's events use `(subject_type, subject_id)`. The
+  newest-first views without an organization use `(created_at, id)`.
 - **Writes:** admin actions call `AuditLog::record($action, $subject, $before, $after, Actor::platformAdmin($admin),
   reason: $reason)` inside the change's transaction. `reason` is a column (≤ 500 chars, trimmed, blank → null), not a
   `before`/`after` key (ADR-0038).
 - **Redaction:** `App\Audit\AuditRedaction` — passwords, tokens, secrets, remember tokens, OTP / TOTP / recovery codes,
   payment evidence, `customer_*` (except `customer_id`) and `notes`, at any depth.
 - **New admin write routes** must be added to `AdminAuditRecordingTest::ADMIN_WRITE_ROUTES` with the audit action they
-  write (F-014 adds suspend / reactivate there).
+  write (F-014 adds suspend / reactivate there). A route that writes no audit event (`null`) needs a justification in
+  `UNAUDITED_ROUTES`; only the TOTP challenge has one.
 - Labels for every `AuditAction`, actor type and subject type live in `lang/id/admin.php` → `audit` (a test checks
-  every action).
+  every action, every `Actor::TYPES` entry and every model in `app/Models` but `AuditEvent`).
 
 ## Changelog
 
@@ -71,3 +76,7 @@ None — seller visibility resolved 2026-10-23 (see changelog).
 - 2026-10-23 — **ready.** Sellers do **not** see admin actions on their org in P0 (Rengga); admin audit events stay platform-internal. Moved to scope "Out" with an AC.
 - 2026-10-26 — **built; status → done.** Admin audit view `/admin/audit` (filters: organization incl. platform-level, actor, action), `audit_events.reason` column, shared `AuditRedaction` (writer + view), `AuditEventQueries::forOrganization/forSubject` for F-012/F-013, write-route registry test. AC-1…AC-6 numbered and covered by tests. ADR-0038 proposed.
 - 2026-10-26 — ADR-0038 accepted (Rengga).
+- 2026-10-27 — Review follow-up: `forSubject()` constrains on the subject's organization; new indexes
+  `(created_at, id)` and `(subject_type, subject_id)`; the organization filter is validated with `exists()` instead of
+  loading every organization (searchable picker deferred to F-012's search); label test covers every actor and subject
+  type; unaudited admin write routes need a justification; AC-1 rollback test for `admin:revoke`.

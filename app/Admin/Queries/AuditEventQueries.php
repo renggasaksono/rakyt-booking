@@ -48,13 +48,20 @@ class AuditEventQueries
     }
 
     /**
-     * Events about one record, newest first (F-013 booking detail).
+     * Events about one record, newest first (F-013 booking detail). A
+     * seller-owned subject (and an organization) is also matched on its
+     * organization, so the query uses the `(organization_id, subject_type,
+     * subject_id)` index; any other subject (a user) uses `(subject_type,
+     * subject_id)`.
      *
      * @return Collection<int, AuditEvent>
      */
     public function forSubject(Model $subject, int $limit = self::RELATED_LIMIT): Collection
     {
+        $organizationId = $this->organizationIdOf($subject);
+
         return $this->newest()
+            ->when($organizationId !== null, fn (Builder $query) => $query->where('organization_id', $organizationId))
             ->where('subject_type', $subject->getMorphClass())
             ->where('subject_id', (string) $subject->getKey())
             ->limit($limit)
@@ -62,13 +69,24 @@ class AuditEventQueries
     }
 
     /**
-     * Every organization, for the organization filter.
+     * Every organization, for the organization filter. Loads them all: fine
+     * while sellers are few; a searchable picker replaces it later (with
+     * F-012's search).
      *
      * @return Collection<int, Organization>
      */
     public function organizations(): Collection
     {
         return Organization::query()->orderBy('name')->orderBy('id')->get(['id', 'name', 'slug']);
+    }
+
+    /**
+     * Whether an organization exists, to validate the organization filter
+     * without loading every organization.
+     */
+    public function organizationExists(int $id): bool
+    {
+        return Organization::query()->whereKey($id)->exists();
     }
 
     /**
@@ -90,6 +108,26 @@ class AuditEventQueries
     }
 
     /**
+     * The organization an event about $subject is stored under, when it is
+     * fixed by the subject itself (as AuditLog resolves it). A user's events
+     * may belong to their organization or to none (F-010), so none is assumed.
+     */
+    private function organizationIdOf(Model $subject): ?int
+    {
+        $id = match (true) {
+            $subject instanceof Organization => $subject->getKey(),
+            $subject instanceof User => null,
+            array_key_exists('organization_id', $subject->getAttributes()) => $subject->getAttribute('organization_id'),
+            default => null,
+        };
+
+        return $id === null ? null : (int) $id;
+    }
+
+    /**
+     * Newest first; the `(created_at, id)` index serves the unfiltered and
+     * actor/action/platform views.
+     *
      * @return Builder<AuditEvent>
      */
     private function newest(): Builder

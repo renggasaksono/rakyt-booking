@@ -6,7 +6,7 @@ priority: P0
 roadmap: mvp-week-4
 mockups: []
 decisions: ["0004", "0011"]
-updated: 2026-10-23
+updated: 2026-10-27
 ---
 
 # F-012 · Admin seller directory & organization details
@@ -39,6 +39,7 @@ F-010 · F-001 · F-003 · F-005 · F-006 · F-014 (actions) · F-015 (audit tra
 - [ ] Filter by account status (active / suspended).
 - [ ] Detail page shows profile, status, plan, registration date and last activity (owner's `last_login_at`; "Belum pernah masuk" when null), plus trips, departures and recent bookings — all read-only.
 - [ ] Seat summary per departure uses the same counts as the seller dashboard (F-007).
+- [ ] Detail page lists the organization's recent audit events (newest first) via `AuditEventQueries::forOrganization()`, rendered with `AuditEventPresenter` — admin only; a seller session never sees them (F-015 AC-6).
 - [ ] Cross-organization reads only through admin query classes; a seller session cannot reach these pages or their JSON (test).
 - [ ] Payment evidence opens only through a signed, short-lived URL issued to the admin (same private storage as F-006).
 - [ ] Usable at phone width.
@@ -51,3 +52,4 @@ None — "last activity" resolved 2026-10-23 (see changelog).
 
 - 2026-10-17 — created
 - 2026-10-23 — **ready.** "Last activity" = owner's last successful sign-in, via a new nullable `users.last_login_at` (Rengga, recommended default). Null shown as "Belum pernah masuk".
+- 2026-10-27 — Added AC: recent audit events on the detail page via `AuditEventQueries::forOrganization()` + `AuditEventPresenter` (F-015 review follow-up). The audit view's organization dropdown becomes a searchable picker together with this feature's search.
