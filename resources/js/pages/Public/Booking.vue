@@ -88,7 +88,10 @@ const paymentCopy = computed(() => props.copy.payment ?? {});
 const payable = computed(() => counting.value);
 const hasMethods = computed(() => (props.payment.methods ?? []).length > 0);
 const showInstructions = computed(() => ['awaiting_payment', 'needs_review'].includes(status.value));
-const canUpload = computed(() => hasMethods.value && (payable.value || status.value === 'needs_review'));
+const uploadable = computed(() => hasMethods.value && (payable.value || status.value === 'needs_review'));
+// F-014 AC-6: a suspended seller takes no evidence; the upload button gives way to a notice.
+const uploadsPaused = computed(() => uploadable.value && props.payment.uploads_paused === true);
+const canUpload = computed(() => uploadable.value && !uploadsPaused.value);
 const steps = computed(() => progressSteps(props.progress, paymentCopy.value));
 const showProgress = computed(() => props.progress != null);
 const copied = ref(null);
@@ -424,6 +427,15 @@ function submitEvidence(event) {
                 class="mt-3 rounded-lg bg-status-waiting-tint px-3 py-2 text-sm text-status-waiting"
             >
                 {{ t(copy, 'payment.no_methods') }}
+            </p>
+
+            <p
+                v-if="uploadsPaused"
+                class="mt-4 flex items-start gap-2 bg-status-cancelled-tint px-3 py-2 text-sm text-status-cancelled"
+                role="status"
+            >
+                <span aria-hidden="true">⏸</span>
+                <span>{{ t(copy, 'payment.uploads_paused') }}</span>
             </p>
 
             <template v-if="canUpload">

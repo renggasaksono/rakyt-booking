@@ -81,6 +81,14 @@ return [
     'footer' => 'Dibuat dengan Rakyt',
 
     // Server-rendered <head> (AC-29, AC-30).
+    // F-014: a suspended seller's link. Neutral, and nothing of the seller on it.
+    'unavailable' => [
+        'title' => 'Halaman tidak tersedia · Rakyt Booking',
+        'heading' => 'Halaman ini sedang tidak tersedia',
+        'message' => 'Trip di link ini belum bisa dilihat atau dipesan saat ini. Coba lagi nanti.',
+        'home' => 'Ke beranda Rakyt',
+    ],
+
     'head' => [
         'seller_title' => ':name · Rakyt Booking',
         'seller_description' => ':n trip · :city',

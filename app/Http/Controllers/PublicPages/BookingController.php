@@ -115,12 +115,18 @@ class BookingController extends Controller
      * needs_review under the lock, re-checking the hold (AC-12, AC-13). A refusal
      * (expired hold or wrong status) redirects back to the booking page, which
      * then shows the expired / current state (AC-13, AC-15). The upload POST is
-     * no-store via the public.booking.* middleware (AC-30).
+     * no-store via the public.booking.* middleware (AC-30). A suspended seller's
+     * booking takes no upload (F-014 AC-6).
      */
     public function uploadEvidence(Request $request, string $organization, string $token): RedirectResponse
     {
         $booking = $this->bookingByToken($token);
         $url = self::bookingUrl($this->current->get()->slug, $booking);
+
+        // F-014 AC-6: a suspended seller takes no evidence; nothing is stored.
+        if (! $this->visibility->organizationIsPublic($this->current->get())) {
+            return redirect()->to($url, 303)->with('notice', __('booking.payment.errors.seller_unavailable'));
+        }
 
         try {
             $data = Validator::make(
@@ -135,7 +141,10 @@ class BookingController extends Controller
         $record = $this->bookings->uploadEvidence($booking, $data['bukti']);
 
         if ($record === null) {
-            return redirect()->to($url, 303)->with('notice', __('booking.payment.errors.expired'));
+            // Refused under the lock: the hold ended, or the seller was suspended meanwhile.
+            $suspended = ! $this->visibility->organizationIsPublic($this->current->get()->refresh());
+
+            return redirect()->to($url, 303)->with('notice', __($suspended ? 'booking.payment.errors.seller_unavailable' : 'booking.payment.errors.expired'));
         }
 
         return redirect()->to($url, 303);

@@ -115,9 +115,12 @@ return [
         'paid' => 'Pembayaran lunas. Sampai jumpa di :trip.',
         'rejected' => 'Bukti transfer ditolak.',
         'rejected_reason' => 'Alasan: :reason',
+        // F-014 AC-6: the seller is suspended, so no evidence can be uploaded. Neutral.
+        'uploads_paused' => 'Unggah bukti bayar sedang ditutup karena penjual ini tidak tersedia di Rakyt untuk sementara.',
         'errors' => [
             'evidence' => 'Unggah foto/berkas gambar (JPG/PNG), maks. 5 MB.',
             'expired' => 'Waktu pembayaran sudah habis.',
+            'seller_unavailable' => 'Bukti bayar belum bisa diunggah: penjual ini tidak tersedia di Rakyt untuk sementara.',
         ],
     ],
 

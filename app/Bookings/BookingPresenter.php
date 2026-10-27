@@ -119,7 +119,11 @@ final class BookingPresenter
                 'timezone' => $organization->timezone,
             ],
             // F-006: payment instructions, the amount, the evidence and the 3-step progress.
-            'payment' => ['methods' => self::methods($organization, $booking)],
+            // F-014 AC-6: uploads are refused while the seller is suspended; the page says so.
+            'payment' => [
+                'methods' => self::methods($organization, $booking),
+                'uploads_paused' => $organization->isSuspended(),
+            ],
             'amount_due' => $booking->total_amount,
             'evidence' => self::evidence($organization, $booking),
             'reject_reason' => $booking->status === BookingStatus::Rejected ? self::record($booking)?->reject_reason : null,
