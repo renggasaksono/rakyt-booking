@@ -35,6 +35,9 @@ enum AuditAction: string
     case OrganizationSlugChanged = 'organization.slug_changed';
     case OrganizationMemberAdded = 'organization.member_added';
     case OrganizationMemberRemoved = 'organization.member_removed';
+    // F-014: the platform admin suspends or reactivates an organization (reason required, ADR-0038).
+    case OrganizationSuspended = 'organization.suspended';
+    case OrganizationReactivated = 'organization.reactivated';
 
     case AuthPasswordReset = 'auth.password_reset';
     case AuthPasswordChanged = 'auth.password_changed';

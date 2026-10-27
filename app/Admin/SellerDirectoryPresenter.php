@@ -79,6 +79,13 @@ class SellerDirectoryPresenter
                 'plan_label' => $this->label('admin.sellers.plans.'.$organization->plan, (string) $organization->plan),
                 'registered_label' => $this->date($organization->created_at),
             ],
+            // F-014: who suspended it, when and why; null while active.
+            'suspension' => $organization->isSuspended() ? [
+                'at' => $this->iso($organization->suspended_at),
+                'at_label' => $this->dateTime($organization->suspended_at),
+                'by' => $this->queries->suspendedByName($organization) ?? __('admin.sellers.suspension.unknown_admin'),
+                'reason' => $organization->suspended_reason,
+            ] : null,
             'last_activity' => [
                 'at' => $owner?->last_login_at === null ? null : $this->iso($owner->last_login_at),
                 'label' => $this->lastLogin($owner?->last_login_at),

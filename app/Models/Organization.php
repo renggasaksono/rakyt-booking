@@ -27,9 +27,13 @@ class Organization extends Model
     /**
      * The booking code is derived once at creation and the booking counter is
      * moved only by App\Bookings\BookingService (F-005 AC-17, AC-17b). The
-     * account status changes only through the admin (F-014), never a payload.
+     * account status and its suspension details change only through
+     * App\Organizations\OrganizationSuspension (F-014), never a payload.
      */
-    protected $guarded = ['id', 'public_id', 'booking_code', 'last_booking_number', 'status'];
+    protected $guarded = [
+        'id', 'public_id', 'booking_code', 'last_booking_number',
+        'status', 'suspended_at', 'suspended_by', 'suspended_reason',
+    ];
 
     /** Database defaults, so new instances carry them too (ADR-0014, F-003 Q6). */
     protected $attributes = [
@@ -38,6 +42,9 @@ class Organization extends Model
         'plan' => 'free',
         'last_booking_number' => 0,
         'status' => 'active',
+        'suspended_at' => null,
+        'suspended_by' => null,
+        'suspended_reason' => null,
     ];
 
     protected function casts(): array
@@ -47,6 +54,8 @@ class Organization extends Model
             'first_published_at' => 'datetime',
             'last_booking_number' => 'integer',
             'status' => OrganizationStatus::class,
+            'suspended_at' => 'datetime',
+            'suspended_by' => 'integer',
         ];
     }
 
@@ -105,6 +114,15 @@ class Organization extends Model
     public function isOnboarding(): bool
     {
         return $this->first_published_at === null && $this->onboarding_skipped_at === null;
+    }
+
+    /**
+     * Suspended by the platform admin (F-014): no public page, no new
+     * bookings or evidence uploads, and its members cannot sign in.
+     */
+    public function isSuspended(): bool
+    {
+        return $this->status === OrganizationStatus::Suspended;
     }
 
     /**

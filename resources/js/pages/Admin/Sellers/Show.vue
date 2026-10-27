@@ -1,8 +1,11 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 import AccountStatusPill from '../../../components/AccountStatusPill.vue';
 import AuditEventCard from '../../../components/AuditEventCard.vue';
 import BookingStatusPill from '../../../components/BookingStatusPill.vue';
+import BottomSheet from '../../../components/BottomSheet.vue';
+import FieldError from '../../../components/FieldError.vue';
 import StatusBadge from '../../../components/StatusBadge.vue';
 import AdminLayout from '../../../layouts/AdminLayout.vue';
 import { SEAT_SEGMENT_CLASSES, seatSegments } from '../../../lib/dashboard.js';
@@ -11,12 +14,15 @@ import { t } from '../../../lib/text.js';
 /**
  * One seller organization (F-012): profile, account, members, trips,
  * upcoming departures with the seller dashboard's seat counts, recent
- * bookings and the organization's audit events. Read-only — nothing here
- * changes seller data. Phone first: sections stack as cards; from 1024 px
- * profile and account sit side by side.
+ * bookings and the organization's audit events. The only change made here is
+ * F-014's suspend / reactivate in the "Akun" section: a sheet that states
+ * the effects and asks for a required reason. Neither is gold — suspending
+ * is destructive (Ditolak-styled), reactivating an ink outline. Phone first:
+ * sections stack as cards; from 1024 px profile and account sit side by side.
  */
-defineProps({
+const props = defineProps({
     organization: { type: Object, required: true },
+    suspension: { type: Object, default: null },
     // eslint-disable-next-line vue/prop-name-casing
     last_activity: { type: Object, required: true },
     members: { type: Array, required: true },
@@ -28,6 +34,45 @@ defineProps({
     copy: { type: Object, required: true },
     urls: { type: Object, required: true },
 });
+
+const REASON_MAX = 500;
+const suspended = computed(() => props.organization.status === 'suspended');
+const sheetOpen = ref(false);
+const failed = ref(false);
+const form = useForm({ alasan: '' });
+const canSubmit = computed(() => form.alasan.trim() !== '' && !form.processing);
+
+function openSheet() {
+    form.reset();
+    form.clearErrors();
+    failed.value = false;
+    sheetOpen.value = true;
+}
+
+function submit() {
+    if (!canSubmit.value) {
+        return;
+    }
+
+    failed.value = false;
+    form.post(suspended.value ? props.urls.reactivate : props.urls.suspend, {
+        preserveScroll: true,
+        onSuccess: () => {
+            sheetOpen.value = false;
+            form.reset();
+        },
+        onNetworkError: () => {
+            failed.value = true;
+
+            return false;
+        },
+        onHttpException: () => {
+            failed.value = true;
+
+            return false;
+        },
+    });
+}
 </script>
 
 <template>
@@ -109,7 +154,7 @@ defineProps({
                     </dl>
                 </section>
 
-                <!-- F-014 adds suspend / reactivate to this section. -->
+                <!-- F-014: suspend / reactivate live in this section. -->
                 <section
                     class="rounded-lg border border-ink/10 bg-surface p-4"
                     aria-labelledby="account-title"
@@ -157,7 +202,46 @@ defineProps({
                             >{{ last_activity.label }}</span>
                             <span class="block text-xs text-secondary">{{ t(copy, 'account.last_activity_hint') }}</span>
                         </dd>
+                        <template v-if="suspension">
+                            <dt class="font-heading font-semibold text-ink">
+                                {{ t(copy, 'suspension.since') }}
+                            </dt>
+                            <dd>
+                                <time
+                                    :datetime="suspension.at"
+                                    class="text-ink"
+                                >{{ suspension.at_label }}</time>
+                            </dd>
+                            <dt class="font-heading font-semibold text-ink">
+                                {{ t(copy, 'suspension.by') }}
+                            </dt>
+                            <dd class="text-ink">
+                                {{ suspension.by }}
+                            </dd>
+                            <dt class="font-heading font-semibold text-ink">
+                                {{ t(copy, 'suspension.reason') }}
+                            </dt>
+                            <dd class="whitespace-pre-line text-ink [overflow-wrap:anywhere]">
+                                {{ suspension.reason }}
+                            </dd>
+                        </template>
                     </dl>
+                    <button
+                        v-if="suspended"
+                        type="button"
+                        class="mt-4 min-h-11 w-full px-4 font-heading text-sm font-semibold text-ink ring-[1.5px] ring-inset ring-ink sm:w-auto"
+                        @click="openSheet"
+                    >
+                        {{ t(copy, 'suspension.reactivate') }}
+                    </button>
+                    <button
+                        v-else
+                        type="button"
+                        class="mt-4 min-h-11 w-full px-4 font-heading text-sm font-semibold text-status-rejected ring-[1.5px] ring-inset ring-status-rejected sm:w-auto"
+                        @click="openSheet"
+                    >
+                        {{ t(copy, 'suspension.suspend') }}
+                    </button>
                 </section>
             </div>
 
@@ -384,5 +468,81 @@ defineProps({
                 </ol>
             </section>
         </main>
+
+        <!-- F-014 AC-1: confirmation with the effects and a required reason. -->
+        <BottomSheet
+            v-if="sheetOpen"
+            :title="t(copy, suspended ? 'suspension.reactivate_title' : 'suspension.suspend_title', { name: organization.name })"
+            :close-label="t(copy, 'suspension.close')"
+            @close="sheetOpen = false"
+        >
+            <form
+                class="flex flex-col gap-3 text-sm text-ink"
+                novalidate
+                @submit.prevent="submit"
+            >
+                <ul class="flex list-disc flex-col gap-1 pl-5">
+                    <li
+                        v-for="(effect, i) in (suspended ? copy.suspension.reactivate_effects : copy.suspension.suspend_effects)"
+                        :key="i"
+                    >
+                        {{ effect }}
+                    </li>
+                </ul>
+                <div>
+                    <label
+                        for="suspension-reason"
+                        class="font-heading text-sm font-semibold text-ink"
+                    >{{ t(copy, 'suspension.reason_label') }}</label>
+                    <textarea
+                        id="suspension-reason"
+                        v-model="form.alasan"
+                        :maxlength="REASON_MAX"
+                        rows="3"
+                        required
+                        class="mt-1 w-full border bg-surface p-2 text-base text-ink"
+                        :class="form.errors.alasan ? 'border-status-rejected' : 'border-ink/20'"
+                        :placeholder="t(copy, suspended ? 'suspension.reactivate_placeholder' : 'suspension.suspend_placeholder')"
+                        :aria-invalid="Boolean(form.errors.alasan) || undefined"
+                        aria-describedby="suspension-reason-hint suspension-reason-error"
+                    />
+                    <p
+                        id="suspension-reason-hint"
+                        class="text-xs text-secondary"
+                    >
+                        {{ t(copy, 'suspension.reason_hint', { max: REASON_MAX }) }}
+                    </p>
+                    <FieldError
+                        id="suspension-reason-error"
+                        :message="form.errors.alasan"
+                    />
+                </div>
+                <p
+                    v-if="failed"
+                    class="text-status-rejected"
+                    role="alert"
+                >
+                    {{ t(copy, 'suspension.failed') }}
+                </p>
+                <div class="mt-1 flex flex-col gap-2">
+                    <button
+                        type="submit"
+                        class="min-h-12 w-full px-4 font-heading text-base font-semibold text-surface disabled:opacity-60"
+                        :class="suspended ? 'bg-ink' : 'bg-status-rejected'"
+                        :disabled="!canSubmit"
+                        :aria-busy="form.processing ? 'true' : 'false'"
+                    >
+                        {{ form.processing ? t(copy, 'suspension.sending') : t(copy, suspended ? 'suspension.confirm_reactivate' : 'suspension.confirm_suspend') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="min-h-12 w-full px-4 font-heading text-base font-semibold text-ink ring-[1.5px] ring-inset ring-ink"
+                        @click="sheetOpen = false"
+                    >
+                        {{ t(copy, 'suspension.cancel') }}
+                    </button>
+                </div>
+            </form>
+        </BottomSheet>
     </AdminLayout>
 </template>

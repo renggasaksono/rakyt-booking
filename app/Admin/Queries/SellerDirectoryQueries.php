@@ -10,6 +10,7 @@ use App\Models\OrganizationMember;
 use App\Models\PaymentRecord;
 use App\Models\Trip;
 use App\Models\TripDeparture;
+use App\Models\User;
 use App\Tenancy\OrganizationScope;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,7 +23,8 @@ use Illuminate\Database\Eloquent\Relations\Relation;
  * members, trips, departures, bookings and payment evidence. Every
  * seller-owned read here drops the tenant scope and names the organization
  * explicitly instead — including eager loads — so each detail query stays
- * inside the one organization being viewed. Read-only.
+ * inside the one organization being viewed. Read-only; F-014's status
+ * change lives in App\Organizations\OrganizationSuspension.
  */
 class SellerDirectoryQueries
 {
@@ -72,6 +74,17 @@ class SellerDirectoryQueries
         }
 
         return Organization::query()->find((int) $id);
+    }
+
+    /**
+     * The name of the admin who suspended the organization (F-014), if any.
+     * Users are not organization-scoped.
+     */
+    public function suspendedByName(Organization $organization): ?string
+    {
+        return $organization->suspended_by === null
+            ? null
+            : User::query()->whereKey($organization->suspended_by)->value('name');
     }
 
     /**

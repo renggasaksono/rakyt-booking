@@ -50,6 +50,28 @@ class CheckConstraintsTest extends TestCase
         ]), 'organizations_timezone_check');
     }
 
+    public function test_f014_the_suspension_columns_move_with_the_status(): void
+    {
+        $at = now()->utc();
+
+        // Suspended needs when and why; active carries none of them.
+        foreach ([
+            ['status' => 'suspended'],
+            ['status' => 'suspended', 'suspended_at' => $at],
+            ['status' => 'suspended', 'suspended_reason' => 'Penipuan'],
+            ['status' => 'active', 'suspended_at' => $at],
+            ['status' => 'active', 'suspended_reason' => 'Penipuan'],
+        ] as $columns) {
+            $this->assertRejected(fn () => DB::table('organizations')->insert([
+                ...$this->organizationRow(),
+                ...$columns,
+            ]), 'organizations_suspension_check');
+        }
+
+        DB::table('organizations')->insert([...$this->organizationRow(), 'status' => 'suspended', 'suspended_at' => $at, 'suspended_reason' => 'Penipuan']);
+        $this->assertDatabaseHas('organizations', ['status' => 'suspended', 'suspended_reason' => 'Penipuan']);
+    }
+
     public function test_f001_organization_slug_format_is_enforced_by_the_database(): void
     {
         foreach (['ab', '-kencana', 'kencana-', 'ken--cana', 'Kencana', 'ken_cana', str_repeat('a', 31)] as $slug) {
