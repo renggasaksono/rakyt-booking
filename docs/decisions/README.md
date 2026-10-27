@@ -50,3 +50,4 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0038](0038-admin-audit-trail-conventions.md) | Admin audit trail — reason column, shared redaction, admin-only reads | accepted | 2026-10-26 |
 | [0039](0039-admin-seller-directory-reads.md) | Admin seller directory — single-organization reads, app-signed evidence URLs, sign-in time, status column | proposed | 2026-10-27 |
 | [0040](0040-seller-suspension-enforcement.md) | Seller suspension — where it is enforced, and what stays reachable | accepted | 2026-10-27 |
+| [0041](0041-admin-booking-search.md) | Admin booking search — one search box, a joined cross-organization list, indexes, phone only on the detail | proposed | 2026-10-27 |
