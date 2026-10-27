@@ -97,7 +97,9 @@ class SellerDirectoryQueries
     {
         return $this->of(Trip::class, $organization)
             ->select(['id', 'public_id', 'organization_id', 'name', 'status', 'published_at'])
-            ->withCount(['departures' => fn (Builder $query) => $this->unscoped($query)])
+            // Naming the organization lets the count use (organization_id, trip_id, start_date).
+            ->withCount(['departures' => fn (Builder $query) => $this->unscoped($query)
+                ->where('trip_departures.organization_id', $organization->getKey())])
             ->orderBy('name')
             ->orderBy('id')
             ->limit($limit)

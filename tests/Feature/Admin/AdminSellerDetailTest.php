@@ -341,6 +341,20 @@ class AdminSellerDetailTest extends TestCase
         $this->assertSame($baseline, count($this->queriesOf(fn () => $this->showPage()->assertOk())));
     }
 
+    public function test_trip_departure_counts_name_the_organization_so_they_use_its_index(): void
+    {
+        $otherTrip = $this->bookableTrip($this->b, ['name' => 'Trip Seller Lain']);
+        $this->departureFor($this->b, $otherTrip, '2024-10-24');
+
+        $counts = collect($this->queriesOf(fn () => $this->showPage()->assertOk()))
+            ->filter(fn (string $sql) => str_contains($sql, 'as "departures_count"'))
+            ->values();
+
+        $this->assertCount(1, $counts);
+        $this->assertStringContainsString('"trip_departures"."organization_id" = ?', $counts[0]);
+        $this->showPage()->assertInertia(fn ($page) => $page->where('trips.items.0.departures_count', 1));
+    }
+
     public function test_ac_8_the_detail_page_is_phone_first(): void
     {
         $vue = file_get_contents(resource_path('js/pages/Admin/Sellers/Show.vue'));

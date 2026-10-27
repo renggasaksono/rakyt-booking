@@ -67,3 +67,7 @@ None — "last activity" resolved 2026-10-23 (see changelog).
   who/when/why columns). "Penjual" in the admin nav. The audit view's organization filter is now a searchable picker
   over `GET /admin/penjual/cari`. No write routes; F-014's suspend / reactivate hangs on the detail page's "Akun"
   section. ADR-0039 proposed. AC-8 real-device review pending with the other admin screens.
+- 2026-10-27 — Review fixes (PR #43): the trips' departure count names the organization, so it uses the
+  `(organization_id, trip_id, start_date)` index instead of scanning every seller's departures (query-shape test);
+  `last_login_at` tests now cover sign-up, password reset and remember-me as well as the login form — all stamp it,
+  as ADR-0039 states.
