@@ -184,7 +184,7 @@ class SuspendedSellerPublicTest extends TestCase
         // The booking record stays valid and readable (AC-7), the upload is paused.
         $props = $this->bookingPageProps('kencana', $booking->access_token);
         $this->assertSame($booking->reference, $props['booking']['reference']);
-        $this->assertTrue($props['payment']['uploads_paused']);
+        $this->assertTrue($props['payment']['paused']);
 
         $this->upload($booking)
             ->assertStatus(303)
@@ -240,6 +240,46 @@ class SuspendedSellerPublicTest extends TestCase
         $this->assertSame(1, AuditEvent::acrossOrganizations()->where('action', 'booking.hold_expired')->count());
     }
 
+    public function test_q1_a_suspended_sellers_payment_instructions_never_reach_the_booking_page(): void
+    {
+        $path = 'org/'.$this->a->organization->public_id.'/payments/qris/img.png';
+        Storage::disk(config('rakyt.media.private_disk'))->put($path, 'png');
+        $this->asTenant($this->a, fn () => PaymentMethod::factory()->create([
+            'type' => 'qris',
+            'provider' => 'qris',
+            'account_number' => null,
+            'account_holder' => null,
+            'qris_image_path' => $path,
+            'position' => 1,
+        ]));
+        $booking = $this->awaiting();
+        $qris = route('public.booking.qris', ['organization' => 'kencana', 'token' => $booking->access_token]);
+        $this->get($qris)->assertOk()->assertHeader('Content-Type', 'image/png');
+
+        $this->suspendOrganization($this->a);
+
+        // No account number, holder or QRIS on the page; the booking itself stays readable.
+        $this->get(BookingController::bookingUrl('kencana', $booking))
+            ->assertOk()
+            // (The customer's own phone, +6281234567890, contains the account number's digits.)
+            ->assertDontSee('"account_number":', false)
+            ->assertDontSee('Agus Santoso', false)
+            ->assertDontSee('/qris', false)
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('booking.reference', $booking->reference)
+                ->where('payment', ['methods' => [], 'paused' => true]));
+
+        // The QRIS image route is no longer part of the booking record.
+        $this->get($qris)
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('Public/Unavailable'));
+
+        $this->reactivateOrganization($this->a);
+
+        $this->assertCount(2, $this->bookingPageProps('kencana', $booking->access_token)['payment']['methods']);
+        $this->get($qris)->assertOk()->assertHeader('Content-Type', 'image/png');
+    }
+
     public function test_ac_8_reactivation_restores_the_page_bookings_and_uploads(): void
     {
         $booking = $this->awaiting();
@@ -251,7 +291,7 @@ class SuspendedSellerPublicTest extends TestCase
         $this->assertSame('Kencana Trip', $this->sellerProps()['organization']['name']);
         $this->tripProps('kencana', 'karimunjawa-3h2m');
         $this->formProps('kencana', 'karimunjawa-3h2m', $this->departure->public_id);
-        $this->assertFalse($this->bookingPageProps('kencana', $booking->access_token)['payment']['uploads_paused']);
+        $this->assertFalse($this->bookingPageProps('kencana', $booking->access_token)['payment']['paused']);
 
         $this->submitBooking('kencana', 'karimunjawa-3h2m', $this->bookingInput($this->departure))->assertStatus(303);
         $this->assertSame(2, $this->bookingCount());

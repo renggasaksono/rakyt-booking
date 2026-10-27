@@ -89,9 +89,9 @@ const payable = computed(() => counting.value);
 const hasMethods = computed(() => (props.payment.methods ?? []).length > 0);
 const showInstructions = computed(() => ['awaiting_payment', 'needs_review'].includes(status.value));
 const uploadable = computed(() => hasMethods.value && (payable.value || status.value === 'needs_review'));
-// F-014 AC-6: a suspended seller takes no evidence; the upload button gives way to a notice.
-const uploadsPaused = computed(() => uploadable.value && props.payment.uploads_paused === true);
-const canUpload = computed(() => uploadable.value && !uploadsPaused.value);
+// F-014 AC-6, Q1: a suspended seller takes no payment — no instructions, no upload, one notice.
+const paused = computed(() => props.payment.paused === true);
+const canUpload = computed(() => uploadable.value && !paused.value);
 const steps = computed(() => progressSteps(props.progress, paymentCopy.value));
 const showProgress = computed(() => props.progress != null);
 const copied = ref(null);
@@ -342,7 +342,10 @@ function submitEvidence(event) {
             <h2 class="font-heading text-base font-semibold text-ink">
                 {{ t(copy, 'payment.title') }}
             </h2>
-            <p class="mt-1 text-sm text-secondary [overflow-wrap:anywhere]">
+            <p
+                v-if="!paused"
+                class="mt-1 text-sm text-secondary [overflow-wrap:anywhere]"
+            >
                 {{ t(copy, 'payment.direct_notice', { seller: organization.name }) }}
             </p>
 
@@ -423,19 +426,19 @@ function submitEvidence(event) {
             </template>
 
             <p
-                v-else
+                v-else-if="!paused"
                 class="mt-3 rounded-lg bg-status-waiting-tint px-3 py-2 text-sm text-status-waiting"
             >
                 {{ t(copy, 'payment.no_methods') }}
             </p>
 
             <p
-                v-if="uploadsPaused"
-                class="mt-4 flex items-start gap-2 bg-status-cancelled-tint px-3 py-2 text-sm text-status-cancelled"
+                v-if="paused"
+                class="mt-3 flex items-start gap-2 bg-status-cancelled-tint px-3 py-2 text-sm text-status-cancelled"
                 role="status"
             >
                 <span aria-hidden="true">⏸</span>
-                <span>{{ t(copy, 'payment.uploads_paused') }}</span>
+                <span>{{ t(copy, 'payment.paused') }}</span>
             </p>
 
             <template v-if="canUpload">

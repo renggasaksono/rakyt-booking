@@ -65,7 +65,7 @@ Source of UI wording: [design mockup](../design/README.md).
 | seller cancellation | batalkan pesanan | The seller cancels a holding booking: `cancelled` with `cancel_reason = seller`, seats returned; refunds stay outside Rakyt (F-007, ADR-0003). |
 | last activity | aktivitas terakhir | In the admin seller directory: when the organization's owner last signed in successfully (`users.last_login_at`); "Belum pernah masuk" until the first sign-in. F-012. |
 | platform admin | admin | Rakyt operator (the product owner in the MVP) with access to `/admin` across organizations. Not a member of any organization. ADR-0011. |
-| suspended (organization) | ditangguhkan | Organization blocked from new activity by the platform admin (with a required reason; reactivated the same way): its link shows "tidak tersedia", no new bookings or evidence uploads, its members cannot sign in. Data, existing bookings and holds' expiry are unchanged. F-014, ADR-0040. |
+| suspended (organization) | ditangguhkan | Organization blocked from new activity by the platform admin (with a required reason; reactivated the same way): its link shows "tidak tersedia", no new bookings, payment instructions or evidence uploads, its members cannot sign in. Data, existing bookings and holds' expiry are unchanged. F-014, ADR-0040. |
 
 ## Booking & payment statuses
 

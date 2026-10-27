@@ -103,12 +103,13 @@ class ResolvePublicOrganization
 
     /**
      * The customer's own booking behind its token (F-005 AC-29, F-006): the
-     * page, its evidence, the QRIS image and the upload. These stay reachable
-     * while the seller is suspended — the booking record stays valid (F-014).
+     * page, its evidence and the upload. These stay reachable while the seller
+     * is suspended — the booking record stays valid (F-014). The seller's QRIS
+     * image does not: no payment instructions while suspended (F-014 Q1).
      */
     public static function isBookingRecord(Request $request): bool
     {
-        return $request->routeIs('public.booking.show', 'public.booking.evidence', 'public.booking.evidence.show', 'public.booking.qris');
+        return $request->routeIs('public.booking.show', 'public.booking.evidence', 'public.booking.evidence.show');
     }
 
     /**

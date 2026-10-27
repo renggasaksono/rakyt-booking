@@ -248,7 +248,7 @@ class BookingPageTest extends TestCase
         // F-016 AC-7: `self` is the page's own private URL (copy-link + print proof).
         $this->assertSame(['home', 'evidence_upload', 'evidence_show', 'self'], array_keys($props['urls']));
         // F-014 AC-6: whether uploads are paused for a suspended seller.
-        $this->assertSame(['methods', 'uploads_paused'], array_keys($props['payment']));
+        $this->assertSame(['methods', 'paused'], array_keys($props['payment']));
 
         // The evidence/upload URLs legitimately carry this booking's own token (the
         // page itself sits at the token URL); nothing else leaks ids or another booking.

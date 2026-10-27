@@ -1,7 +1,7 @@
 ---
 id: 0040
 title: Seller suspension — where it is enforced, and what stays reachable
-status: proposed
+status: accepted
 date: 2026-10-27
 deciders: [Rengga]
 related: [F-014, F-012, F-015, F-002, F-005, F-006, ADR-0006, ADR-0011, ADR-0026, ADR-0038, ADR-0039]
@@ -43,10 +43,12 @@ booking page (`/<slug>/pesanan/<token>`, ADR-0027) does while the seller is susp
   by default: a new public route is unavailable for a suspended seller unless it is added to
   `ResolvePublicOrganization::isBookingRecord()`. Date requests have no endpoint (F-004 is a WhatsApp handoff on the
   trip page), so hiding the page removes them.
-- **The customer's own booking stays reachable.** The token routes — booking page, own evidence, QRIS image and the
-  upload — are the `isBookingRecord()` allowlist: "paid booking records stay valid", so a customer keeps their
-  reference, status and proof. The page shows a neutral notice instead of the upload button
-  (`payment.uploads_paused`), and the upload endpoint refuses before storing anything.
+- **The customer's own booking stays reachable — without payment instructions.** The token routes — booking page,
+  own evidence and the upload — are the `isBookingRecord()` allowlist: "paid booking records stay valid", so a
+  customer keeps their reference, status and proof. The seller's payment instructions do not stay (F-014 Q1,
+  decided before acceptance): `BookingPresenter` sends no payment methods while suspended, the QRIS image route is
+  not on the allowlist (it renders the unavailable page), and one neutral notice (`payment.paused`) replaces both the
+  instructions and the upload button. The upload endpoint refuses before storing anything.
 - **Races are decided under the organization lock.** `BookingService::create()` already locks the organization row
   first (ADR-0026 §3); it now refuses when that locked row is suspended (after a replay check, which creates nothing).
   `uploadEvidence()` takes a **shared** lock on the organization row before the departure and booking (same lock
@@ -61,10 +63,9 @@ booking page (`/<slug>/pesanan/<token>`, ADR-0027) does while the seller is susp
   suspension cannot lose a race with a booking; reactivation is a single row change with nothing to restore.
 - Costs: every seller request already loads the membership's organization, so the check is free there; sign-in and
   the `Login` listener add one membership query. The unavailable page is rendered by middleware, before
-  `HandleInertiaRequests`, so it carries no shared props (it needs none). A suspended seller's customers still see the
-  seller's payment instructions on their booking page while uploads are paused (see F-014 Q1).
-- Follow-ups: F-014 Q1 (hide payment instructions while suspended?) is a product call; any new public route must
-  decide whether it belongs to `isBookingRecord()`.
+  `HandleInertiaRequests`, so it carries no shared props (it needs none). A customer with an unpaid booking at a
+  suspended seller cannot pay through Rakyt's page until reactivation; their hold expires as usual.
+- Follow-ups: any new public route must decide whether it belongs to `isBookingRecord()`.
 
 ## Alternatives considered
 
