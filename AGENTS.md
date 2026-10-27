@@ -89,6 +89,11 @@ checkout made before the rename may still show `Pages/`: fix it once with `mv re
 - Admin writes (F-015, ADR-0038): record with `Actor::platformAdmin($admin)` and, where the action needs one, `AuditLog::record(…, reason:)` in the change's transaction; add every new non-GET `admin.*` route to `AdminAuditRecordingTest::ADMIN_WRITE_ROUTES` with its audit action. Audit events are read only in `app/Admin/Queries/AuditEventQueries` — seller code never reads `audit_events` (a guard test lists the exceptions). Redaction rules live in `App\Audit\AuditRedaction`.
 - Inertia merges shared props (`HandleInertiaRequests::share()`: `errors`, `flash`, `seller`, `admin`, `account`, …) and page props **shallowly**: a page prop with the same name silently replaces the shared one (e.g. an Akun `account` prop once hid the verification banner's `copy`/`urls`). Never name a page prop after a shared key.
 - `Model::shouldBeStrict()` is on outside production: accessing an attribute a model instance never loaded throws (`MissingAttributeException`), and mass-assigning a non-fillable key throws instead of dropping it. A column with only a DB default (e.g. a boolean flag) is absent on a freshly made/factory instance — give it a `protected $attributes` default so middleware and `share()` can read it everywhere, not only after a DB reload.
+- Seller suspension (F-014, ADR-0040): change `organizations.status` and its `suspended_*` columns only through
+  `App\Organizations\OrganizationSuspension` (a check constraint ties them together; in tests use
+  `Tests\Support\SuspendsSellers`, never a bare `forceFill(['status' => …])`). `ResolveCurrentOrganization` signs a
+  suspended seller out on any request, so no seller page needs its own check. A new public route is "tidak tersedia"
+  for a suspended seller unless it is added to `ResolvePublicOrganization::isBookingRecord()` (the customer's token pages).
 - Public endpoints get a named limiter (`throttle:public-booking`, …); customer token pages get `no-referrer`.
 - Public pages (`/<slug>`, `/<slug>/<trip>`, F-002) are *fallback* routes that run without a session (no
   `StartSession`, CSRF or `ResolveCurrentOrganization`): the organization comes from the slug (`ResolvePublicOrganization`). Read trips via `PublicVisibility::trips()`, add fields to
