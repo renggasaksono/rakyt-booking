@@ -13,7 +13,8 @@ use Illuminate\Http\Request;
  * always renders.
  *
  * The search term is read as exactly one of:
- * - a booking reference (`RKB-BRM-1024-0142`, any case) — exact match (AC-1);
+ * - a booking reference (`RKB-BRM-1024-0142`, any case, segments split by
+ *   hyphens or spaces) — exact match (AC-1);
  * - a full Indonesian mobile number in any F-005 format (`0812…`, `+62 812-…`,
  *   `62812…`) — normalised to E.164 and matched exactly (AC-2);
  * - text — part of the customer's name, or of the seller's name or slug.
@@ -29,8 +30,11 @@ final readonly class AdminBookingFilters
 
     public const SEARCH_TEXT = 'text';
 
-    /** RKB-<booking code>-<MMDD>-<NNNN…> (ADR-0026 §5); bookings.reference is varchar(24). */
-    private const REFERENCE_PATTERN = '/^RKB-[A-Z]{3}[A-Z0-9]?-\d{4}-\d{4,11}$/i';
+    /**
+     * RKB-<booking code>-<MMDD>-<NNNN…> (ADR-0026 §5); bookings.reference is varchar(24).
+     * Segments may be split by spaces as well (`RKB BRM 1024 0142`, as read out or retyped).
+     */
+    private const REFERENCE_PATTERN = '/^RKB[ -]+([A-Z]{3}[A-Z0-9]?)[ -]+(\d{4})[ -]+(\d{4,11})$/i';
 
     /** Only digits and phone punctuation: the term is meant as a number. */
     private const PHONE_LIKE_PATTERN = '/^[\d\s+\-().]+$/';
@@ -91,8 +95,8 @@ final readonly class AdminBookingFilters
      */
     public function reference(): ?string
     {
-        return $this->search !== null && preg_match(self::REFERENCE_PATTERN, $this->search) === 1
-            ? strtoupper($this->search)
+        return $this->search !== null && preg_match(self::REFERENCE_PATTERN, $this->search, $segments) === 1
+            ? strtoupper('RKB-'.$segments[1].'-'.$segments[2].'-'.$segments[3])
             : null;
     }
 

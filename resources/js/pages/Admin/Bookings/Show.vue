@@ -5,6 +5,7 @@ import AuditEventCard from '../../../components/AuditEventCard.vue';
 import BookingStatusPill from '../../../components/BookingStatusPill.vue';
 import StatusBadge from '../../../components/StatusBadge.vue';
 import AdminLayout from '../../../layouts/AdminLayout.vue';
+import { formatPhone } from '../../../lib/booking.js';
 import { SEAT_SEGMENT_CLASSES, seatSegments } from '../../../lib/dashboard.js';
 import { t } from '../../../lib/text.js';
 
@@ -108,7 +109,7 @@ defineProps({
                             {{ t(copy, 'detail.phone') }}
                         </dt>
                         <dd class="font-mono text-ink">
-                            {{ booking.customer_phone }}
+                            {{ formatPhone(booking.customer_phone) }}
                         </dd>
                         <dt class="font-heading font-semibold text-ink">
                             {{ t(copy, 'detail.participants') }}

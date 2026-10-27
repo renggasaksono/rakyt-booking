@@ -48,8 +48,12 @@ class RedactSensitiveData implements ProcessorInterface
      */
     private const PRIVATE_MEDIA_PATH_PATTERN = '~org(?:\\\\?/)[\w.-]+(?:\\\\?/)(?:evidence|payments)(?:\\\\?/)[^\s"\'\\\\]+~i';
 
-    /** The customer booking token is a path segment: /<slug>/pesanan/<token> (F-005 AC-40, F-009 R20, ADR-0027 §5). Also JSON-escaped. */
-    private const BOOKING_TOKEN_PATH_PATTERN = '~(\\\\?/pesanan\\\\?/)[^/?#\s"\'\\\\]+~';
+    /**
+     * The customer booking token is a path segment: /<slug>/pesanan/<token> (F-005 AC-40, F-009 R20, ADR-0027 §5). Also
+     * JSON-escaped. `admin` is a reserved slug: /admin/pesanan/<public id> is the admin booking detail (F-013), not a
+     * secret, and stays traceable.
+     */
+    private const BOOKING_TOKEN_PATH_PATTERN = '~(?<!/admin|^admin)(?<!/admin\\\\)(\\\\?/pesanan\\\\?/)[^/?#\s"\'\\\\]+~';
 
     /** The same path URL-encoded, e.g. inside a wa.me `text` that was logged on its own (F-007 AC-24). */
     private const ENCODED_BOOKING_TOKEN_PATTERN = '~(%2Fpesanan%2F)[A-Za-z0-9]+~i';
