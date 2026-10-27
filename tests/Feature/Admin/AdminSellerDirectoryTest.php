@@ -99,6 +99,38 @@ class AdminSellerDirectoryTest extends TestCase
         }
     }
 
+    public function test_ac_1_terms_pasted_from_whatsapp_are_normalised_before_matching(): void
+    {
+        $match = $this->seller('bromo', 'Bromo Adventure', ['whatsapp' => '+6281234567890']);
+        $this->seller('kencana', 'Kencana Trip', ['whatsapp' => '+6285700001111']);
+        $admin = $this->platformAdmin();
+
+        $terms = [
+            "\u{202A}+62 812-3456-7890\u{202C}",    // Bidi embedding WhatsApp adds on copy.
+            "\u{FEFF}0812\u{2011}3456\u{2011}7890", // BOM and non-breaking hyphens.
+            "+62 812\u{2212}3456\u{2013}7890",      // Minus sign and en dash.
+            '０８１２３４５６７８９０',                    // Full-width digits.
+            "\u{2066}Bromo Adventure\u{2069}",      // A name, isolated.
+            'ｂｒｏｍｏ',
+        ];
+
+        foreach ($terms as $term) {
+            $this->assertSame([$match->id()], $this->ids($admin, ['cari' => $term]), json_encode($term));
+        }
+
+        $this->actingAsConfirmedAdmin($admin)->get(route('admin.sellers.index', ['cari' => "\u{202A}+62 812-3456-7890\u{202C}"]))
+            ->assertInertia(fn ($page) => $page->where('filters.cari', '+62 812-3456-7890'));
+
+        // The organization picker's lookup shares the term.
+        $this->actingAsConfirmedAdmin($admin)->getJson(route('admin.sellers.lookup', ['cari' => "\u{202A}bromo\u{202C}"]))
+            ->assertJsonPath('organizations.0.slug', 'bromo')
+            ->assertJsonCount(1, 'organizations');
+
+        // Other control characters still drop the term.
+        $this->actingAsConfirmedAdmin($admin)->get(route('admin.sellers.index', ['cari' => "bromo\x07"]))
+            ->assertInertia(fn ($page) => $page->where('filters.cari', null));
+    }
+
     public function test_ac_1_results_are_paginated(): void
     {
         $this->freezeClock('2026-10-01 09:00');

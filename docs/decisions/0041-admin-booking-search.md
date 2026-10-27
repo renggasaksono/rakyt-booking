@@ -1,7 +1,7 @@
 ---
 id: 0041
 title: Admin booking search — one search box, a joined cross-organization list, indexes, phone only on the detail
-status: proposed
+status: accepted
 date: 2026-10-27
 deciders: [Rengga]
 related: [F-013, F-012, F-015, F-005, F-006, F-007, ADR-0011, ADR-0021, ADR-0026, ADR-0039]
@@ -34,6 +34,9 @@ technical details open:
     number is not a phone search (unlike the seller's own list, which matches trailing digits within one organization);
   - anything else → part of the customer's name, or of the seller's name or slug (`ILIKE`, wildcards escaped).
   Terms are validated like F-012's (2–100 characters, UTF-8, no control characters); invalid filters are dropped.
+  Before that the shared term normaliser drops invisible format characters (the bidi marks WhatsApp adds when a number
+  is copied, zero-width spaces, a BOM), applies NFKC (full-width digits and letters) and reads every Unicode dash as a
+  hyphen; a reference may separate its segments with spaces (`RKB BRM 1024 0142`).
 - **The list is one joined query** in `App\Admin\Queries\AdminBookingQueries`: `bookings` joined to `trip_departures`,
   `trips` and `organizations` on the composite `(organization_id, id)` keys (`bookings.organization_id =
   trip_departures.organization_id AND bookings.trip_departure_id = trip_departures.id`, and so on), so a row can never
@@ -43,11 +46,12 @@ technical details open:
   sums each read with `organization_id` = the booking's organization.
 - **Four indexes** (migration `2026_10_27_000005`): `bookings (reference)`, `bookings (customer_phone)`,
   `bookings (created_at, id)` and `trip_departures (start_date)`, for the exact lookups, the newest-first list and the
-  departure-date filter. Name search is a substring `ILIKE` with no index: it walks `(created_at, id)` backwards and
-  stops at 26 matches, which is fast for names that occur and degrades to a scan for one that does not. A `pg_trgm`
+  departure-date filter. Name search is a substring `ILIKE` with no index. It does not walk `(created_at, id)`: for a
+  name that matches nothing, PostgreSQL plans a parallel sequential scan of `bookings` with a hash join to the other
+  tables (about 124 ms at 500 000 bookings). A `pg_trgm`
   GIN index is the follow-up when bookings reach the low millions — it needs the extension on the managed database,
   so it is not added now.
-- **One status filter.** ADR-0026 §1 keeps one status column on `bookings` for both booking and payment state
+- **One status filter** (confirmed by Rengga, 2026-10-27: no separate payment-status filter). ADR-0026 §1 keeps one status column on `bookings` for both booking and payment state
   (`awaiting_payment`, `needs_review`, `paid`, `rejected`, `cancelled`, `completed`); evidence and the seller's
   verification live in `payment_records`, not in a second status. The spec's "booking status, payment status" filters
   are therefore one select over that set. The detail shows the payment record (amount due, evidence and upload time,

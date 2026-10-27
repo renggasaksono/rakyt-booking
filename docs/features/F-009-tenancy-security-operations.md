@@ -136,6 +136,8 @@ Operations follow ADR-0016.
 - [ ] **B11c (auto) Staff-assisted recovery:** Given Rakyt staff run the recovery artisan command (never ad-hoc SQL) to set a new verified email for the account, then all sessions are revoked, a reset link goes to the new email, payment-instruction changes are blocked for 24 hours, and `auth.account_recovered` is audited with actor `rakyt_staff:<name>`.
 - [ ] **B12 (auto) Email change:** Given a signed-in seller changes their sign-in email (current password required), then the change takes effect at once and the new address must be verified again; the old address is told about the change, other sessions are revoked, `auth.email_changed` is audited with the old and new email, and payment-instruction changes are blocked for 24 hours. *(Reworded 2026-10-19 per F-001 Q15, decided by Rengga: at once instead of after verifying the new address. Built in F-001 A11 except the 24-hour block — F-001 Q16, a pre-pilot gate.)*
 
+*Note (2026-10-27, from F-013):* when setting up the web server (access logs) and the error tracker (B1), scrub the `cari` query parameter as well — seller and admin search terms carry customer names and phone numbers, and the app's own log redaction (A24) does not reach those logs.
+
 ### Slice C — Hardening (week 6)
 
 - [ ] **C1** A review lists every seller-owned resource and route shipped in P0 (at least: organizations profile, organization members, trips, trip media, departures, bookings, date requests, payment instructions, payment records, payment evidence, audit events) and confirms each has a policy and a passing cross-tenant test (A2/A3, plus A5 for public routes). Gaps are launch-blocking.

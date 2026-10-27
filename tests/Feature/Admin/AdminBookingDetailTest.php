@@ -276,6 +276,11 @@ class AdminBookingDetailTest extends TestCase
         $response = $this->show();
 
         $response->assertInertia(fn ($page) => $page->where('booking.customer_phone', '+6281299887766'));
+        // Shown grouped as on the customer's pages (`+62 812 9988 7766`), not raw E.164.
+        $this->assertStringContainsString(
+            'formatPhone(booking.customer_phone)',
+            (string) file_get_contents(resource_path('js/pages/Admin/Bookings/Show.vue')),
+        );
 
         foreach ([$booking->access_token, $booking->access_token_hash, $booking->submission_key, '/pesanan/'.$booking->access_token, 'CATATAN-PELANGGAN'] as $secret) {
             $response->assertDontSee($secret, false);
