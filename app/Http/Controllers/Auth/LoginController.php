@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Admin\AdminArea;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Onboarding\OnboardingProgress;
@@ -60,6 +61,11 @@ class LoginController extends Controller
         }
 
         $request->session()->regenerate();
+
+        // F-010: a platform admin never follows a stale seller URL.
+        if ($request->user()->is_platform_admin) {
+            AdminArea::keepIntendedInside($request);
+        }
 
         return redirect()->intended($progress->landingUrl($request->user()));
     }

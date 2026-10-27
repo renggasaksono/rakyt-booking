@@ -7,6 +7,7 @@ use App\Audit\Actor;
 use App\Audit\AuditAction;
 use App\Audit\AuditLog;
 use App\Models\User;
+use App\Tenancy\Middleware\ResolveCurrentOrganization;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -14,7 +15,8 @@ use Illuminate\Support\Facades\DB;
  * Grant platform-admin access and enrol TOTP two-factor (F-010, ADR-0011).
  * The only way the flag is ever set; it can never be set over HTTP. The grant
  * is audited (F-010 AC-4). The secret is shown once, for the admin to add to
- * their authenticator app.
+ * their authenticator app. A seller's account is refused: the admin is never a
+ * member of any organization (F-010).
  */
 class GrantPlatformAdminCommand extends Command
 {
@@ -30,6 +32,12 @@ class GrantPlatformAdminCommand extends Command
 
         if ($user === null) {
             $this->error("No user found with email {$email}.");
+
+            return self::FAILURE;
+        }
+
+        if (ResolveCurrentOrganization::membershipOf($user) !== null) {
+            $this->error("{$email} is a member of an organization. The platform admin must be a separate account.");
 
             return self::FAILURE;
         }

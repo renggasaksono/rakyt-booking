@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Admin\AdminArea;
 use App\Admin\AdminSession;
 use App\Admin\TwoFactorAuthenticator;
 use App\Http\Controllers\Controller;
@@ -45,6 +46,7 @@ class TwoFactorChallengeController extends Controller
         // A fresh factor is a privilege change: re-key the session (F-001 A-style).
         $request->session()->regenerate();
         AdminSession::confirm($request);
+        AdminArea::keepIntendedInside($request);
 
         return redirect()->intended(route('admin.dashboard'));
     }

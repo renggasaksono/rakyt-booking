@@ -65,8 +65,14 @@ Route::get('/verifikasi/{id}/{hash}', [EmailVerificationController::class, 'veri
     ->middleware(['no-referrer', 'throttle:6,1'])
     ->name('verification.verify');
 
-Route::middleware('auth')->group(function () {
-    Route::post('/keluar', [LoginController::class, 'destroy'])->name('logout');
+// Shared with the platform admin: the TOTP challenge and the admin shell sign out here.
+Route::post('/keluar', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
+
+/*
+| Seller-only, like every `auth` route outside /admin: the platform admin is
+| not a tenant (F-010, ADR-0011), so `not-platform-admin` turns them away.
+*/
+Route::middleware(['auth', 'not-platform-admin'])->group(function () {
     Route::post('/verifikasi/kirim-ulang', [EmailVerificationController::class, 'send'])->middleware('throttle:verification-resend')->name('verification.send');
 
     Route::get('/pengaturan/akun', [AccountController::class, 'edit'])->name('settings.account');
@@ -137,9 +143,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 /*
 | Seller app. A seller without an organization goes to onboarding step 1
-| (E1); one still in the guided flow resumes it (E2).
+| (E1); one still in the guided flow resumes it (E2). The platform admin is
+| turned away first (F-010).
 */
-Route::middleware(['auth', 'organization', 'onboarded'])->group(function () {
+Route::middleware(['auth', 'not-platform-admin', 'organization', 'onboarded'])->group(function () {
     // "Hari ini" (F-007 AC-1): sellers land here after sign-in and onboarding.
     Route::get('/hari-ini', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', fn () => redirect()->route('dashboard'));
