@@ -14,7 +14,6 @@ use App\Organizations\BookingSlug;
 use App\Trips\TripPresenter;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
-use Illuminate\Support\Collection;
 
 /**
  * "Hari ini" (F-007 section B, mockups 1e/2f). Every read goes through the
@@ -155,59 +154,20 @@ final class DashboardPresenter
             ->get()
             ->each(fn (TripDeparture $departure) => $departure->trip->setRelation('organization', $organization));
 
-        $seats = $this->seatBreakdown($departures);
+        // AC-12: one grouped seat query (SeatBreakdown).
+        $seats = SeatBreakdown::sums(Booking::query(), $departures->modelKeys());
 
         return $departures->map(function (TripDeparture $departure) use ($seats, $now, $organization) {
-            $paid = $seats[$departure->getKey()]['paid'] ?? 0;
-            $held = $seats[$departure->getKey()]['held'] ?? 0;
             $open = $departure->isOpen() && ! $departure->deadlinePassed($now);
 
             return [
                 ...$this->trips->departure($departure),
                 'trip' => ['name' => $departure->trip->name],
-                'seats' => [
-                    'capacity' => $departure->capacity,
-                    'paid' => $paid,
-                    'held' => $held,
-                    'empty' => max(0, $departure->capacity - $departure->seats_taken),
-                ],
+                'seats' => SeatBreakdown::seats($departure, $seats),
                 'closes_on' => $open
                     ? CarbonImmutable::instance($departure->booking_deadline_at)->setTimezone($organization->timezone)->toDateString()
                     : null,
             ];
         })->values()->all();
-    }
-
-    /**
-     * AC-12: lunas = Σ paid participants; ditahan = Σ awaiting_payment +
-     * needs_review (an expired, unreleased hold still holds its seats). One
-     * grouped query; lunas + ditahan = seats_taken (seat invariant).
-     *
-     * @param  Collection<int, TripDeparture>  $departures
-     * @return array<int, array{paid: int, held: int}>
-     */
-    private function seatBreakdown(Collection $departures): array
-    {
-        if ($departures->isEmpty()) {
-            return [];
-        }
-
-        $sums = Booking::query()
-            ->whereIn('trip_departure_id', $departures->modelKeys())
-            ->whereIn('status', BookingStatus::holdingValues())
-            ->groupBy('trip_departure_id', 'status')
-            ->selectRaw('trip_departure_id, status, SUM(participants) AS seats')
-            ->get();
-
-        $out = [];
-
-        foreach ($sums as $row) {
-            $id = (int) $row->getAttribute('trip_departure_id');
-            $key = $row->getAttribute('status') === BookingStatus::Paid ? 'paid' : 'held';
-            $out[$id] ??= ['paid' => 0, 'held' => 0];
-            $out[$id][$key] += (int) $row->getAttribute('seats');
-        }
-
-        return $out;
     }
 }

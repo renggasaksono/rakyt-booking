@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Organizations\BookingCode;
+use App\Organizations\OrganizationStatus;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,9 +26,10 @@ class Organization extends Model
 
     /**
      * The booking code is derived once at creation and the booking counter is
-     * moved only by App\Bookings\BookingService (F-005 AC-17, AC-17b).
+     * moved only by App\Bookings\BookingService (F-005 AC-17, AC-17b). The
+     * account status changes only through the admin (F-014), never a payload.
      */
-    protected $guarded = ['id', 'public_id', 'booking_code', 'last_booking_number'];
+    protected $guarded = ['id', 'public_id', 'booking_code', 'last_booking_number', 'status'];
 
     /** Database defaults, so new instances carry them too (ADR-0014, F-003 Q6). */
     protected $attributes = [
@@ -35,6 +37,7 @@ class Organization extends Model
         'default_booking_deadline_preset' => 'h3',
         'plan' => 'free',
         'last_booking_number' => 0,
+        'status' => 'active',
     ];
 
     protected function casts(): array
@@ -43,6 +46,7 @@ class Organization extends Model
             'onboarding_skipped_at' => 'datetime',
             'first_published_at' => 'datetime',
             'last_booking_number' => 'integer',
+            'status' => OrganizationStatus::class,
         ];
     }
 

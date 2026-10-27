@@ -80,3 +80,7 @@ None — seller visibility resolved 2026-10-23 (see changelog).
   `(created_at, id)` and `(subject_type, subject_id)`; the organization filter is validated with `exists()` instead of
   loading every organization (searchable picker deferred to F-012's search); label test covers every actor and subject
   type; unaudited admin write routes need a justification; AC-1 rollback test for `admin:revoke`.
+- 2026-10-27 — With F-012: the organization filter is a searchable picker over the seller lookup
+  (`GET /admin/penjual/cari`, ≤ 10 matches); the page gets only the selected organization (`selected_organization`),
+  no longer every organization (`AuditEventQueries::organizations()` removed). The event card is a shared component
+  (`AuditEventCard.vue`), also used on the seller detail page.

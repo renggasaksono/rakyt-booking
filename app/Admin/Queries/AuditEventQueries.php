@@ -69,18 +69,6 @@ class AuditEventQueries
     }
 
     /**
-     * Every organization, for the organization filter. Loads them all: fine
-     * while sellers are few; a searchable picker replaces it later (with
-     * F-012's search).
-     *
-     * @return Collection<int, Organization>
-     */
-    public function organizations(): Collection
-    {
-        return Organization::query()->orderBy('name')->orderBy('id')->get(['id', 'name', 'slug']);
-    }
-
-    /**
      * Whether an organization exists, to validate the organization filter
      * without loading every organization.
      */

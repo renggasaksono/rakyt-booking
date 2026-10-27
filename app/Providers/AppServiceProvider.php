@@ -5,10 +5,13 @@ namespace App\Providers;
 use App\Bookings\BookingDepartureBookings;
 use App\Payments\ActivePaymentMethods;
 use App\Security\RateLimits;
+use App\Security\RecordLastLogin;
 use App\Tenancy\CurrentOrganization;
 use App\Trips\Contracts\DepartureBookings;
 use App\Trips\Contracts\PaymentReadiness;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -35,5 +38,8 @@ class AppServiceProvider extends ServiceProvider
         Model::shouldBeStrict(! $this->app->isProduction());
 
         RateLimits::register();
+
+        // F-012: "last activity" is the last successful sign-in.
+        Event::listen(Login::class, RecordLastLogin::class);
     }
 }
