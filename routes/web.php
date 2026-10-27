@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminAuditController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminSellerController;
 use App\Http\Controllers\Admin\TwoFactorChallengeController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\LoginController;
@@ -109,6 +110,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         // F-015: read-only — audit events are append-only, so no write routes.
         Route::get('/audit', [AdminAuditController::class, 'index'])->name('audit.index');
+
+        // F-012: read-only seller directory. `cari` before `{organization}`.
+        Route::get('/penjual', [AdminSellerController::class, 'index'])->name('sellers.index');
+        Route::get('/penjual/cari', [AdminSellerController::class, 'lookup'])->name('sellers.lookup');
+        Route::get('/penjual/{organization}', [AdminSellerController::class, 'show'])->name('sellers.show');
+        // AC-7: payment evidence only through a short-lived signed URL issued to the admin.
+        Route::get('/penjual/{organization}/pesanan/{booking}/bukti', [AdminSellerController::class, 'evidence'])
+            ->name('sellers.evidence');
+        Route::get('/penjual/{organization}/pesanan/{booking}/bukti/lihat', [AdminSellerController::class, 'showEvidence'])
+            ->middleware(['signed', 'no-referrer'])
+            ->name('sellers.evidence.show');
     });
 });
 

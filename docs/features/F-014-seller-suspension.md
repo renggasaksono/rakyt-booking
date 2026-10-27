@@ -67,3 +67,7 @@ None — all four suspension-effect questions resolved 2026-10-23 (see "Suspensi
 
 - 2026-10-17 — created
 - 2026-10-23 — **ready.** Suspension effects decided (Rengga): public page shows a neutral "tidak tersedia" state (not 404) via `PublicVisibility`; seller sign-in blocked entirely (no read-only mode in P0); unpaid holds expire normally while evidence uploads are blocked; paid/upcoming bookings are never auto-cancelled or auto-notified (admin handles comms out-of-band). Added `status` + `suspended_at`/`suspended_by`/`suspended_reason` columns and ACs for each effect.
+- 2026-10-27 — F-012 added `organizations.status` (`active` default / `suspended`, check constraint, cast to
+  `App\Organizations\OrganizationStatus`, guarded — set with `forceFill`) for its status filter (ADR-0039). F-014
+  adds `suspended_at` / `suspended_by` / `suspended_reason` and the actions on the seller detail page's "Akun"
+  section (`resources/js/pages/Admin/Sellers/Show.vue`, `/admin/penjual/{id}`).

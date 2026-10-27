@@ -57,7 +57,8 @@ npm test                  # Vitest (UI helpers)
 ```
 
 For plain-HTTP local dev set `SESSION_SECURE_COOKIE=false` in `.env` (or run `herd secure`).
-Never drop or reset the dev database to "start clean"; tests reset their own test database.
+Never drop or reset the dev database to "start clean"; tests reset their own test database. There is no `.env.testing`:
+`php artisan migrate --env=testing` migrates the **dev** database — just run `php artisan test`.
 
 When you add or change an npm dependency, regenerate `package-lock.json` with the latest npm 11 (`npx -y npm@11 install` may resolve to your local npm; pin the newest 11.x, e.g. `npx -y npm@11.21.1 install --package-lock-only`). Older local npm drops optional peer entries (e.g. `react` under `@laravel/multiplex`), and CI's `npm ci` then fails.
 
@@ -79,6 +80,12 @@ checkout made before the rename may still show `Pages/`: fix it once with `mv re
 - All UI copy lives in `lang/id/*.php` (Vue pages get it as props); never hard-code Bahasa strings in views.
 - Audited actions go through `App\Audit\AuditLog`, inside the same `DB::transaction` as the change. A seller-level event must resolve an organization (it throws otherwise). A **platform-level** admin event (the admin is a member of no organization, F-010) is the only exception: add the case to `AuditAction::isPlatformLevel()`; `AuditLog` then stores it with a null `organization_id`, allowed because `AuditEvent implements OrganizationOptional` (and `audit_events.organization_id` is nullable). Never make a seller model `OrganizationOptional`.
 - Admin area (F-010): the `/admin` route group sits behind `auth` + the `platform-admin` gate (and `platform-admin.pending` guards only the TOTP challenge) — never `organization`/`onboarded`, since the admin is not a tenant. The flag `users.is_platform_admin` and `two_factor_secret` are **not** mass-assignable (set only by `admin:grant`/`admin:revoke`); access needs required TOTP (hand-rolled on `pragmarx/google2fa`, not Fortify) within a rolling idle window (`config('rakyt.admin.session_lifetime')`). Admin pages hang on `AdminLayout.vue` and read the shared `admin` Inertia prop.
+- Admin reads (F-012, ADR-0039): the admin has no current organization, so the tenant scope returns **nothing** — also
+  in eager loads and `withCount`. In `app/Admin/Queries` read one organization with
+  `Model::acrossOrganizations()->where('organization_id', …)` and drop the scope on related loads
+  (`with(['departure' => fn ($q) => $q->withoutGlobalScope(OrganizationScope::class)])`); never `runAs()` the seller.
+  Admin URLs take the organization id as a plain string resolved through the query class (no route-model binding), so
+  the gate runs before any lookup and the access tests' literal `{param}` URIs still redirect/403.
 - Admin writes (F-015, ADR-0038): record with `Actor::platformAdmin($admin)` and, where the action needs one, `AuditLog::record(…, reason:)` in the change's transaction; add every new non-GET `admin.*` route to `AdminAuditRecordingTest::ADMIN_WRITE_ROUTES` with its audit action. Audit events are read only in `app/Admin/Queries/AuditEventQueries` — seller code never reads `audit_events` (a guard test lists the exceptions). Redaction rules live in `App\Audit\AuditRedaction`.
 - Inertia merges shared props (`HandleInertiaRequests::share()`: `errors`, `flash`, `seller`, `admin`, `account`, …) and page props **shallowly**: a page prop with the same name silently replaces the shared one (e.g. an Akun `account` prop once hid the verification banner's `copy`/`urls`). Never name a page prop after a shared key.
 - `Model::shouldBeStrict()` is on outside production: accessing an attribute a model instance never loaded throws (`MissingAttributeException`), and mass-assigning a non-fillable key throws instead of dropping it. A column with only a DB default (e.g. a boolean flag) is absent on a freshly made/factory instance — give it a `protected $attributes` default so middleware and `share()` can read it everywhere, not only after a DB reload.

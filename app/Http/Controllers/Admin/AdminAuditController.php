@@ -8,7 +8,6 @@ use App\Admin\Queries\AuditEventQueries;
 use App\Audit\Actor;
 use App\Audit\AuditAction;
 use App\Http\Controllers\Controller;
-use App\Models\Organization;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,10 +38,10 @@ class AdminAuditController extends Controller
         $response = Inertia::render('Admin/AuditLog', [
             'events' => $this->presenter->rows($rows->take(self::PER_PAGE)),
             'filters' => $filters->toArray(),
+            // The organization filter is a searchable picker over the F-012
+            // seller lookup; only the chosen organization is sent.
+            'selected_organization' => $this->selectedOrganization($filters),
             'options' => [
-                'organizations' => $this->queries->organizations()
-                    ->map(fn (Organization $organization) => ['id' => (string) $organization->id, 'name' => $organization->name, 'slug' => $organization->slug])
-                    ->values()->all(),
                 'actor_types' => array_map(fn (string $type) => ['value' => $type, 'label' => __('admin.audit.actor_types.'.$type)], Actor::TYPES),
                 'actions' => array_map(fn (AuditAction $action) => ['value' => $action->value, 'label' => __('admin.audit.actions.'.$action->value)], AuditAction::cases()),
             ],
@@ -54,6 +53,7 @@ class AdminAuditController extends Controller
             'copy' => __('admin.audit'),
             'urls' => [
                 'index' => route('admin.audit.index'),
+                'organization_lookup' => route('admin.sellers.lookup'),
             ],
         ])->toResponse($request);
 
@@ -61,5 +61,19 @@ class AdminAuditController extends Controller
         $response->headers->set('Cache-Control', 'no-store, private');
 
         return $response;
+    }
+
+    /**
+     * @return array{id: string, name: string, slug: string}|null
+     */
+    private function selectedOrganization(AuditEventFilters $filters): ?array
+    {
+        if ($filters->organization === null || $filters->organization === AuditEventFilters::PLATFORM) {
+            return null;
+        }
+
+        $organization = $this->queries->organizationsById([(int) $filters->organization])->first();
+
+        return $organization === null ? null : ['id' => (string) $organization->id, 'name' => $organization->name, 'slug' => $organization->slug];
     }
 }

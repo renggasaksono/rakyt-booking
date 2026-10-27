@@ -246,19 +246,34 @@ class AdminAuditLogTest extends TestCase
             );
     }
 
-    public function test_filter_options_list_organizations_actor_types_and_every_action(): void
+    public function test_filter_options_list_actor_types_and_every_action_but_not_every_organization(): void
     {
         $this->createTenant(['name' => 'Bromo Adventure', 'slug' => 'bromo']);
-        $this->createTenant(['name' => 'Arjuna Trip', 'slug' => 'arjuna']);
         $admin = $this->platformAdmin();
 
         $this->actingAsConfirmedAdmin($admin)->get(route('admin.audit.index'))
             ->assertInertia(fn ($page) => $page
-                ->where('options.organizations.0.name', 'Arjuna Trip')
-                ->where('options.organizations.1.name', 'Bromo Adventure')
+                // F-012: organizations are found with the seller lookup, never all loaded.
+                ->missing('options.organizations')
+                ->where('selected_organization', null)
+                ->where('urls.organization_lookup', route('admin.sellers.lookup'))
                 ->has('options.actor_types', 5)
                 ->has('options.actions', count(AuditAction::cases()))
             );
+    }
+
+    public function test_the_filtered_organization_is_named_for_the_picker(): void
+    {
+        $seller = $this->createTenant(['name' => 'Bromo Adventure', 'slug' => 'bromo']);
+        $admin = $this->platformAdmin();
+
+        $this->actingAsConfirmedAdmin($admin)->get(route('admin.audit.index', ['organisasi' => $seller->id()]))
+            ->assertInertia(fn ($page) => $page
+                ->where('selected_organization', ['id' => (string) $seller->id(), 'name' => 'Bromo Adventure', 'slug' => 'bromo'])
+            );
+
+        $this->actingAsConfirmedAdmin($admin)->get(route('admin.audit.index', ['organisasi' => 'platform']))
+            ->assertInertia(fn ($page) => $page->where('selected_organization', null));
     }
 
     public function test_every_action_actor_type_and_subject_type_has_a_label(): void
@@ -386,10 +401,10 @@ class AdminAuditLogTest extends TestCase
 
         $this->actingAsConfirmedAdmin($admin)->get(route('admin.audit.index'))
             ->assertInertia(fn ($page) => $page
-                ->where('admin.nav.1.key', 'audit')
-                ->where('admin.nav.1.label', __('admin.nav.audit'))
-                ->where('admin.nav.1.url', route('admin.audit.index'))
-                ->where('admin.nav.1.active', true)
+                ->where('admin.nav.2.key', 'audit')
+                ->where('admin.nav.2.label', __('admin.nav.audit'))
+                ->where('admin.nav.2.url', route('admin.audit.index'))
+                ->where('admin.nav.2.active', true)
                 ->where('admin.nav.0.active', false)
             );
     }

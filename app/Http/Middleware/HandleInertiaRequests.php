@@ -179,6 +179,12 @@ class HandleInertiaRequests extends Middleware
                     'active' => $request->routeIs('admin.dashboard'),
                 ],
                 [
+                    'key' => 'sellers',
+                    'label' => __('admin.nav.sellers'),
+                    'url' => route('admin.sellers.index'),
+                    'active' => $request->routeIs('admin.sellers.*'),
+                ],
+                [
                     'key' => 'audit',
                     'label' => __('admin.nav.audit'),
                     'url' => route('admin.audit.index'),

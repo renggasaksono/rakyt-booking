@@ -16,7 +16,8 @@ use Illuminate\Notifications\Notifiable;
 
 // `is_platform_admin` and `two_factor_secret` are deliberately absent: the
 // admin flag and TOTP secret are set only by the admin:grant/admin:revoke
-// commands, never through a mass-assigned HTTP payload (F-010, ADR-0011).
+// commands, never through a mass-assigned HTTP payload (F-010, ADR-0011);
+// `last_login_at` only by App\Security\RecordLastLogin (F-012).
 #[Fillable(['name', 'email', 'password', 'terms_accepted_at', 'signup_started_at'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret'])]
 class User extends Authenticatable implements MustVerifyEmail
@@ -35,6 +36,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'is_platform_admin' => false,
         'two_factor_secret' => null,
         'two_factor_confirmed_at' => null,
+        'last_login_at' => null,
     ];
 
     /**
@@ -53,6 +55,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'is_platform_admin' => 'boolean',
             'two_factor_secret' => 'encrypted',
             'two_factor_confirmed_at' => 'datetime',
+            // F-012: the last successful sign-in ("last activity").
+            'last_login_at' => 'datetime',
         ];
     }
 
