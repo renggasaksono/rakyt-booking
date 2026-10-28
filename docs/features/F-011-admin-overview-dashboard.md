@@ -62,3 +62,4 @@ None — status mapping resolved 2026-10-23 (see changelog).
   is no admin trip list; trips are read per seller) and count trips of suspended sellers too. `trips (status)` index
   added. ADR-0042 proposed. AC-6 checked by layout test only; real-device review pending with the other admin screens.
 - 2026-10-28 — ADR-0042 accepted (Rengga): the published-trips count links to the seller directory filtered to sellers with a published trip.
+- 2026-10-28 — Review fixes: the "Menunggu pembayaran" / "Perlu dicek" cards show their status glyph (◷ / ◐) from `BOOKING_STATUS_STYLES`, and the Aktif / Ditangguhkan links reuse the directory's `ACCOUNT_STATUS_STYLES` instead of re-declaring tint and glyph (`statStyle()` in `adminOverview.js`, Vitest).

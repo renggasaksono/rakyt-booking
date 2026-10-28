@@ -1,7 +1,7 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
-import { formatCount, STAT_TONES } from '../../lib/adminOverview.js';
+import { formatCount, statStyle } from '../../lib/adminOverview.js';
 import { t } from '../../lib/text.js';
 
 /**
@@ -16,6 +16,7 @@ defineProps({
 });
 
 const bookingStats = ['bookings', 'awaiting_payment', 'needs_review'];
+const sellerStatuses = ['active', 'suspended'];
 </script>
 
 <template>
@@ -57,21 +58,15 @@ const bookingStats = ['bookings', 'awaiting_payment', 'needs_review'];
                         </Link>
                         <div class="mt-3 flex flex-wrap gap-2">
                             <Link
-                                :href="stats.sellers.active.url"
-                                class="inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-status-paid-tint px-3 font-heading text-sm font-medium text-status-paid"
-                            >
-                                <span aria-hidden="true">✓</span>
-                                {{ t(copy, 'dashboard.stats.active') }}
-                                <span class="font-semibold">{{ formatCount(stats.sellers.active.count) }}</span>
-                            </Link>
-                            <Link
-                                :href="stats.sellers.suspended.url"
+                                v-for="status in sellerStatuses"
+                                :key="status"
+                                :href="stats.sellers[status].url"
                                 class="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 font-heading text-sm font-medium"
-                                :class="STAT_TONES.suspended"
+                                :class="statStyle(status).className"
                             >
-                                <span aria-hidden="true">⏸</span>
-                                {{ t(copy, 'dashboard.stats.suspended') }}
-                                <span class="font-semibold">{{ formatCount(stats.sellers.suspended.count) }}</span>
+                                <span aria-hidden="true">{{ statStyle(status).glyph }}</span>
+                                {{ t(copy, `dashboard.stats.${status}`) }}
+                                <span class="font-semibold">{{ formatCount(stats.sellers[status].count) }}</span>
                             </Link>
                         </div>
                     </div>
@@ -111,9 +106,14 @@ const bookingStats = ['bookings', 'awaiting_payment', 'needs_review'];
                         class="block min-h-11 rounded-lg border border-ink/10 bg-surface p-4 hover:border-ink/30"
                     >
                         <span
-                            class="inline-block rounded-lg font-heading text-3xl font-semibold"
-                            :class="STAT_TONES[key] ? ['px-2', STAT_TONES[key]] : 'text-ink'"
+                            class="inline-flex items-center gap-2 rounded-lg font-heading text-3xl font-semibold"
+                            :class="statStyle(key) ? ['px-2', statStyle(key).className] : 'text-ink'"
                         >
+                            <span
+                                v-if="statStyle(key)"
+                                aria-hidden="true"
+                                class="text-xl"
+                            >{{ statStyle(key).glyph }}</span>
                             {{ formatCount(stats[key].count) }}
                         </span>
                         <span class="mt-1 block font-heading text-sm font-medium text-ink underline">
