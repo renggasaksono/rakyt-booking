@@ -3,7 +3,7 @@
  * App\Admin\SellerDirectoryFilters, and the organization lookup the audit
  * view's organization picker uses.
  */
-export const SELLER_FILTER_KEYS = ['cari', 'status'];
+export const SELLER_FILTER_KEYS = ['cari', 'status', 'trip'];
 
 /** Shortest term the lookup searches for (SellerDirectoryFilters::SEARCH_MIN). */
 export const LOOKUP_MIN = 2;

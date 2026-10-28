@@ -12,8 +12,9 @@ use Normalizer;
 /**
  * Search and filter of the admin seller directory (F-012 AC-1, AC-2): a term
  * matched against the organization's name, slug or WhatsApp number (the
- * owner's phone), and the account status. Anything invalid is dropped, so the
- * list always renders.
+ * owner's phone), the account status, and — the target of the F-011 overview's
+ * published-trips count — sellers with at least one published trip. Anything
+ * invalid is dropped, so the list always renders.
  */
 final readonly class SellerDirectoryFilters
 {
@@ -21,10 +22,14 @@ final readonly class SellerDirectoryFilters
 
     public const SEARCH_MAX = 100;
 
+    /** `trip=published`: sellers with at least one published trip (F-011). */
+    public const PUBLISHED_TRIPS = 'published';
+
     public function __construct(
         public ?string $search = null,
         public ?OrganizationStatus $status = null,
         public int $page = 1,
+        public bool $withPublishedTrips = false,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -36,6 +41,7 @@ final readonly class SellerDirectoryFilters
             self::term($request->query('cari')),
             OrganizationStatus::tryFrom(is_string($request->query('status')) ? $request->query('status') : ''),
             $page,
+            $request->query('trip') === self::PUBLISHED_TRIPS,
         );
     }
 
@@ -69,6 +75,9 @@ final readonly class SellerDirectoryFilters
     }
 
     /**
+     * Search and status. The published-trip filter reads trips across
+     * organizations, so SellerDirectoryQueries applies it.
+     *
      * @param  Builder<Organization>  $query
      * @return Builder<Organization>
      */
@@ -107,14 +116,20 @@ final readonly class SellerDirectoryFilters
         return array_filter([
             'cari' => $this->search,
             'status' => $this->status?->value,
+            'trip' => $this->trip(),
         ], fn (?string $value) => $value !== null);
     }
 
     /**
-     * @return array{cari: ?string, status: ?string}
+     * @return array{cari: ?string, status: ?string, trip: ?string}
      */
     public function toArray(): array
     {
-        return ['cari' => $this->search, 'status' => $this->status?->value];
+        return ['cari' => $this->search, 'status' => $this->status?->value, 'trip' => $this->trip()];
+    }
+
+    private function trip(): ?string
+    {
+        return $this->withPublishedTrips ? self::PUBLISHED_TRIPS : null;
     }
 }

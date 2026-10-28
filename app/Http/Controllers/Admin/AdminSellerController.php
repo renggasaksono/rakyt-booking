@@ -47,6 +47,7 @@ class AdminSellerController extends Controller
             'filters' => $filters->toArray(),
             'options' => [
                 'statuses' => array_map(fn (OrganizationStatus $status) => ['value' => $status->value, 'label' => $status->label()], OrganizationStatus::cases()),
+                'trips' => [['value' => SellerDirectoryFilters::PUBLISHED_TRIPS, 'label' => __('admin.sellers.filters.published_trips')]],
             ],
             'pagination' => [
                 'page' => $filters->page,

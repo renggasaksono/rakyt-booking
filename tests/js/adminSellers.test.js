@@ -5,6 +5,7 @@ describe('sellerFilterQuery', () => {
     it('keeps only filled filters, trimmed', () => {
         expect(sellerFilterQuery({ cari: ' kencana ', status: null })).toEqual({ cari: 'kencana' });
         expect(sellerFilterQuery({ cari: '', status: 'suspended' })).toEqual({ status: 'suspended' });
+        expect(sellerFilterQuery({ cari: null, status: null, trip: 'published' })).toEqual({ trip: 'published' });
     });
 
     it('ignores unknown keys and the page', () => {
