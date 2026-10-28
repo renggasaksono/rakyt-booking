@@ -51,3 +51,4 @@ Architecture & product decision records. Short, append-only, numbered.
 | [0039](0039-admin-seller-directory-reads.md) | Admin seller directory — single-organization reads, app-signed evidence URLs, sign-in time, status column | accepted | 2026-10-27 |
 | [0040](0040-seller-suspension-enforcement.md) | Seller suspension — where it is enforced, and what stays reachable | accepted | 2026-10-27 |
 | [0041](0041-admin-booking-search.md) | Admin booking search — one search box, a joined cross-organization list, indexes, phone only on the detail | accepted | 2026-10-27 |
+| [0042](0042-admin-overview-counts.md) | Admin overview — live grouped counts, a trips status index, published trips open the sellers that publish one | proposed | 2026-10-28 |
