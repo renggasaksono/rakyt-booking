@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminSellerController;
 use App\Models\Organization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\BuildsAdmins;
+use Tests\Support\BuildsDashboard;
 use Tests\Support\BuildsPublicPages;
 use Tests\Support\BuildsTrips;
 use Tests\Support\InteractsWithTenants;
@@ -20,7 +21,7 @@ use Tests\TestCase;
  */
 class AdminSellerDirectoryTest extends TestCase
 {
-    use BuildsAdmins, BuildsPublicPages, BuildsTrips, InteractsWithTenants, RefreshDatabase, SuspendsSellers;
+    use BuildsAdmins, BuildsDashboard, BuildsPublicPages, BuildsTrips, InteractsWithTenants, RefreshDatabase, SuspendsSellers;
 
     public function test_ac_6_the_directory_and_lookup_are_behind_the_admin_gate(): void
     {
@@ -173,7 +174,7 @@ class AdminSellerDirectoryTest extends TestCase
         $this->actingAsConfirmedAdmin($admin)->get(route('admin.sellers.index', ['status' => 'suspended']))
             ->assertInertia(fn ($page) => $page
                 ->where('sellers.0.status_label', 'Ditangguhkan')
-                ->where('filters', ['cari' => null, 'status' => 'suspended'])
+                ->where('filters', ['cari' => null, 'status' => 'suspended', 'trip' => null])
                 ->where('options.statuses', [
                     ['value' => 'active', 'label' => 'Aktif'],
                     ['value' => 'suspended', 'label' => 'Ditangguhkan'],
@@ -181,16 +182,53 @@ class AdminSellerDirectoryTest extends TestCase
             );
     }
 
+    public function test_filter_by_sellers_with_a_published_trip(): void
+    {
+        // F-011: the overview's published-trips count opens this list.
+        $published = $this->seller('bromo', 'Bromo Adventure');
+        $draftOnly = $this->seller('kencana', 'Kencana Trip');
+        $this->seller('rinjani', 'Rinjani Trek');
+        $this->tripFor($published, ['name' => 'Bromo Sunrise'], published: true);
+        $this->tripFor($published, ['name' => 'Ijen Blue Fire'], published: true);
+        $this->tripFor($draftOnly, ['name' => 'Karimunjawa 3H2M']);
+        $admin = $this->platformAdmin();
+
+        // One row per seller, however many trips it publishes.
+        $this->assertSame([$published->id()], $this->ids($admin, ['trip' => 'published']));
+        $this->assertSame([$published->id()], $this->ids($admin, ['trip' => 'published', 'cari' => 'bromo']));
+        $this->assertSame([], $this->ids($admin, ['trip' => 'published', 'status' => 'suspended']));
+
+        $this->actingAsConfirmedAdmin($admin)->get(route('admin.sellers.index', ['trip' => 'published']))
+            ->assertInertia(fn ($page) => $page
+                ->where('filters', ['cari' => null, 'status' => null, 'trip' => 'published'])
+                ->where('options.trips', [['value' => 'published', 'label' => 'Punya trip tampil']])
+            );
+    }
+
+    public function test_the_published_trip_filter_reads_trips_by_the_organization(): void
+    {
+        $this->tripFor($this->seller('bromo', 'Bromo Adventure'), published: true);
+        $admin = $this->platformAdmin();
+        $this->ids($admin, ['trip' => 'published']);
+
+        $queries = $this->queriesOf(fn () => $this->ids($admin, ['trip' => 'published']));
+        $directory = collect($queries)->first(fn (string $sql) => str_contains($sql, 'from "organizations"') && str_contains($sql, 'exists'));
+
+        // A correlated subquery on (organization_id, status): no join, no duplicate rows.
+        $this->assertNotNull($directory);
+        $this->assertStringContainsString('"trips"."organization_id" = "organizations"."id"', $directory);
+    }
+
     public function test_invalid_filters_are_dropped_and_the_list_still_renders(): void
     {
         $this->seller();
         $admin = $this->platformAdmin();
 
-        $this->actingAsConfirmedAdmin($admin)->get(route('admin.sellers.index').'?status=hapus&halaman=-3&cari[]=x')
+        $this->actingAsConfirmedAdmin($admin)->get(route('admin.sellers.index').'?status=hapus&trip=draft&halaman=-3&cari[]=x')
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->has('sellers', 1)
-                ->where('filters', ['cari' => null, 'status' => null])
+                ->where('filters', ['cari' => null, 'status' => null, 'trip' => null])
                 ->where('pagination.page', 1)
             );
 

@@ -18,11 +18,27 @@ return [
         'signed_in_as' => 'Masuk sebagai :name',
     ],
 
+    // F-011: the overview. Live counts across every seller; each opens its filtered list.
     'dashboard' => [
         'title' => 'Beranda Admin',
-        'heading' => 'Panel Admin Rakyt',
-        'intro' => 'Area internal untuk mengelola platform selama masa pilot.',
-        'empty' => 'Menu lainnya akan muncul di sini seiring fitur admin ditambahkan.',
+        'heading' => 'Ringkasan platform',
+        'intro' => 'Angka terkini dari semua penjual. Ketuk angka untuk melihat daftarnya.',
+        'sellers_section' => 'Penjual',
+        'bookings_section' => 'Pesanan',
+        'stats' => [
+            'sellers' => 'Penjual',
+            'sellers_hint' => 'Semua organisasi penjual yang terdaftar.',
+            'active' => 'Aktif',
+            'suspended' => 'Ditangguhkan',
+            'published_trips' => 'Trip tampil',
+            'published_trips_hint' => 'Lihat penjual yang punya trip tampil.',
+            'bookings' => 'Total pesanan',
+            'bookings_hint' => 'Semua pesanan, apa pun statusnya.',
+            'awaiting_payment' => 'Menunggu pembayaran',
+            'awaiting_payment_hint' => 'Pelanggan belum mengirim bukti bayar.',
+            'needs_review' => 'Perlu dicek',
+            'needs_review_hint' => 'Bukti bayar sudah dikirim, menunggu dicek penjual.',
+        ],
     ],
 
     // F-015: the admin audit view. Read-only; admin events stay platform-internal.
@@ -154,6 +170,9 @@ return [
             'search_placeholder' => 'Nama, link booking, atau nomor WhatsApp',
             'status' => 'Status akun',
             'all_statuses' => 'Semua status',
+            'trip' => 'Trip',
+            'all_trips' => 'Semua penjual',
+            'published_trips' => 'Punya trip tampil',
             'apply' => 'Cari',
             'reset' => 'Hapus filter',
         ],

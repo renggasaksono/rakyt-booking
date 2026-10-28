@@ -9,7 +9,7 @@ import { t } from '../../../lib/text.js';
 /**
  * Penjual (F-012): every seller organization, newest registration first,
  * searchable by name, slug or WhatsApp number and filterable by account
- * status (filters live in the URL). Phone first — sellers are cards, the
+ * status and by having a published trip (F-011's link; filters live in the URL). Phone first — sellers are cards, the
  * filters stack; from 1024 px the filters sit in one row.
  */
 const props = defineProps({
@@ -41,7 +41,7 @@ function apply() {
             </p>
 
             <form
-                class="mt-6 grid gap-3 rounded-lg border border-ink/10 bg-surface p-4 lg:grid-cols-[2fr_1fr_auto] lg:items-end"
+                class="mt-6 grid gap-3 rounded-lg border border-ink/10 bg-surface p-4 lg:grid-cols-[2fr_1fr_1fr_auto] lg:items-end"
                 role="search"
                 :aria-label="t(copy, 'filters.title')"
                 @submit.prevent="apply"
@@ -70,6 +70,21 @@ function apply() {
                             :key="status.value"
                             :value="status.value"
                         >{{ status.label }}</option>
+                    </select>
+                </label>
+
+                <label class="flex flex-col font-heading text-sm font-semibold text-ink">
+                    {{ t(copy, 'filters.trip') }}
+                    <select
+                        v-model="draft.trip"
+                        class="mt-1 min-h-12 rounded-lg border border-ink/20 bg-surface px-2 text-base font-normal"
+                    >
+                        <option :value="null">{{ t(copy, 'filters.all_trips') }}</option>
+                        <option
+                            v-for="trip in options.trips"
+                            :key="trip.value"
+                            :value="trip.value"
+                        >{{ trip.label }}</option>
                     </select>
                 </label>
 

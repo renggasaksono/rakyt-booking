@@ -72,3 +72,5 @@ None — "last activity" resolved 2026-10-23 (see changelog).
   `last_login_at` tests now cover sign-up, password reset and remember-me as well as the login form — all stamp it,
   as ADR-0039 states.
 - 2026-10-27 — ADR-0039 accepted (Rengga).
+- 2026-10-28 — F-011 adds a directory filter `trip=published` ("Trip: Punya trip tampil"), the target of the
+  overview's published-trips count: sellers with at least one published trip, one row each (ADR-0042).

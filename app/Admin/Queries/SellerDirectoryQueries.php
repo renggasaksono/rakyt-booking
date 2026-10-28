@@ -12,6 +12,7 @@ use App\Models\Trip;
 use App\Models\TripDeparture;
 use App\Models\User;
 use App\Tenancy\OrganizationScope;
+use App\Trips\TripStatus;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -42,6 +43,13 @@ class SellerDirectoryQueries
     public function search(SellerDirectoryFilters $filters, int $offset, int $limit): Collection
     {
         return $filters->apply(Organization::query())
+            // F-011: a correlated subquery on trips' (organization_id, status) index — one row per seller.
+            ->when($filters->withPublishedTrips, fn (Builder $query) => $query->whereExists(
+                Trip::acrossOrganizations()
+                    ->select('trips.id')
+                    ->whereColumn('trips.organization_id', 'organizations.id')
+                    ->where('trips.status', TripStatus::Published->value),
+            ))
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->offset($offset)
