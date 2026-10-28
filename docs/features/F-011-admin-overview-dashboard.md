@@ -61,3 +61,4 @@ None — status mapping resolved 2026-10-23 (see changelog).
   follows each link and compares. Published trips link to the seller directory's new `trip=published` filter (there
   is no admin trip list; trips are read per seller) and count trips of suspended sellers too. `trips (status)` index
   added. ADR-0042 proposed. AC-6 checked by layout test only; real-device review pending with the other admin screens.
+- 2026-10-28 — ADR-0042 accepted (Rengga): the published-trips count links to the seller directory filtered to sellers with a published trip.

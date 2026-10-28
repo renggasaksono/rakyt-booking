@@ -1,7 +1,7 @@
 ---
 id: 0042
 title: Admin overview — live grouped counts, a trips status index, published trips open the sellers that publish one
-status: proposed
+status: accepted
 date: 2026-10-28
 deciders: [Rengga]
 related: [F-011, F-012, F-013, ADR-0011, ADR-0039, ADR-0041]
